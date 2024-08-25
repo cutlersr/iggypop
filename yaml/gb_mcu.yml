@@ -1,16 +1,12 @@
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
-# see https://edinburgh-genome-foundry.github.io/DnaChisel for more options.
-
-mode: chisel 
-# mode: no_mods  # set to 'no_mods' to skip chiseling (i.e. no sequence changes)
-# mode: no_hinge # set to 'no_hinge' for only returning chiseled sequences
-
+mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
+                                       # 'no_hinge' to only returning chiseled sequences
 constraints:
-  # RE sites to avoid
-  - type: AvoidPattern
-    pattern: BsaI_site
-    strand: both
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
   - type: AvoidPattern
     pattern: BsmBI_site
     strand: both
@@ -24,44 +20,37 @@ constraints:
     pattern: BtgZI
     strand: both
 
-# Nanopore sequencing does not do well with homopolymeric runs
-  - type: AvoidPattern
-    pattern: "AAAAAA"
+  - type: AvoidPattern                  # Nanopore does not do well  
+    pattern: "AAAAAA"                   # with homopolymeric runs
     strand: both
   - type: AvoidPattern
     pattern: "CCCCCC"
     strand: both
 
+  - type: EnforceTranslation            # force changes to be synonymous
 
-# force changes to be synonymous
-# note --> gb formatting adds this for any annotated cds in the gb file
-  - type: EnforceTranslation
-
-# avoid hairpins
-  - type: AvoidHairpins
+  - type: AvoidHairpins                 # avoid hairpins
     stem_size: 20
     hairpin_window: 250
 
-# enforce GC content within these bounds
-  - type: EnforceGCContent
-    mini: 0.2
+  - type: EnforceGCContent.             # enforce GC content 
+    mini: 0.2                           # within these bounds  
     maxi: 0.6
-    window: 65
-
+    window: 60
 
 optimizations:
-  # optimize to prevent 10 bp repeats
-  - type: UniquifyAllKmers
+  - type: UniquifyAllKmers              # optimize to minimze 10 bp repeats
     include_reverse_complement: True
     k: 10
 
-# match_best_codon, use_best_codon, harmonize_rca, hybrid, or none
-codon_opt: 'match_codon_usage'  
+codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
+ 
+species: e_coli                         # taxids work as do species names
 
-# the following common names work: "arabidopsis", "e_coli", "s_cerevisiae", 
-# "h_sapiens", "c_elegans", "b_subtilis", "d_melanogaster"; other can be 
-# specified an NCBI taxID. 
-species: e_coli
+codon_tbl: "cocoputs"                   # can be "kazusa" or "none"
+
+deintronize: "off"     
+
 
 ############################ CLONING PARAMETERS ###############################
 

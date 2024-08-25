@@ -1,0 +1,207 @@
+==========================
+iggypop
+==========================
+
+**indexed golden gate DNA assembly by PCRing oligo pool templates**
+==========================
+
+
+iggypop is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded pieces that can be reassembled by golden gate cloning. The assembly overhangs are selected using pre-computed, high-fidelity sets, and the fragmented genes are amplified from oligo pools using experimentally validated barcode primer pairs.
+
+iggypop enables end-to-end design, assembly, and validation of 100s of genetic parts in a single experiment.
+
+.. image:: png/overview.png
+   :alt: Overview
+
+Installation
+============
+
+**Linux**
+
+.. code:: bash
+
+    git clone github.com/cutlersr/iggypop
+    cd iggypop
+    python -m venv .venv
+    source .venv/bin/activate
+    chmod +x setup.sh
+    ./setup.sh
+
+**Docker**
+
+.. code:: bash
+
+    git clone github.com/cutlersr/iggypop
+    cd iggypop
+    docker build -t iggypop .
+    docker run -it -v $(pwd):/app iggypop
+
+**Singularity**
+
+.. code:: bash
+
+    git clone github.com/cutlersr/iggypop
+    cd iggypop
+    singularity build iggypop.sif Singularity
+    singularity run -B $(pwd):/app iggypop.sif
+
+Usage
+=====
+
+Coding Sequence Mode
+---------------------
+
+
+.. code:: bash
+
+    # CDS in FASTA format
+    python iggypop.py cds --i "in/test.fasta" --o "test_oligos"
+
+Coding sequences are optimized using `dnachisel` and then fragmented using `goldenhinges`. Barcodes and cut sites are then added to each fragment to yield oligos that can be amplified with gene-specific primers and assembled.
+
+The `dnachisel` parameters for sequence optimization can be set in a yaml file using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. For example, to exclude BsaI sites, prevent changes to the first 200 base pairs, and enforce synonymous changes to the coding sequence, you would include the following in your yaml file:
+
+.. code:: yaml
+
+    constraints
+        # RE sites to avoid
+          - type: AvoidPattern
+            pattern: BsaI_site
+            strand: both    
+        # Prevent changes in the first 200 base pairs
+          - type: AvoidChanges
+            location: [1, 200]
+        # Force changes to be synonymous  
+          - type: EnforceTranslation
+
+You can also change settings on the command line. To use `use_best_codon` optimization, an *E. coli* codon table, BsaI sites for assemblies, and 300 bp oligos:
+
+.. code:: bash
+
+    python iggypop.py cds  --i "in/cds_test.fasta"  --species "e_coli"  --base_3p_end "AGAGACG"  \
+            --base_5p_end "CGTCTCA"  --codon_opt "use_best_codon"  --segment_length 250 
+
+The default cds yaml parameters design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
+
+
+Genbank File Mode
+------------------
+
+The parameters for optimized GenBank files are set with annotations according to `dnachisel's genbank API <https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html>`_. Adding annotations is a bit of a pain, but you can use `iggypop format` to speed this up; the optimization parameters are specified in a yaml file.
+
+.. code:: bash
+
+    # Format a Genbank file using the default settings from a yaml
+    python iggypop.py format --i "in/test_unformatted.gb"  --o "out/test_formatted.gb"  --yml "yaml/gb_mcu.yml"
+
+We recommend you check the formatting produced by `iggypop format` in Snapgene, Geneious, Benchling, or your favorite viewer. Once everything's good, generate your oligos:
+
+
+Running formatted genbanks
+------------------
+
+.. code:: bash
+
+    python iggypop.py gb  --i "in/test_formatted.gb" --o "test_oligos"
+
+
+Extra Features
+=====
+
+MoClo-compatible CDSs
+-----------------------
+
+This `workflow <#common-workflows-tips>`_ assembles reusable CDSs by adding a short 5' BsaI/ATTG leader in-frame with the CDS's native ATG, and 3' GCTT/BsaI. CDSs assembled are MoClo compatible (i.e., BsaI digestion creates an ORF with AATG/GCTT overhangs). The figure below zooms in on the first and last oligonucleotides of an assembly to illustrate the mapping between parameters set in the yml file and the designed sequence. This is the default design mode; see the yaml folder for other options.
+
+.. image:: png/molco.png
+   :alt: MoClo Compatibility
+
+
+Two-step assembly
+-------------------
+
+For target sequences longer than 3 Kb (~18 fragments 250 bp oligos), the frequency of proper assemblies is low enough that it can be better to break the target sequences into smaller "step one" fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. A challenge with the two-step approach is that one failed block will ruin the entire second-step assembly. Thus, settings with a low failure rate are critical. In our `workflow <#common-workflows-tips>`_, we set the maximum fragment length to 1104 base pairs (six oligos), which, in our experience, can be assembled with a very low failure rate to yield a high percentage of error-free clones. The figure below shows the first and last oligos of a 2-step assembly. This workflow is designed to generate MoClo-compatible CDSs; a `version <#common-workflows-tips>`_ for `.gb` files also skips the MoClo compatibility.
+
+.. image:: png/two_step.png
+   :alt: Two-step Assembly
+
+.. code:: bash
+
+    python iggypop.py gb  --i "in/test.gb"  --yml "two_step_gb.yml"   --o "two_step"
+
+This ...
+
+Versioning
+---------------------
+
+.. code:: bash
+
+    python iggypop.py gb  --i "in/test.gb"  --yml "yaml/gb_mcu.yml"  --repeats 5  --o "repeats"
+
+This generates a set of sequences using `match_codon_usage` to optimize the coding sequences of the three genes on the operon in the test file; subsequent functional screens identify the best-performing construct(s).
+
+
+Deintronization
+-----------------
+
+Sequences ported from other organisms or newly designed sequences can sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `iggypop cds --deintronize on`, a chiseled CDS is generated and passed to a Convolutional Neural Network splicing model from the `Spliceator` project  `paper <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
+
+.. code:: bash
+
+    python iggypop.py cds  --i "in/test.fasta" --deintronize "on" --o "deintronized" 
+
+
+Vectors
+=======
+
+We've developed a series of pIGGY vectors for the one-step and two-step cloning modes; they are derivatives of pUPD2 and pCAMBIA. Sequences can be found `here <#vectors>`_.
+
+Other tools & explanations
+==========================
+
+Barcode primers
+----------------
+
+Our barcode primers were designed to have balanced Tms, lack commonly used restriction sites, not dimerize, and be as small as possible (to maximize the sequence per oligo dedicated to the target, i.e., to maximize the `--segment_length` parameter). In addition, we wanted to minimize potential cross-hybridization of the primers to prevent mis-amplification and off-target hybridization in complex oligonucleotide pools. We also sought to reduce cross-hybridization/amplification of contaminant DNAs (*E. coli*, T7, T4, others). To accomplish this, a large set of 18 bp primers was generated with `primer3`; these were then scored for potential cross-hybridization/amplification and amplification of contaminant DNAs using `MFEprimer-3` (described `here <https://academic.oup.com/nar/article/47/W1/W610/5486745>`_). The top primers with the lowest cross-hybridization/amplification scores were retained and are provided `here <#barcode-primers>`_. We've tested many of these pairs in oligo pools, and only ~1% failed, so it is pretty reliable; 350 pairs are currently validated. We've purged the pairs we know are defective and will update the primer file as we get more validation. You probably don't need to start from scratch, but if you do, here's the pipeline...
+
+.. code:: bash
+
+    # example run settings; set `num_sequences` to more than you need to account for # bad primers eliminated after the MFEprimer steps.
+    iggypop primers       \
+    --num_sequences 10    \
+    --opt_tm 60           \ 
+    --opt_size 18         \
+    --gc_content 0.5      \
+    --max_size 18         \
+    --max_size 18
+
+Overhang sets
+-------------
+
+We use the `goldenhinges` packages to select overhangs for reassembling chiseled sequences. Given a sequence and fragment sizes, `golden hinges` searches for overhang solutions within a given distance from ideal target cut sites. `golden hinges` can limit the overhangs allowable to a user-specified list. So, if you provide `goldenhinges` with a pre-computed list of 20 overhangs with an overall assembly fidelity of 98%, any subset selected from that list will possess at least 98% fidelity (usually much higher for small subsets). To create an efficient pipeline for selecting high-fidelity overhangs, we pre-computed a large number of high-fidelity overhang sets using `iggypop.py gagga`; these are passed as constraints to `goldenhinges`. `iggypop` searches through these to identify `n_tries` solutions, and returns the highest fidelity set obtained.
+
+The overhang sets we use (`ohsets.csv`) were generated using a genetic algorithm and a Monte Carlo optimizer. The sets were optimized with `AATG, GCTT` as the `fixed_overhangs` (i.e., external cloning overhangs); AATG and GCTT have near-perfect fidelity and are MoClo-compliant for CDSs, so it's easy to create high-fidelity sets using them. Fidelities are calculated using `Potapov et al. <https://pubs.acs.org/doi/10.1021/acssynbio.8b00333>`_ data for one-hour incubations at 25 ºC using T4 DNA ligase; you can change this with the `potapov_data` setting. You can specify whatever external overhangs you want but check with NEB's `fidelity calculator <https://ligasefidelity.neb.com/viewset/run.cgi>`_ to ensure they are a high-fidelity pair first.
+
+For the overhang sets used, we ran a few thousand gaga runs on UCR's high-performance computing cluster and filtered the results to select the highest-scoring sets and maximally diverse subsets.
+
+The following command will do a run with a target of a set of 20 overhangs. Due to the way GAs work, sets with repeated sequences can arise; the `alpha` and `beta` parameters below control a penalty function that reduces repeated overhangs.
+
+.. code:: bash
+
+    # run a bunch of optimizations
+    iggypop gagga 
+        --set_size=20            \
+        --ngen=150               \
+        --pop_size=1000          \
+        --min_improve=.0005      \
+        --alpha 2.4              \
+        --beta 2.4               \
+        --tournament_size 4 
+
+    # then run this from the directory with all of your results
+    Rscript scripts/process_gagga_runs.R --top_percent=2 --n_cliques=30
+
+The data below shows the fidelities obtained for a run of 4,500 plant transcription factors using AATG/GCTT cloning overhangs; in this run the mean fragment number is 7 (~1.2 kB) and the mean assembly fidelity is predicted to be 99.5%.
+
+.. image:: png/fidelity_plot.png
+   :alt: fidelity_plot

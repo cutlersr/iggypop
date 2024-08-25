@@ -1,0 +1,76 @@
+Log file for: pops_24
+Start time: 2024-08-25 16:12:15
+Command line: /app/iggypop/iggypop_cds.py --i in/test.fasta --mode no_mods --repeats 4 --seed 123
+using cocoputs for your codon table
+using match_codon_usage for your codon optimization
+seed: 123
+
+Processing Achn363401
+Seed value for this run: 123
+********************************************************************************
+
+Hinging without chiseling sequence (no sequence changes)
+Length: 1144
+# segments: 7
+
+OH set fidelity: 0.996
+
+seed: 124
+
+Processing Achn363401
+Seed value for this run: 124
+********************************************************************************
+
+Hinging without chiseling sequence (no sequence changes)
+Length: 1144
+# segments: 7
+
+OH set fidelity: 0.996
+
+seed: 125
+
+Processing Achn363401
+Seed value for this run: 125
+********************************************************************************
+
+Hinging without chiseling sequence (no sequence changes)
+Length: 1144
+# segments: 7
+
+OH set fidelity: 0.996
+
+seed: 126
+
+Processing Achn363401
+Seed value for this run: 126
+********************************************************************************
+
+Hinging without chiseling sequence (no sequence changes)
+Length: 1144
+# segments: 7
+
+OH set fidelity: 0.996
+
+
+
+
+Group: Achn363401.1_1_A01_se
+Skipping group Achn363401.1_1_A01_se because it has less than 2 unique sequences.
+
+Group: Achn363401.2_1_A02_se
+Skipping group Achn363401.2_1_A02_se because it has less than 2 unique sequences.
+
+Group: Achn363401.3_1_A03_se
+Skipping group Achn363401.3_1_A03_se because it has less than 2 unique sequences.
+
+Group: Achn363401.4_1_A04_se
+Skipping group Achn363401.4_1_A04_se because it has less than 2 unique sequences.
+
+
+********************************************************************************
+
+
+Done
+
+Completion time: 2024-08-25 16:12:19
+

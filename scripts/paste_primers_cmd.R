@@ -287,7 +287,7 @@ if (opt$run_type == "gb") {
   seqs_out <- out %>% 
     group_by(base_id) %>%
     select(c(accession, pop_id = base_id, primer_index, f_primer, r_primer, 
-             total_fragments, internal_ohs, fidelity, input_seq, 
+             total_fragments, n_fragments_in_set, internal_ohs, fidelity, input_seq, 
              chiseled_seq)) %>%
     slice(1) %>%
     arrange(primer_index)  
@@ -300,7 +300,7 @@ if (opt$run_type == "gb") {
       group_by(base_id) %>%
       mutate(total_fragments = n()) %>%    
       select(c(accession, pop_id = base_id, primer_index, total_fragments, 
-               internal_ohs, fidelity, f_primer, r_primer, input_seq, 
+               n_fragments_in_set, internal_ohs, fidelity, f_primer, r_primer, input_seq, 
                chiseled_seq, second_step_assembly_seq)) %>%
       slice(1) %>%
       arrange(primer_index)
@@ -323,7 +323,7 @@ if (opt$run_type == "cds") {
   seqs_out <- out %>% 
     group_by(base_id) %>%
     select(c(accession, pop_id = base_id, primer_index, f_primer, r_primer, 
-             total_fragments, internal_ohs, fidelity, f_primer, r_primer, 
+             total_fragments, n_fragments_in_set, internal_ohs, fidelity, f_primer, r_primer, 
              input_cai, chiseled_cai, input_seq, chiseled_seq)) %>%
     slice(1) %>%
     arrange(primer_index)
@@ -336,7 +336,7 @@ if (opt$run_type == "cds") {
       group_by(base_id) %>%
       mutate(total_fragments = n()) %>%
       select(c(accession, pop_id = base_id, primer_index, total_fragments, 
-               internal_ohs, fidelity, f_primer, r_primer, input_cai, 
+               n_fragments_in_set, internal_ohs, fidelity, f_primer, r_primer, input_cai, 
                chiseled_cai, input_seq, chiseled_seq, 
                second_step_assembly_seq)) %>%
       slice(1) %>%
