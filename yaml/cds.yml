@@ -1,0 +1,113 @@
+###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
+
+# see https://edinburgh-genome-foundry.github.io/DnaChisel for more options.
+
+mode: chisel 
+# mode: no_mods  # set to 'no_mods' to skip chiseling (i.e. no sequence changes)
+# mode: no_hinge # set to 'no_hinge' for only returning chiseled sequences
+
+constraints:
+  # RE sites to avoid
+  - type: AvoidPattern
+    pattern: BsaI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BbsI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
+
+# Nanopore sequencing does not do well with homopolymeric runs
+  - type: AvoidPattern
+    pattern: "AAAAAA"
+    strand: both
+  - type: AvoidPattern
+    pattern: "CCCCCC"
+    strand: both
+
+
+  - type: EnforceTranslation
+
+  - type: AvoidHairpins
+    stem_size: 20
+    hairpin_window: 250
+
+  - type: EnforceGCContent
+    mini: 0.2
+    maxi: 0.6
+    window: 60
+
+optimizations:
+  # optimize to prevent 10 bp repeats
+  - type: UniquifyAllKmers
+    include_reverse_complement: True
+    k: 10
+
+# match_best_codon, use_best_codon, harmonize_rca, hybrid, or none
+codon_opt: 'match_codon_usage'  
+
+# the following common names work: "arabidopsis", "e_coli", "s_cerevisiae", 
+# "h_sapiens", "c_elegans", "b_subtilis", "d_melanogaster"; other can be 
+# specified an NCBI taxID. 
+species: arabidopsis
+
+
+############################ CLONING PARAMETERS ###############################
+
+# these are the outer overhangs used for cloning into the pIGGY vectors
+ext_overhangs:
+  - AATG
+  - GCTT
+
+# multi-level design parameters
+# this will break the sequence into step_1 fragments of maximum two_step_length
+# which are assembled, validated, and then used in a second step assembly
+two_step: False
+
+# Generates AATG on the 5'end of a CDS, and GCTT on 3' end. 
+base_5p_end: "A"
+base_3p_end: "GCTT"
+
+# The IIS sequences appended to the 5' end of each first-step oligo is defined 
+# here. This adds BsaI sites. 
+pcr_5p_cut: "CGTCTCA"
+pcr_3p_cut: "AGAGACG"
+
+
+# run the deintronization process
+# default is to turn this off; you can turn it on with the --deintronize flag
+deintronize: False
+
+
+########################### HINGING PARAMETERS #################################
+
+# Increase to 250 for 300 bp oligos; decrease to 150 for 200 bp oligos.
+# Decrease to 198 if you are cloning with BbsI w/ 250 bp oligos
+segment_length: 200
+
+# max_fragments: Max number of fragments per PCR reaction.
+max_fragments: 18
+
+# radius value used by goldenhinges
+radius: 8
+
+# row of barcode primers file to start from
+primer_index: 1
+
+# Fidelity scoring data; multiple datasets are in the data folder 
+fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
+
+ohsets: 'data/hf_oh_sets.xlsx'
+
+# n_tries: Number of overhang sets to test for generating hinges.
+n_tries: 10
+
+# file with indexing primers. 
+index_primers: "data/10K_primers_renamed.csv"

@@ -1,0 +1,63 @@
+LOCUS       J23119_rbs_mRFP          979 bp    DNA     linear   UNA 02-JUL-2024
+DEFINITION  J23119_rbs_mRFP.
+ACCESSION   J23119_rbs_mRFP
+KEYWORDS    .
+SOURCE      synthetic
+  ORGANISM  synthetic.
+FEATURES             Location/Qualifiers
+     promoter        26..60
+                     /created_by="seancutler"
+                     /label="J23119"
+     RBS             68..79
+                     /note="strong bacterial ribosome binding site (Elowitz and
+                      Leibler, 2000)"
+                     /note:="B0034"
+                     /label="RBS"
+     ORF             86..763
+                     /CAI="0.73"
+                     /label="mRFP_magenta"
+     regulatory      154..157
+                     /created_by="seancutler"
+                     /label="oh"
+     misc_difference 278..280
+                     /note:="Bao et al. 2020; PMID: 32891596"
+                     /created_by="seancutler"
+                     /modified_by="seancutler"
+                     /label="F65C"
+     regulatory      328..331
+                     /created_by="seancutler"
+                     /label="oh"
+     regulatory      489..492
+                     /created_by="seancutler"
+                     /label="oh"
+     regulatory      654..657
+                     /created_by="seancutler"
+                     /label="oh"
+     terminator      811..882
+                     /created_by="seancutler"
+                     /label="rrnBT1 terminator"
+     regulatory      819..822
+                     /created_by="seancutler"
+                     /label="oh"
+     terminator      885..979
+                     /created_by="seancutler"
+                     /label="lambda t0 terminator"
+ORIGIN        
+        1 ataacaattt cacacaggag aattcttgac agctagctca gtcctaggta taatgctagc
+       61 actagtgaaa gaggagaaat actagatggc ttcctccgaa gacgttatca aagagttcat
+      121 gcgtttcaaa gttcgtatgg aaggttccgt taacggtcac gagttcgaaa tcgaaggtga
+      181 aggtgaaggt cgtccgtacg aaggtaccca gaccgctaaa ctgaaagtta ccaaaggtgg
+      241 tccgctgccg ttcgcttggg acatcctgtc cccgcagtgt atgtacggtt ccaaagctta
+      301 cgttaaacac ccggctgaca tcccggacta cctgaaactg tccttcccgg aaggtttcaa
+      361 atgggaacgt gttatgaact tcgaagacgg tggtgttgtt accgttaccc aggactcctc
+      421 cctgcaagac ggtgagttca tctacaaagt taaactgcgt ggtaccaact tcccgtccga
+      481 cggtccggtt atgcagaaaa aaaccatggg ttgggaagct tccaccgaac gtatgtaccc
+      541 ggaagacggt gctctgaaag gtgaaatcaa aatgcgtctg aaactgaaag acggtggtca
+      601 ctacgacgct gaagttaaaa ccacctacat ggctaaaaaa ccggttcagc tgccgggtgc
+      661 ttacaaaacc gacatcaaac tggacatcac ctcccacaac gaagactaca ccatcgttga
+      721 acagtacgaa cgtgctgaag gtcgtcactc caccggtgct taataataac gctgatagtg
+      781 ctagtgtaga tcgctactag agccaggcat caaataaaac gaaaggctca gtcgaaagac
+      841 tgggcctttc gttttatctg ttgtttgtcg gtgaacgctc tctggactcc tgttgataga
+      901 tccagtaatg acctcagaac tccatctgga tttgttcaga acgctcggtt gccgccgggc
+      961 gttttttatt ggtgagaat
+//

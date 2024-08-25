@@ -1,0 +1,29 @@
+# Ignore all files with a .log extension
+*.log
+
+# Ignore all files in the logs directory
+logs/
+
+# Ignore environment-specific files
+.env
+
+# Ignore compiled code
+*.class
+*.pyc
+*.o
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore node_modules directory (for Node.js projects)
+node_modules/
+
+# Ignore Python virtual environment directories
+.venv/
+
+# ignore files located in ignore folders
+**/ignore/
+barcodes/
+
+data/mfeprimer-3.3.1-linux-386
