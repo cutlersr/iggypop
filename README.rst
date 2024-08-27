@@ -10,8 +10,10 @@ iggypop is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in ol
 
 iggypop enables end-to-end design, assembly, and validation of 100s of genetic parts in a single experiment.
 
+
 .. image:: png/overview.png
    :alt: Overview
+
 
 Installation
 ============
@@ -37,6 +39,7 @@ Installation
     docker run -v $(pwd):/app -it iggypop /bin/bash
 
 
+
 Usage
 =====
 
@@ -47,7 +50,7 @@ Coding Sequence Mode
 .. code:: bash
 
     # CDS in FASTA format
-    python iggypop.py cds --i "in/test.fasta" --o "test_oligos"
+    ./iggypop.py cds --i in/test.fasta --o test_oligos
 
 Coding sequences are optimized using `dnachisel` and then fragmented using `goldenhinges`. Barcodes and cut sites are then added to each fragment to yield oligos that can be amplified with gene-specific primers and assembled.
 
@@ -70,9 +73,9 @@ You can also change settings on the command line. To use `use_best_codon` optimi
 
 .. code:: bash
 
-    python iggypop.py cds  --i "in/cds_test.fasta"            \ 
-       --species "e_coli"  --base_3p_end "AGAGACG"            \
-       --base_5p_end "CGTCTCA"  --codon_opt "use_best_codon"  \
+    ./iggypop.py cds  --i in/cds_test.fasta                 \    
+       --species e_coli  --base_3p_end AGAGACG            \
+       --base_5p_end CGTCTCA  --codon_opt use_best_codon  \
        --segment_length 250 
 
 The default cds yaml parameters design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
@@ -86,11 +89,10 @@ The parameters for optimized GenBank files are set with annotations according to
 .. code:: bash
 
     # Format a Genbank file using parameters in a yaml
-    python iggypop.py format --i "in/test_unformatted.gb"  \
-       --o "in/test_formatted.gb"  --yml "yaml/gb_mcu.yml"
+    ./iggypop.py format --i in/test_unformatted.gb --o in/test_formatted.gb  --yml yaml/gb_mcu.yml
 
     # Run the formatted Genbank file
-    python iggypop.py gb  --i "in/test_formatted.gb" --o "test_oligos"
+    ./iggypop.py gb  --i in/test_formatted.gb --o test_oligos
 
 
 We recommend you check the formatting produced by `iggypop format` in Snapgene, Geneious, Benchling, or your favorite viewer.
@@ -100,7 +102,7 @@ We recommend you check the formatting produced by `iggypop format` in Snapgene, 
 Design features
 =====
 
-The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters.
+The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well.
 
 
 MoClo-compatible CDSs
@@ -115,28 +117,25 @@ The `moclo` yaml files have paramaters to design reusable CDSs by adding a short
 Two-step assembly
 -------------------
 
-For target sequences longer than 3 Kb (~18 fragments 250 bp oligos), the frequency of proper assemblies is low enough that it can be better to break the target sequences into smaller "step one" fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks assembled and cloned with BbsI; the fragments are then assembled into the final sequence using BsmBI in the second step. You can change the enzymes used and fragment size in the yaml file if needed. The figure below shows the first and last oligos of a 2-step assembly. The CDS mode is designed to generate MoClo-compatible CDSs; the gb versions skips the MoClo compatibility.
+For target sequences longer than 3 Kb (~18 fragments 250 bp oligos), the frequency of proper assemblies is low enough that it can be better to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks assembled and cloned with BbsI; the fragments are then assembled into the final sequence using BsmBI in the second step. You can change the enzymes used and fragment size in the yaml file if needed. The figure below shows the first and last oligos of a 2-step assembly. The CDS mode is designed to generate MoClo-compatible CDSs; the gb versions skips the MoClo compatibility.
 
 .. image:: png/two_step.png
    :alt: Two-step Assembly
 
 .. code:: bash
 
-    python iggypop.py gb --i "in/test.gb"     \
-      --yml "two_step_gb.yml"  --o "two_step"
+    ./iggypop.py gb --i in/test.gb --two_step on  --o two_step
 
 
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expresion between codon optimized of the same amino acid sequence. The `repeats` parameter allows you to genrate multiple versions. This example generates five versions of a three gene operon with each ORF being optimized using using match_codon_usage. 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expresion between codon optimized of the same amino acid sequence. The `--repeats` parameter allows you to genrate multiple versions. This example generates five versions of a three gene operon with each ORF being optimized using using match_codon_usage. 
 
 
 .. code:: bash
 
-    python iggypop.py gb                         \
-      --i "in/test.gb" --yml "yaml/gb_mcu.yml"   \
-      --repeats 5  --o "repeats"
+    ./iggypop.py gb --i in/test.gb --repeats 5 --o repeats
 
 
 
@@ -147,18 +146,23 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
 
 .. code:: bash
 
-    python iggypop.py cds  --i "in/test.fasta" --deintronize "on" --o "deintronized" 
+    ./iggypop.py cds  --i in/test.fasta --deintronize on --o deintronized
 
 
 `Hybrid` codon optimization
 -----------------
 
-The two main methods of optimizing seqeunces are match_codon_usage (MCU) which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have CAI values of ~0.75 and UBC generates CAI values of 1. In some cases you may want CAI values in between those ranges, for example if you want to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The `codon_opt  hybrid` parameter allows this with the `--pct` paramater determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct paramater to hit the CAI value you're looking for. This is a bit oif a hack based on this comment at the DNAChisel repo. 
+The two main methods of optimizing seqeunces are match_codon_usage (MCU) which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have CAI values of ~0.75 and UBC generates CAI values of 1. In some cases you may want CAI values in between those ranges, for example if you want to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` paramater determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct paramater to hit the CAI value you're looking for. This is a bit oif a hack based on this comment at the DNAChisel repo. 
 
 .. code:: bash
 
-    python iggypop.py cds --i "in/test.fasta" \
-      --yml yaml/moclo_cds_hybrid.yml --pct 30
+    ./iggypop.py cds --i in/test.fasta --codon_opt hybrid --pct 30 --o hybrid
+
+
+Reports & quiet
+-----------------
+
+You can generate dnachisel report with --reports; if you want iggypop to print less to the screen use --quiet
 
 
 
@@ -176,7 +180,7 @@ Our barcode primers were designed to have balanced Tms, lack commonly used restr
 .. code:: bash
 
     # example run settings; set `num_sequences` to more than you need to account for # bad primers eliminated after the MFEprimer steps.
-    iggypop primers       \
+    ./iggypop.py primers  \
     --num_sequences 10    \
     --opt_tm 60           \ 
     --opt_size 18         \
@@ -199,7 +203,7 @@ The following command will do a run with a target of a set of 20 overhangs. Due 
 .. code:: bash
 
     # run a bunch of optimizations
-    iggypop gagga 
+    /iggypop.py gagga 
         --set_size=20            \
         --ngen=150               \
         --pop_size=1000          \
