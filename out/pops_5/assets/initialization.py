@@ -7,7 +7,7 @@ def initialize(run_type="cds"):
     
     # Parse arguments based on the run_type and set defaults
     if run_type == "cds":
-        args = parse_arguments(run_type, default_yml='yaml/moclo_cds.yml')
+        args = parse_arguments(run_type, default_yml='yaml/moclo_cds_mcu.yml')
     elif run_type == "gb":
         args = parse_arguments(run_type, default_yml='yaml/gb_mcu.yml')
     else:

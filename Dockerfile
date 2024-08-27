@@ -6,18 +6,43 @@ LABEL maintainer="cutler@ucr.edu"
 
 # Install necessary system packages for your application
 RUN apt-get update && apt-get install -y \
+    bowtie \
     git \
-    swig \
-    libssl-dev \
+    libbz2-1.0 \
+    libc6 \
+    libcom-err2 \
+    libcrypt1 \
+    libdb5.3 \
+    libexpat1 \
     libffi-dev \
+    libffi8 \
+    libgdbm6 \
+    libgssapi-krb5-2 \
+    libhdf5-dev \
+    libk5crypto3 \
+    libkeyutils1 \
+    libkrb5-3 \
+    libkrb5support0 \
+    liblzma5 \
+    libncursesw6 \
+    libnsl2 \
+    libreadline8 \
+    libsqlite3-0 \
+    libssl-dev \
+    libssl3 \
+    libtinfo6 \
+    libtirpc3 \
+    libuuid1 \
     libxml2-dev \
     libxslt1-dev \
-    zlib1g-dev \
-    r-base \
-    libhdf5-dev \
-    wget \
     ncbi-blast+ \
-    bowtie && \
+    netbase \
+    r-base \
+    swig \
+    tzdata \
+    wget \
+    zlib1g \
+    zlib1g-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -32,11 +57,6 @@ RUN pip install --upgrade pip setuptools wheel && \
 # Run setup script
 RUN chmod +x setup.sh && ./setup.sh
 
-# Create a symbolic link to the iggypop.py script in /usr/local/bin
-RUN ln -s /app/iggypop.py /usr/local/bin/iggypop
-
 # Ensure the script has executable permissions
 RUN chmod +x /app/iggypop.py
 
-# Set the default command to run the script
-CMD ["iggypop"]

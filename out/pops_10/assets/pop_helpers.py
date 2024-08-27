@@ -778,9 +778,9 @@ def report_gb_cai(input_genbank, output_genbank, species):
                             break
                     data.append({
                         'ID': record.id,
+                        'Annotation': annotation_value,
                         'Sequence': str(seq),
-                        'CAI': cai,
-                        'Annotation': annotation_value
+                        'CAI': cai
                     })
         return data
 

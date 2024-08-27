@@ -471,7 +471,22 @@ def get_unique_filename(base_path, filename):
     
     return full_path
 
+def check_mfeprimer():
+    mfeprimer_path = './data/mfeprimer-3.3.1-linux-386'
+    if not os.path.isfile(mfeprimer_path):
+        print("MFEprimer is not installed in the data folder.")
+        print("Please download MFEprimer using the following command:")
+        print()
+        print("wget https://github.com/quwubin/MFEprimer-3.0/releases/download/v3.3.1/mfeprimer-3.3.1-linux-386.gz")
+        print("gunzip mfeprimer-3.3.1-linux-386.gz")
+        print("mv mfeprimer-3.3.1-linux-386 ./data/")
+        print("chmod +x ./data/mfeprimer-3.3.1-linux-386")
+        print()
+        exit(1)
+
 if __name__ == '__main__':
+    check_mfeprimer()
+
     parser = argparse.ArgumentParser(description='Generate DNA sequences and their PCR primers.')
     parser.add_argument('--num_sequences', type=int, default=10, help='Number of sequences to generate')
     parser.add_argument('--sequence_length', type=int, default=800, help='Length of each sequence')
@@ -481,9 +496,9 @@ if __name__ == '__main__':
     parser.add_argument('--max_size', type=int, default=18, help='Maximum size of the primer.') 
     parser.add_argument('--cores', type=int, default=6, help='Number of cores to use.')
     parser.add_argument('--min_size', type=int, default=18, help='Minimum size of the primer.')
-    parser.add_argument('--no_coli', action='store_true', default=False, help='Exclude default search for amplicons of coli and olter contaminsnts')
+    parser.add_argument('--no_coli', action='store_true', default=False, help='Exclude default search for amplicons of coli and other contaminants')
     parser.add_argument('--first_cut', type=float, default=0.8, help='Upper quantile of primers to retain at first filtering; default ≥80th percentile.')
-    parser.add_argument('--second_cut', type=float, default=0.5, help='Upper quantile of primers to retain on seocnd contaminant filtering; default ≥50th percentile.')
+    parser.add_argument('--second_cut', type=float, default=0.5, help='Upper quantile of primers to retain on second contaminant filtering; default ≥50th percentile.')
     
     args = parser.parse_args()
 
@@ -492,7 +507,7 @@ if __name__ == '__main__':
     primers_df = main(args.num_sequences, args.sequence_length, args.gc_content, 
                       args.opt_size, args.opt_tm, args.max_size, args.min_size)
 
-    mfeprimer_path='./data/mfeprimer-3.3.1-linux-386'
+    mfeprimer_path = './data/mfeprimer-3.3.1-linux-386'
 
     # Run MFEPrimer analysis
     num_cores = args.cores
@@ -522,7 +537,7 @@ if __name__ == '__main__':
     database = "data/coli_other_contanminants.fasta"
 
     if args.no_coli == False:
-        print(f'Removing primers with cross-hyrbdization with E .coli and other contaminating DNAs')
+        print(f'Removing primers with cross-hybridization with E .coli and other contaminating DNAs')
         all_analysis = []
         all_analysis = run_mfe_coli_all(primers_df, database, mfeprimer_path, num_cores)
 
@@ -562,4 +577,3 @@ if __name__ == '__main__':
     print(f'Done')
     print(f'Your primers are located in the out/primers folder')
     print(f"Stop time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-

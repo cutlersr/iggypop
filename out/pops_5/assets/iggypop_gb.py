@@ -225,10 +225,12 @@ if __name__ == "__main__":
             two_step_df = pd.DataFrame()
 
             for record in SeqIO.parse(handle, "genbank"):
-                original_sequence = str(record.seq)
-                seq_id = record.id  # Extract sequence ID from the record
-
                 for repeat in range(repeats):
+
+                    original_sequence = str(record.seq)
+                    seq_id = record.id  # Extract sequence ID from the record
+                    seed = seed if seed else random.randint(0, 2**32 - 1)
+                    numpy.random.seed(seed)
 
                     try:
                         accession = seq_id
@@ -246,8 +248,6 @@ if __name__ == "__main__":
                             f'>{seq_id}\n{original_sequence}', log_file, quiet
                         )
 
-                        seed = seed if seed else random.randint(0, 2**32 - 1)
-                        numpy.random.seed(seed)
                         log_and_print(f'seed: {seed}', log_file, quiet)
 
                         if mode != 'no_mods':
@@ -327,6 +327,7 @@ if __name__ == "__main__":
                             if (two_step == "on") and len(chiseled_sequence) > two_step_length:
                                 log_and_print("running two-step mode", log_file)
                                 two_step_df_all = pd.DataFrame()
+
                                 log_and_print(
                                     f"Length: {len(chiseled_sequence)}", log_file, quiet
                                 )
@@ -337,12 +338,6 @@ if __name__ == "__main__":
                                         chiseled_sequence, current_seq_id, two_step_length
                                     )
                                 
-                                except Exception as e:
-                                    log_and_print(
-                                        f"{current_seq_id} FAILED hinge.\n"
-                                        f"Exception occurred: {e}\n", log_file
-                                    )
-
                                     for seq_id, solution_data in best_solutions_dict.items():
                                         two_step_df_all = solution_data['dataframe']
                                         two_step_df_all = pd.concat([two_step_df_all])
@@ -379,7 +374,15 @@ if __name__ == "__main__":
                                         for seq_id, solution_data in best_solutions_dict.items():
                                             df = solution_data['dataframe']
                                             df['Tries_for_hinges'] = solution_data['Tries_for_hinges']
+                                            df['accession'] = accession
                                             df_all = pd.concat([df_all, df])
+
+                                except Exception as e:
+                                    log_and_print(
+                                        f"{current_seq_id} FAILED hinge.\n"
+                                        f"Exception occurred: {e}\n", log_file
+                                    )
+
 
                             else:
                                 log_and_print(
@@ -496,16 +499,20 @@ if __name__ == "__main__":
 
             output_path = f'{ofile}_CAIs.txt'
             # Save the CAI summaries to a file
-            log_and_print(f'{input_df} \n {output_df}', log_file)
             save_cai_summary_to_file(input_df, output_df, output_path)
+            input_df = input_df.drop(columns=['Sequence'])
+            output_df = output_df.drop(columns=['Sequence'])
+            log_and_print('*' * 80, log_file)
+            log_and_print(f'original CAI values for CDSs \n {input_df}\n', log_file)
+            log_and_print(f'output CAI values for CDSs \n {output_df}\n', log_file)
                 
             # Convert command-line arguments to a dictionary
             dict = vars(updated_defaults)
 
             # Create output Excel file and then add primers and format output with R
-            if mode != 'no_hinge':
-                # Drop unnecessary columns for gb run
-                df_all = df_all.drop(columns=['Original_CAI', 'Chiseled_CAI'])
+#            if mode != 'no_hinge':
+#                # Drop unnecessary columns for gb run
+#                df_all = df_all.drop(columns=['Original_CAI', 'Chiseled_CAI'])
 
             # Create an ExcelWriter object
             with pd.ExcelWriter(f'{ofile}_all_data.xlsx') as writer:
@@ -519,6 +526,7 @@ if __name__ == "__main__":
 
             if repeats > 1:
                 try:
+                    log_and_print('*' * 80, log_file)
                     log_and_print('\nCalculating similarity matrix for repeats\n', log_file)
                     sequences = read_fasta2(f'{ofile}_designed_seqs.fasta')
 
@@ -535,13 +543,14 @@ if __name__ == "__main__":
                             )
                             continue
 
+
                         distance_matrix = calculate_distance_matrix(unique_seqs)
                         identity_matrix = calculate_pairwise_identity(distance_matrix)
                         print_matrix(identity_matrix, "Identity Matrix:", log_file, decimals=2)
 
                         average_distance = calculate_average_distance(distance_matrix)
                         log_and_print(
-                            f"Average Pairwise Distance (%): {average_distance:.1f}", 
+                            f"Average Pairwise Distance (%): {average_distance:.1f}\n", 
                             log_file
                         )
 
@@ -550,6 +559,8 @@ if __name__ == "__main__":
                     log_and_print(f"An error occurred: {e}", log_file)
 
             if mode != "no_hinge":
+                log_and_print('*' * 80, log_file)
+
                 cmd = [
                     'Rscript', 
                     'scripts/paste_primers_cmd.R', 

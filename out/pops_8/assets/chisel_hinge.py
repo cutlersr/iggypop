@@ -80,6 +80,7 @@ def chisel(
         # Load data from the YAML file
         with open(file_path, 'r') as f:
             data = yaml.safe_load(f)
+            print(data)
     except FileNotFoundError:
         log_and_print(f"YAML file not found: {file_path}", log_file, quiet)
         return None

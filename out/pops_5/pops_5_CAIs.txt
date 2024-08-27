@@ -6,6 +6,6 @@ HBG_GGGATAAT.1 0.784243 superfolder GFP
 
 Output GenBank CAI Summary:
               ID      CAI      Annotation
-HBG_GGGATAAT.1.1 0.827159              TK
-HBG_GGGATAAT.1.1 0.868140             ble
-HBG_GGGATAAT.1.1 0.890173 superfolder GFP
+HBG_GGGATAAT.1.1 0.816703              TK
+HBG_GGGATAAT.1.1 0.864019             ble
+HBG_GGGATAAT.1.1 0.876991 superfolder GFP

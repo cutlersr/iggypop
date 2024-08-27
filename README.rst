@@ -34,7 +34,7 @@ Installation
     git clone github.com/cutlersr/iggypop
     cd iggypop
     docker build -t iggypop .
-    docker run -it -v $(pwd):/app iggypop
+    docker run -v $(pwd):/app -it iggypop /bin/bash
 
 **Singularity**
 
@@ -78,8 +78,10 @@ You can also change settings on the command line. To use `use_best_codon` optimi
 
 .. code:: bash
 
-    python iggypop.py cds  --i "in/cds_test.fasta"  --species "e_coli"  --base_3p_end "AGAGACG"  \
-            --base_5p_end "CGTCTCA"  --codon_opt "use_best_codon"  --segment_length 250 
+    python iggypop.py cds  --i "in/cds_test.fasta"            \ 
+       --species "e_coli"  --base_3p_end "AGAGACG"            \
+       --base_5p_end "CGTCTCA"  --codon_opt "use_best_codon"  \
+       --segment_length 250 
 
 The default cds yaml parameters design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
 
@@ -87,31 +89,29 @@ The default cds yaml parameters design MoClo compatible ORFs that lack common gg
 Genbank File Mode
 ------------------
 
-The parameters for optimized GenBank files are set with annotations according to `dnachisel's genbank API <https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html>`_. Adding annotations is a bit of a pain, but you can use `iggypop format` to speed this up; the optimization parameters are specified in a yaml file.
+The parameters for optimized GenBank files are set with annotations according to `dnachisel's genbank API <https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html>`_. Adding annotations is a bit of a pain, but you can use `iggypop format` to speed this up; the optimization parameters are specified in a yaml file; once formatted you can run with `iggypop.py gb`
 
 .. code:: bash
 
-    # Format a Genbank file using the default settings from a yaml
-    python iggypop.py format --i "in/test_unformatted.gb"  --o "out/test_formatted.gb"  --yml "yaml/gb_mcu.yml"
+    # Format a Genbank file using parameters in a yaml
+    python iggypop.py format --i "in/test_unformatted.gb"  \
+       --o "in/test_formatted.gb"  --yml "yaml/gb_mcu.yml"
+
+    # Run the formatted Genbank file
+    python iggypop.py gb  --i "in/test_formatted.gb" --o "test_oligos"
+
 
 We recommend you check the formatting produced by `iggypop format` in Snapgene, Geneious, Benchling, or your favorite viewer. Once everything's good, generate your oligos:
 
 
-Running formatted genbanks
-------------------
 
-.. code:: bash
-
-    python iggypop.py gb  --i "in/test_formatted.gb" --o "test_oligos"
-
-
-Extra Features
+Features
 =====
 
 MoClo-compatible CDSs
 -----------------------
 
-This `workflow <#common-workflows-tips>`_ assembles reusable CDSs by adding a short 5' BsaI/ATTG leader in-frame with the CDS's native ATG, and 3' GCTT/BsaI. CDSs assembled are MoClo compatible (i.e., BsaI digestion creates an ORF with AATG/GCTT overhangs). The figure below zooms in on the first and last oligonucleotides of an assembly to illustrate the mapping between parameters set in the yml file and the designed sequence. This is the default design mode; see the yaml folder for other options.
+The `moclo` yaml files have paramaters to design reusable CDSs by adding a short 5' BsaI/ATTG on the 5' end and a 3' GCTT/BsaI. The CDSs are first assembled with BsmBI and the final clones are MoClo compatible (i.e., BsaI digestion will release an ORF with AATG/GCTT overhangs). The figure below zooms in on the first and last oligonucleotides of an assembly to illustrate the mapping between parameters set in the yml file and the designed sequence. This is the default design mode; see the yaml folder for other options. 
 
 .. image:: png/molco.png
    :alt: MoClo Compatibility

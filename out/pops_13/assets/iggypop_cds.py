@@ -1,111 +1,3 @@
-"""
-This program is designed to create barcoded fragments of target coding
-sequences that can be amplified in a single PCR reaction and then assembled
-using Golden Gate cloning. Input sequences are optionally optimized using
-DNAchisel. Depending on the parameters set, you can domesticate sequences
-to remove restriction enzymes, perform codon optimization, prevent hairpins,
-and apply various other optimization tools offered by DNAchisel prior to
-generating the fragmeted/barcoded sequences.
-
-DNAchisel's three codon optimization methods can be used (`match_codon_usage`,
-`use_best_codon`, `harmonize_rca`). Additionally, a "hybrid" mode is available
-that uses `use_best_codon` with a constraint that the sequence be `--pct`
-different from the input; this leads to higher CAI values than
-`match_codon_usage` and sequences with greater diversity than `use_best_codon`.
-
-An experimental feature (`--deintronize`) uses Spliceator in combination with
-DNAchisel to remove potential cryptic introns and splice donor/acceptor
-sites. If you want to skip chiseling or sequence optimization, use
-`--mode no_mods`.
-
-Once optimized, sequences are appended with defined 5' and 3' ends to create_
-overhangs and other elements needed for Golden Gate cloning. The default
-settings add sequences generate a MoClo-compatible ORF, resulting in
-final clones flanked by BsaI sites and AATG/GCTT overhangs (after assembly), 
-thus suitable to build Level 1 constructs in MoClo-compatible systems.
-
-The final target sequences are fragmented into segments with high-fidelity
-overhangs for efficient reassembly via Golden Gate cloning. The maximum
-fragment size is set by the `--segment_length` flag, with a default value
-of 200, which is appropriate for synthesizing 250 bp oligos (reserving 50 bp
-for enzyme sites and barcode primers). Fragmentation is done with
-GoldenHinges, which limits overhang selection to predefined sets. To
-ensure high-fidelity assemblies, sets of precomputed high-fidelity overhangs
-are used as constraints. Multiple overhang sets are considered (`--n_tries`),
-with the highest fidelity set reported.
-
-Assemblies for sequences larger than a few kilobases can be assembled in
-a two-step process (`--two_step on` flag), aiming for ~1 kb first-step
-assemblies. This approach increases the frequency of error-free clones
-required in the second step.
-
-By default, a single barcoding primer set is appended to each fragment,
-enabling a single-tube reaction for reassembly. For more complex assemblies,
-multiple barcodes can be used per gene, with the `--max_fragments` flag
-determining the number of barcodes. Barcodes are added from a file in the
-`data/` folder; you can use a custom set of barcodes if required with the
-`--index_primers` flag.
-
-Additional functionality includes the `--repeats` flag, which allows
-generating multiple versions of a single input sequence, useful for testing
-multiple optimized sequences. When combined with `--tweak_n`, it generates
-a large set of candidates, from which a maximally diverse subset can be
-selected for further testing.
-
-Parameters can be set via command line or more conveniently with a YAML
-file. Command-line arguments override YAML settings.
-
-**Command line options**:
-- `--i` (str): Input FASTA file path for sequences to optimize and fragment.
-- `--o` (str): Output file stem, saved in the `out/` folder.
-- `--yml` (str): YAML file for run parameters (default: `yaml/moclo_cds.yml`).
-  Command-line arguments override YAML settings.
-- `--mode` (str): Operation mode:
-  - `chisel`: Modifies the input sequence (default).
-  - `no_mods`: Only hinges and barcodes fragments.
-  - `no_hinge`: Chisels sequences without hinging/barcoding.
-- `--reports` (bool): Enables DNAchisel reports.
-
-**Codon Optimization**:
-- `--codon_opt` (str): Codon optimization method (`use_best_codon`,
-  `match_codon_usage`, `harmonize_rca`, `hybrid`, `none`).
-- `--pct` (float): Target sequence divergence for hybrid optimization
-  (default: 20%).
-- `--species` (str): Codon table for optimization (default: `arabidopsis`).
-  Supports NCBI taxIDs.
-- `--codon_tbl` (str): Codon table source (`cocoputs`, `kazusa`).
-- `--original_species` (str): Source species for codon harmonization.
-- `--deintronize` (str): Enables experimental deintronization mode.
-
-**Repeated Design**:
-- `--repeats` (int): Number of chiseled sequences to create per input.
-- `--tweak_n` (int): Number of tweaked sequences for diversity.
-- `--tweak_cai` (float): Minimum CAI value for tweaking (default: 0.8).
-
-**Assembly**:
-- `--two_step` (str): Enables two-step assemblies.
-- `--max_fragments` (int): Maximum fragments per PCR (default: 6).
-- `--segment_length` (int): Maximum segment length (default: 200 bp).
-- `--ext_overhangs` (list): External overhangs for cloning, excluded from
-  internal junctions.
-- `--base_5p_end`, `--base_3p_end` (str): Sequences appended to the 5' and
-  3' ends of the chiseled CDS.
-- `--pcr_5p_cut`, `--pcr_3p_cut` (str): Sequences added to oligos for Golden
-  Gate cloning.
-- `--primer_index` (int): Starting point for adding primers from the index
-  set.
-- `--n_tries` (int): Number of overhang sets to consider (default: 50).
-- `--radius` (int): Distance from ideal cut sites for selecting overhangs
-  (default: 8).
-
-**Miscellaneous**:
-- `--seed` (int): Seed for random number generation.
-- `--index_primers` (str): Path to index primers file (`data/10K_primers_renamed.csv`).
-- `--fidelity_data` (str): Path to OH fidelity data (`data/FileS03_T4_18h_25C.xlsx`).
-- `--ohsets` (str): High-fidelity overhang sets for assembly.
-- `--taxIDs` (bool): Prints a list of common organisms and their NCBI taxIDs.
-"""
-
 import os
 import sys
 import datetime
@@ -147,7 +39,7 @@ def hinge(chiseled_sequence, seq_id, segment_length):
 
         best_overall_solution = max(fidelity_scores.values())
         log_and_print(
-            f"\nOH set fidelity: {best_overall_solution:.3f}\n", log_file, quiet
+            f"\nOH set fidelity: {best_overall_solution:.3f}\n", log_file
         )
 
         max_fidelity_index = max(fidelity_scores, key=fidelity_scores.get)
@@ -191,6 +83,7 @@ if __name__ == "__main__":
         )
         log_file.write(f"Command line: {' '.join(sys.argv)}\n")
 
+
         print_header_cds(tag)
 
         if check_ext_overhangs(ext_overhangs):
@@ -229,6 +122,8 @@ if __name__ == "__main__":
         try:
             if (codon_tbl=="cocoputs"):
 
+                log_and_print("using cocoputs for your codon table", log_file)
+
                 if species == "arabidopsis":
                     species = 'a_thaliana'
                     print("using AT")
@@ -240,10 +135,6 @@ if __name__ == "__main__":
 
             else:
                 codon_table = get_codons_table(species)
-
-            log_and_print(f"using {codon_tbl} for your codon table", log_file)
-            log_and_print(f"using {codon_opt} for your codon optimization", log_file)
-
 
         except Exception as e:
             log_and_exit(
@@ -278,8 +169,7 @@ if __name__ == "__main__":
             sys.exit()
 
         if tweak_n and repeats < tweak_n:
-            print(f"Tweaking requires the use of repeats; run with \
-                '--repeats {2 * tweak_n}' (or greater).")
+            print(f"Tweaking requires the use of repeats; run with '--repeats {2 * tweak_n}' (or greater).")
             sys.exit()
 
 
@@ -287,6 +177,7 @@ if __name__ == "__main__":
         two_step_df = pd.DataFrame()
 
 #       Main sequence modification and fragmentation loop
+#        seed = seed if seed else random.randint(0, 2**32 - 1)
 
         for i, seq_dict in enumerate(sequences):
             original_sequence = seq_dict['sequence'].upper()
@@ -306,13 +197,14 @@ if __name__ == "__main__":
                 chiseled_cai = None
                 reports = reports
 
+                log_and_print(f'\nProcessing {accession}', log_file)
+#                    log_and_print(f"Seed value for this run: {seed}", log_file)
+                log_and_print('*' * 80, log_file)
+
                 seed = seed if seed else random.randint(0, 2**32 - 1)
                 numpy.random.seed(seed)
-                log_and_print(f'seed: {seed}', log_file, quiet)
+                log_and_print(f'seed: {seed}', log_file)
 
-                log_and_print(f'\nProcessing {accession}', log_file)
-                log_and_print(f"Seed value for this run: {seed}", log_file, quiet)
-                log_and_print('*' * 80, log_file)
 
                 if mode != 'no_mods':
                     if not check_orf(
@@ -343,7 +235,7 @@ if __name__ == "__main__":
                             if last_try == 0:
                                 log_and_print(
                                     f">{current_seq_id}\n{original_sequence}",
-                                    log_file, quiet
+                                    log_file
                                 )
 
                             results_path = (
@@ -356,21 +248,23 @@ if __name__ == "__main__":
                                 original_species, intron_constraints,
                                 loc_constraints_left, loc_constraints_right,
                                 left_bounds, right_bounds, log_file,
-                                reports, pct, last_try, repeat, quiet, yml, results_path
+                                reports, pct, last_try, repeat, yml, results_path
                             )
                             time.sleep(0.2)
 
+#                                log_and_print(f'seed value for this run: {seed}', log_file)
+#                                seed += 1
+
                             if last_try == 0:
                                 log_and_print(
-                                    f">{current_seq_id}_chisel\n"
-                                    f"{chiseled_sequence}",
-                                    log_file, quiet
+                                    f">{current_seq_id}_chisel\n{chiseled_sequence}",
+                                    log_file
                                 )
 
                             if last_try > 0:
                                 log_and_print(
                                     f">{current_seq_id}_chisel_{last_try + 1}\n"
-                                    f"{chiseled_sequence}", log_file, quiet
+                                    f"{chiseled_sequence}", log_file
                                 )
 
                             if codon_opt != "none":
@@ -381,7 +275,7 @@ if __name__ == "__main__":
                                     chiseled_sequence, codon_table
                                 )
 
-                                if codon_tbl == "kazusa":
+                                if codon_tbl=="kazusa":
                                     species_name = (
                                         "arabidopsis" if species == '3702'
                                         else str(species)
@@ -390,24 +284,22 @@ if __name__ == "__main__":
                                 log_and_print(
                                     f"\nChiseled with {codon_opt} optimization "
                                     f"and the {species_name} codon table.",
-                                    log_file, quiet
+                                    log_file
                                 )
                                 log_and_print(
-                                    f"\tOriginal CAI: {original_cai:.3f}", log_file, quiet
+                                    f"\tOriginal CAI: {original_cai:.3f}", log_file
                                 )
                                 log_and_print(
                                     f"\tChiseled CAI: {chiseled_cai:.3f}\n",
-                                    log_file, quiet
+                                    log_file
                                 )
 
-                                if deintronize == "on":
+                                if (deintronize=="on"):
                                     log_and_print(
                                         "scanning chiseled sequence for cryptic "
                                         "introns", log_file
                                     )
-                                    log_and_print(
-                                        "this may take a while...", log_file
-                                    )
+                                    log_and_print("this may take a while...", log_file)
 
                                     intron, dico_donor, dico_acceptor = check_intron(
                                         chiseled_sequence
@@ -445,28 +337,26 @@ if __name__ == "__main__":
 
                             else:
                                 # Add 5' and 3' ends to the chiseled sequence
-                                chiseled_sequence = (
-                                    base_5p_end + original_sequence + base_3p_end
-                                )
+                                chiseled_sequence = str(base_5p_end + original_sequence + base_3p_end)
 
                         except Exception as e:
                             log_and_print(
-                                f"{current_seq_id} FAILED chisel.\n"
-                                f"Exception occurred: {e}\n", log_file
+                                f"{current_seq_id} FAILED chisel.\nException occurred: {e}\n",
+                                log_file
                             )
                             log_and_print("Retrying...", log_file)
                         last_try = max_attempts
 
-                    # Copy the chisel to "original_sequence" for deintronize mode
+
+                    # copy the chisel to "original_sequence" for deontronize mode
                     original_sequence = chiseled_sequence
 
                     # Add 5' and 3' ends to the chiseled sequence
-                    chiseled_sequence = (
-                        base_5p_end + original_sequence + base_3p_end
-                    )
+                    chiseled_sequence = str(base_5p_end + original_sequence + base_3p_end)
+
 
                 if mode == 'no_mods':
-                    chiseled_sequence = (
+                    chiseled_sequence = str(
                         base_5p_end + original_sequence + base_3p_end
                     )
                     log_and_print(
@@ -476,42 +366,38 @@ if __name__ == "__main__":
 
                 if mode != 'no_hinge':
 
-                    seg_num = math.ceil(
-                        len(chiseled_sequence) / (segment_length - radius * 2)
-                    )
+                    seg_num = math.ceil(len(chiseled_sequence) / (segment_length - radius * 2))
 
-                    if two_step == "on" and len(chiseled_sequence) > two_step_length:
+                    if (two_step=="on") and len(chiseled_sequence) > two_step_length:
                         log_and_print("running two-step mode", log_file)
                         two_step_df_all = pd.DataFrame()
-                        log_and_print(f"Length: {len(chiseled_sequence)}", log_file, quiet)
+                        log_and_print(f"Length: {len(chiseled_sequence)}", log_file)
                         log_and_print(
-                            f"# segments: {seg_num}", log_file, quiet
+                            f"# segments: {seg_num}", log_file
                         )
-
+                        
                         try:
                             best_solutions_dict = hinge(
                                 chiseled_sequence, current_seq_id, two_step_length
                             )
-
+                        
                         except Exception as e:
                             log_and_print(
-                                f"{current_seq_id} FAILED hinge.\n"
-                                f"Exception occurred: {e}\n", log_file
-                            )
+                                f"{current_seq_id} FAILED hinge.\nException occurred: {e}\n",
+                                log_file
+                        )
 
                         if best_solutions_dict:
                             for seq_id, solution_data in best_solutions_dict.items():
                                 two_step_df_all = solution_data['dataframe']
                                 two_step_df_all = pd.concat([two_step_df_all])
-                            two_step_df_all['accession'] = accession
                             two_step_df_all['base_id'] = two_step_df_all['Seq_ID']
                             two_step_df_all['Seq_ID'] = (
                                 two_step_df_all['Seq_ID'].astype(str) + '_L0_' +
                                 two_step_df_all['Fragment_n'].astype(str)
                             )
                             two_step_df_all['Fragment'] = (
-                                two_step_5p_end +
-                                two_step_df_all['Fragment'].astype(str) +
+                                two_step_5p_end + two_step_df_all['Fragment'].astype(str) +
                                 two_step_3p_end
                             )
 
@@ -522,11 +408,9 @@ if __name__ == "__main__":
                             for index, df in two_step_df_all.iterrows():
                                 seq_id = df['Seq_ID']
                                 sequence = df['Fragment']
-                                seg_num = math.ceil(
-                                    len(df['Fragment']) / (segment_length - radius)
-                                )
+                                seg_num = math.ceil(len(df['Fragment']) / (segment_length - radius))
                                 log_and_print(
-                                    f"Level 1 # segments: {seg_num}", log_file, quiet
+                                    f"Level 1 # segments: {seg_num}", log_file
                                 )
 
                                 best_solutions_dict = hinge(
@@ -537,13 +421,13 @@ if __name__ == "__main__":
                                 for seq_id, solution_data in best_solutions_dict.items():
                                     df = solution_data['dataframe']
                                     df['Tries_for_hinges'] = solution_data['Tries_for_hinges']
-                                    df['accession'] = accession
                                     df_all = pd.concat([df_all, df])
 
+
                     else:
-                        log_and_print(f"Length: {len(chiseled_sequence)}", log_file, quiet)
+                        log_and_print(f"Length: {len(chiseled_sequence)}", log_file)
                         log_and_print(
-                            f"# segments: {seg_num}", log_file, quiet
+                            f"# segments: {seg_num}", log_file
                         )
 
                         try:
@@ -556,7 +440,7 @@ if __name__ == "__main__":
                             if best_solution:
                                 best_fidelity = max(fidelity_scores.values())
                                 log_and_print(
-                                    f"\nOH set fidelity: {best_fidelity:.3f}\n", log_file, quiet
+                                    f"\nOH set fidelity: {best_fidelity:.3f}\n", log_file
                                 )
 
                             if seq_sets:
@@ -584,20 +468,20 @@ if __name__ == "__main__":
                                 )
                         except Exception as e:
                             log_and_print(
-                                f"{current_seq_id} FAILED hinge.\n"
-                                f"Exception occurred: {e}\n", log_file
+                                f"{current_seq_id} FAILED hinge.\nException occurred: {e}\n",
+                                log_file
                             )
 
                 if mode == 'no_hinge':
-                    chiseled_sequence = (
+                    chiseled_sequence = str(
                         base_5p_end + original_sequence + base_3p_end
                     )
-
                     df = create_chisels_df(
-                        accession, current_seq_id, original_sequence, chiseled_sequence,
+                        current_seq_id, original_sequence, chiseled_sequence,
                         original_cai, chiseled_cai
                     )
                     df_all = pd.concat([df_all, df])
+
 
         yml_file = f"{yml}"
 
@@ -620,15 +504,16 @@ if __name__ == "__main__":
         args_dict.update(flattened_constraints)
         args_dict.update(flattened_optimizations)
 
-        log_and_print('\n', log_file, quiet)
+        log_and_print('\n', log_file)
 
         with pd.ExcelWriter(f'{ofile}_all_data.xlsx') as writer:
             df_all.to_excel(writer, sheet_name="pre_indexed_data", index=False)
 
-            if two_step == "on" and not two_step_df.empty:
+            if (two_step=="on") and not two_step_df.empty:
                 two_step_df.to_excel(
                     writer, sheet_name="step_1_fragments", index=False
                 )
+
 
             params_df = pd.DataFrame.from_dict(
                 args_dict, orient='index', columns=['Value']
@@ -638,6 +523,7 @@ if __name__ == "__main__":
         write_fasta(df_all, f'{ofile}_designed_seqs.fasta')
 
         read_log_and_identify_failures(tag)
+
 
         if mode != "no_hinge":
             cmd = [
@@ -650,7 +536,7 @@ if __name__ == "__main__":
                 '--pcr_5p_cut', str(pcr_5p_cut),
                 '--pcr_3p_cut', str(pcr_3p_cut),
                 '--max_fragments', str(max_fragments),
-                '--two_step', 'on' if (two_step == "on" and not two_step_df.empty) else 'off',
+                '--two_step', 'on' if (two_step=="on" and not two_step_df.empty) else 'off',
                 '--run_type', 'cds'
             ]
             try:
@@ -663,6 +549,7 @@ if __name__ == "__main__":
             sequences = read_fasta2(f'{ofile}_designed_seqs.fasta')
 
             for group, seqs in sequences.items():
+                # Filter unique sequences
                 unique_seqs = list(set(seqs))
 
                 print(f"\nGroup: {group}")
@@ -688,26 +575,24 @@ if __name__ == "__main__":
                     f"Average Pairwise Distance (%): {average_distance:.1f}\n"
                 )
 
-        log_and_print('\n', log_file)
+        log_and_print('\n', log_file) 
         log_and_print('*' * 80, log_file)
         log_and_print('\n', log_file)
         log_and_print("Done", log_file)
 
-        if quiet=="off":
-            nerd_alert()
-
+        nerd_alert()
         log_and_print(
             f"\nCompletion time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n",
-            log_file, quiet
+            log_file
         )
 
         log_file.close()
 
+
         if mode == "no_hinge" and tweak_n:
             call_tweaker_2(f"out/{tag}/log.txt", tweak_n)
 
-            with open(f'out/{tag}/cai_max_dif_set.fasta', 'w') as fasta_out, \
-                    open(f'out/{tag}/cai_max_diff_table.txt', 'w') as table_out:
+            with open(f'out/{tag}/cai_max_dif_set.fasta', 'w') as fasta_out, open(f'out/{tag}/cai_max_diff_table.txt', 'w') as table_out:
                 for record in SeqIO.parse(f'out/{tag}/max_diff_subsets.fasta', 'fasta'):
                     codon_table = get_codons_table(species)
                     cai = calculate_cai(str(record.seq), codon_table)
@@ -719,3 +604,4 @@ if __name__ == "__main__":
         with open(log_file_path, "a") as log_file:
             log_and_exit(f"An unexpected error occurred: {e}", log_file, exit_code=99)
         log_file.close()
+

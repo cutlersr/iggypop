@@ -88,13 +88,14 @@ def chisel(
         return None
 
     try:
+        print()
         # Parse constraints from the YAML file
         constraints = [
             eval(
                 f"{entry['type']}("
                 f"{', '.join(f'{key}={repr(value)}' for key, value in entry.items() if key != 'type')})"
             )
-            for entry in data["constraints"]
+            for entry in data.get("constraints", [])
         ]
     except Exception as e:
         log_and_print(f"Error parsing constraints: {e}", log_file, quiet)

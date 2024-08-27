@@ -292,6 +292,10 @@ if __name__ == "__main__":
             original_sequence = seq_dict['sequence'].upper()
             seq_id = seq_dict['id']
 
+            seed = seed if seed else random.randint(0, 2**32 - 1)
+            numpy.random.seed(seed)
+
+
             for repeat in range(repeats):
                 accession = seq_id
                 current_seq_id = f"{seq_id}.{repeat + 1}"
@@ -306,8 +310,6 @@ if __name__ == "__main__":
                 chiseled_cai = None
                 reports = reports
 
-                seed = seed if seed else random.randint(0, 2**32 - 1)
-                numpy.random.seed(seed)
                 log_and_print(f'seed: {seed}', log_file, quiet)
 
                 log_and_print(f'\nProcessing {accession}', log_file)
@@ -598,6 +600,7 @@ if __name__ == "__main__":
                         original_cai, chiseled_cai
                     )
                     df_all = pd.concat([df_all, df])
+                seed = seed + 1
 
         yml_file = f"{yml}"
 

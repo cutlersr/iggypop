@@ -33,7 +33,7 @@ constraints:
     stem_size: 20
     hairpin_window: 250
 
-  - type: EnforceGCContent.             # enforce GC content 
+  - type: EnforceGCContent              # enforce GC content 
     mini: 0.2                           # within these bounds  
     maxi: 0.6
     window: 60

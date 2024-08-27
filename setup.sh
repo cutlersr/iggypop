@@ -28,18 +28,43 @@ else
     # Ensure necessary system packages are installed
     echo "Checking and installing necessary system packages..."
     REQUIRED_PACKAGES=(
-        git
-        swig
-        libssl-dev
-        libffi-dev
-        libxml2-dev
-        libxslt1-dev
-        zlib1g-dev
-        r-base
-        libhdf5-dev
-        wget
-        ncbi-blast+
-        bowtie
+    bowtie 
+    git 
+    libbz2-1.0 
+    libc6 
+    libcom-err2 
+    libcrypt1 
+    libdb5.3 
+    libexpat1 
+    libffi-dev 
+    libffi8 
+    libgdbm6 
+    libgssapi-krb5-2 
+    libhdf5-dev 
+    libk5crypto3 
+    libkeyutils1 
+    libkrb5-3 
+    libkrb5support0 
+    liblzma5 
+    libncursesw6 
+    libnsl2 
+    libreadline8 
+    libsqlite3-0 
+    libssl-dev 
+    libssl3 
+    libtinfo6 
+    libtirpc3 
+    libuuid1 
+    libxml2-dev 
+    libxslt1-dev 
+    ncbi-blast+ 
+    netbase 
+    r-base 
+    swig 
+    tzdata 
+    wget 
+    zlib1g 
+    zlib1g-dev
     )
 
     for PACKAGE in "${REQUIRED_PACKAGES[@]}"; do
@@ -55,25 +80,10 @@ pip install --no-cache-dir -r requirements.txt
 echo "Installing R packages..."
 Rscript install_packages.R
 
-# Ensure mfeprimer is executable
-chmod +x data/mfeprimer-3.3.1-linux-386
-
 # Determine the directory of the current script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 # Ensure iggypop.py is executable
 chmod +x "$SCRIPT_DIR/iggypop.py"
-
-# Create ~/.local/bin if it doesn't exist and ensure it's in the PATH
-mkdir -p ~/.local/bin
-if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
-    export PATH=$PATH:$HOME/.local/bin
-fi
-
-# Create a symbolic link in ~/.local/bin
-if [ ! -e ~/.local/bin/iggypop ]; then
-    ln -s "$SCRIPT_DIR/iggypop.py" ~/.local/bin/iggypop
-fi
 
 echo "Setup complete. Please restart your terminal or run 'source ~/.bashrc' to update your PATH if necessary."
