@@ -15,14 +15,15 @@ file to determine optimization patterns.
 Once optimized, sequences are appended with defined 5' and 3' ends to create 
 overhangs and other elements needed for Golden Gate cloning. The final target 
 sequences are fragmented into segments with high-fidelity overhangs for 
-efficient reassembly via Golden Gate cloning. The maximum fragment size is 
-set by the `--segment_length` flag, with a default value of 200, which is 
-appropriate for synthesizing 250 bp oligos (reserving 50 bp for enzyme sites 
-and barcode primers). Fragmentation is done with GoldenHinges, which limits 
-overhang selection to predefined sets. To ensure high-fidelity assemblies, 
-sets of precomputed high-fidelity overhangs are used as constraints. Multiple 
-overhang sets are considered (`--n_tries`), with the highest fidelity set 
-reported.
+efficient reassembly via Golden Gate cloning. Fragmentation is done with 
+GoldenHinges, which limits overhang selection to predefined sets. To ensure 
+high-fidelity assemblies, sets of precomputed high-fidelity overhangs are 
+used as constraints. Multiple overhang sets are considered (`--n_tries`), 
+with the highest fidelity set reported. The `--oligo_length` and 
+`--primer_length` values determine the maximum length of each fragment that a
+gene gets split up into (i.e. with 18 bp barcodes and 7 bp BsmBI cut sites
+on each end of the oligo only 200 bases of a gene can be encoded 
+on a 250 bp oligo).
 
 Assemblies for sequences larger than a few kilobases can be assembled in 
 a two-step process (`--two_step on` flag), aiming for ~1 kb first-step 
@@ -68,7 +69,8 @@ optimization parameters must be specified in the input GenBank file.
 **Assembly**:
 - `--two_step` (str): Enables two-step assemblies.
 - `--max_fragments` (int): Maximum fragments per PCR (default: 6).
-- `--segment_length` (int): Maximum segment length (default: 200 bp).
+- `--oligo_length` (int): Maximum oligo length (default: 250 bp).
+- `--primer_length` (int): Barcode primer length (default: 18 bp).
 - `--ext_overhangs` (list): External overhangs for cloning, excluded from 
   internal junctions.
 - `--base_5p_end`, `--base_3p_end` (str): Sequences appended to the 5' and 
@@ -170,6 +172,7 @@ if __name__ == "__main__":
     gb = True
     tag, ofile, log_file_path, updated_defaults = initialize(run_type)
     globals().update(vars(updated_defaults))
+    segment_length = calculate_segment_length(pcr_5p_cut, primer_length, oligo_length)
     log_file = open(log_file_path, "a")
 
     if check_ext_overhangs(ext_overhangs):

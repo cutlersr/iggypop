@@ -69,14 +69,13 @@ The `dnachisel` parameters for sequence optimization can be set in a yaml file u
         # Force changes to be synonymous  
           - type: EnforceTranslation
 
-You can also change settings on the command line. To use `use_best_codon` optimization, an *E. coli* codon table, BsaI sites for assemblies, and 300 bp oligos:
+You can also change settings on the command line. To use `use_best_codon` optimization, an *S. cerevisie* codon table, BsaI sites for assemblies, and 300 bp oligos:
 
 .. code:: bash
 
-    ./iggypop.py cds  --i in/cds_test.fasta                 \    
-       --species e_coli  --base_3p_end AGAGACG            \
-       --base_5p_end CGTCTCA  --codon_opt use_best_codon  \
-       --segment_length 250 
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_scerevisiae   \
+                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \
+                      --codon_opt use_best_codon  --oligo_length 300   \
 
 The default cds yaml parameters design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
 
@@ -89,7 +88,9 @@ The parameters for optimized GenBank files are set with annotations according to
 .. code:: bash
 
     # Format a Genbank file using parameters in a yaml
-    ./iggypop.py format --i in/test_unformatted.gb --o in/test_formatted.gb  --yml yaml/gb_mcu.yml
+    ./iggypop.py format --i in/test_unformatted.gb    \ 
+                        --o in/test_formatted.gb      \
+                        --yml yaml/gb_mcu.yml         \
 
     # Run the formatted Genbank file
     ./iggypop.py gb  --i in/test_formatted.gb --o test_oligos
@@ -102,7 +103,7 @@ We recommend you check the formatting produced by `iggypop format` in Snapgene, 
 Design features
 =====
 
-The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well.
+The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well. Based on our lab's prime use cases the **cds mode defaults to an arabidopsis codon table and the gb mode to an e_coli table**.
 
 
 MoClo-compatible CDSs
@@ -180,13 +181,9 @@ Our barcode primers were designed to have balanced Tms, lack commonly used restr
 .. code:: bash
 
     # example run settings; set `num_sequences` to more than you need to account for # bad primers eliminated after the MFEprimer steps.
-    ./iggypop.py primers  \
-    --num_sequences 10    \
-    --opt_tm 60           \ 
-    --opt_size 18         \
-    --gc_content 0.5      \
-    --max_size 18         \
-    --max_size 18
+    ./iggypop.py primers  --num_sequences 10    \
+    --opt_tm 60  --opt_size 18 --gc_content 0.5 \
+    --max_size 18 --max_size 18
 
 
 Overhangs

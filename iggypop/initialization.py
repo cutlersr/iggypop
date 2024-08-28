@@ -210,18 +210,17 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
     )
 
     assembly_group.add_argument(
-        '--max_fragments', type=int, metavar='',
-        help=' (int) Max number of fragments per PCR\n'
-             ' - default 6\n'
+        '--oligo_length', type=int, metavar='',
+        help=' (int) Maximum length of oligo allowed\n'
+             ' Default is 250'
     )
 
     assembly_group.add_argument(
-        '--segment_length', type=int, metavar='',
-        help=' (int) Maximum length of segments to be\n'
-             ' created from input sequence; 200 for\n'
-             ' default to allow for barcodes & cut sites,\n'
-             ' assuming 250 bp oligos.\n'
+        '--primer_length', type=int, metavar='',
+        help=' (int) Barcode primer length\n'
+             ' Default is 18'
     )
+
 
     assembly_group.add_argument(
         '--ext_overhangs', type=str, nargs='+', metavar='',
@@ -260,6 +259,12 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
         help=' (str) Sequence appended to the end of each\n'
              ' oligo for gg cloning. Default is BsmBI -->\n'
              ' "AGAGACG".\n'
+    )
+
+    assembly_group.add_argument(
+        '--max_fragments', type=int, metavar='',
+        help=' (int) Max number of fragments per PCR\n'
+             ' - default 18\n'
     )
 
     assembly_group.add_argument(
@@ -304,9 +309,7 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
         '--index_primers', type=str, metavar='',
         help=' (str) Path to the index primers file. Default\n'
              ' is "data/10K_primers_renamed.csv". Change to use\n'
-             ' custom barcodes; our defaults are built around\n'
-             ' 18 bp primers; update segment length as needed\n'
-             ' if the barcode primer length changes.\n'
+             ' custom barcodes'
     )
 
     misc_group.add_argument(
@@ -346,7 +349,8 @@ def set_defaults():
         'two_step_length': 1104,
         'two_step_5p_end': 'AATGGGTCTCA',
         'two_step_3p_end': 'TGAGACCGCTT',
-        'segment_length': 200,
+        'primer_length': 18,
+        'oligo_length': 250,
         'fidelity_data': 'data/FileS03_T4_18h_25C.xlsx',
         'ohsets': 'data/hf_oh_sets.xlsx',
         'mode': 'chisel',

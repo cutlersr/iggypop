@@ -13,7 +13,7 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from Bio.Seq import Seq
 from concurrent.futures import ProcessPoolExecutor
-import datetime 
+import datetime
 
 """
 This script is used to design primer pairs that act as indexing barcodes 
@@ -21,11 +21,11 @@ to allow amplification of specific targets from oligo pools. It generates
 sets of primers of a specified length and Tm using Primer3, and then 
 filters them using MFEPrimer to select the primer pairs (i) lacking 
 hairpins (ii) not prone to primer dimers and (iii) with the lowest 
-likelihood of cross-hybridization bewteen primers (specified by 
+likelihood of cross-hybridization between primers (specified by 
 --first_cut percentile for the calculated off-target binding scores.)
 
 Experimental validation of ~400 18 bp primer pairs (60 oC Tm) designed with 
-this pipeline show ~99% successful amplifcation of targets from complex 
+this pipeline show ~99% successful amplification of targets from complex 
 oligo pools. A set of 10K primers made with this pipeline is provided in 
 the data folder.
 
@@ -44,7 +44,7 @@ Primer Filtering:
      on their binding scores for each primer; pairs that generate 
      potential amplicons are removed.
 
-Paramaters
+Parameters:
 - `num_sequences`: Number of DNA sequences to generate.
 - `sequence_length`: Length of each DNA sequence.
 - `gc_content`: Desired GC content of the sequences.
@@ -55,9 +55,9 @@ Paramaters
 - `cores`: Number of CPU cores to use for parallel processing.
 - `no_coli`: Flag to exclude search against E. coli contaminants.
 
-  Outputs to `out/primers` directory.
-  MFEprimer executable needs to be in the data directory; a linux version
-  is included in the repo
+Outputs to `out/primers` directory.
+MFEprimer executable needs to be in the data directory; a linux version
+is included in the repo.
 """
 
 # Sequences to exclude from primers:
@@ -114,9 +114,7 @@ def reverse_complement(dna_sequence):
     # Reverse the complemented sequence and return it
     return ''.join(reversed(list(complemented)))
 
-
 def generate_pcr_primers(sequence, opt_size=18, opt_tm=60.0, max_size=18, min_size=18):
-
     primers = primer3.bindings.design_primers(
         {
             'SEQUENCE_ID': 'seq1',
@@ -188,14 +186,12 @@ def main(num_sequences, sequence_length, gc_content, opt_size, opt_tm, max_size,
 
     return primers_df
 
-
-
 def create_target_seqs_for_mfe(primers_df, stuffer_length=150, mfeprimer_path='./data/mfeprimer-3.3.1-linux-386'):
     """
     Create a new df with each forward primer and its reverse complement
     with a polyA stuffer in the middle; these are used as a search
     target by the mfe program - the goal is to eventually select primers
-    with minimal cross-hyrbiridization to other primers in the final set
+    with minimal cross-hybridization to other primers in the final set
     of barcoding primers. Also writes the sequences to a FASTA file.
 
     Args:
@@ -302,7 +298,6 @@ def parse_mfeprimer_output(output_file):
         print("Not enough primer data to create binding numbers DataFrame.")
         return pd.DataFrame()
 
-
 def mfeprimer(seq_num, all_primers, mfeprimer_path):
     temp_file_path = "out/primers/test.fasta"
     out_file_path = "out/primers/out.txt"
@@ -322,7 +317,7 @@ def mfeprimer(seq_num, all_primers, mfeprimer_path):
     # Execute the MFEPrimer command
     subprocess.run([mfeprimer_path, "-i", temp_file_path, "-d", "out/primers/all_pri.fa", "-o", out_file_path], check=True)
 
-        # Read back the output file for verification
+    # Read back the output file for verification
     with open(out_file_path, 'r') as file:
         output_contents = file.readlines()
 
@@ -422,7 +417,6 @@ def mfeprimer(seq_num, all_primers, mfeprimer_path, temp_file_suffix):
 
     return analysis
 
-
 def run_mfeprimer_multicore(all_primers, mfeprimer_path='./data/mfeprimer-3.3.1-linux-386', num_cores=10):
     analysis_results = []
 
@@ -448,7 +442,6 @@ def run_mfeprimer_multicore(all_primers, mfeprimer_path='./data/mfeprimer-3.3.1-
 
     return analysis_df
 
-
 def get_unique_filename(base_path, filename):
     """
     Checks if the file exists and appends an incrementing suffix to the filename
@@ -472,20 +465,34 @@ def get_unique_filename(base_path, filename):
     return full_path
 
 def check_mfeprimer():
-    mfeprimer_path = './data/mfeprimer-3.3.1-linux-386'
-    if not os.path.isfile(mfeprimer_path):
+    data_dir = './data'
+    mfeprimer_glob = os.path.join(data_dir, 'mfeprimer*')
+    mfeprimer_versions = glob.glob(mfeprimer_glob)
+
+    if len(mfeprimer_versions) == 0:
         print("MFEprimer is not installed in the data folder.")
-        print("Please download MFEprimer using the following command:")
-        print()
-        print("wget https://github.com/quwubin/MFEprimer-3.0/releases/download/v3.3.1/mfeprimer-3.3.1-linux-386.gz")
-        print("gunzip mfeprimer-3.3.1-linux-386.gz")
-        print("mv mfeprimer-3.3.1-linux-386 ./data/")
-        print("chmod +x ./data/mfeprimer-3.3.1-linux-386")
-        print()
+        print("Please download MFEprimer using the following commands:")
+        print("""
+        wget https://github.com/quwubin/MFEprimer-3.0/releases/download/v3.3.1/mfeprimer-3.3.1-linux-386.gz
+        gunzip mfeprimer-3.3.1-linux-386.gz
+        mv mfeprimer-3.3.1-linux-386 ./data/
+        chmod +x ./data/mfeprimer-3.3.1-linux-386
+        """)
         exit(1)
+    elif len(mfeprimer_versions) == 1 and mfeprimer_versions[0].endswith('mfeprimer-3.3.1-linux-386'):
+        print("MFEprimer installed: mfeprimer-3.3.1-linux-386")
+    else:
+        for mfe_version in mfeprimer_versions:
+            if 'mfeprimer-3.3.1-linux-386' in mfe_version:
+                print("MFEprimer installed: mfeprimer-3.3.1-linux-386")
+            else:
+                print(f"Warning: Detected MFEprimer version '{mfe_version}'.")
+                print("Iggypop was not specifically designed with this version, but it should work fine.")
+
+    return mfeprimer_versions[0]  # Return the detected MFEprimer path
 
 if __name__ == '__main__':
-    check_mfeprimer()
+    mfeprimer_path = check_mfeprimer()
 
     parser = argparse.ArgumentParser(description='Generate DNA sequences and their PCR primers.')
     parser.add_argument('--num_sequences', type=int, default=10, help='Number of sequences to generate')
@@ -505,13 +512,10 @@ if __name__ == '__main__':
     print(f"Start time: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     primers_df = main(args.num_sequences, args.sequence_length, args.gc_content, 
-                      args.opt_size, args.opt_tm, args.max_size, args.min_size)
-
-    mfeprimer_path = './data/mfeprimer-3.3.1-linux-386'
+                      args.opt_size, args.opt_tm, args.max_size, args.min_size, mfeprimer_path=mfeprimer_path)
 
     # Run MFEPrimer analysis
     num_cores = args.cores
- 
     primer_analysis_df = run_mfeprimer_multicore(primers_df, mfeprimer_path, num_cores)
     primers_merged = pd.merge(primers_df, primer_analysis_df, on="name")
     primers_merged['off_target_binding'] = (primers_merged['F_bind_plus'] + primers_merged['F_bind_minus'] +
@@ -519,7 +523,7 @@ if __name__ == '__main__':
 
 
     # Filter out the bottom nth quantile of records based on 'bind_sum' & 
-    # eliminate primers with hairpins or propensity to for form dimers
+    # eliminate primers with hairpins or propensity to form dimers
     cutoff = primers_merged['off_target_binding'].quantile(args.first_cut)
     primers_merged = primers_merged[primers_merged['off_target_binding'] <= cutoff]
     primers_merged.sort_values(by=['off_target_binding'], inplace=True)
@@ -534,7 +538,7 @@ if __name__ == '__main__':
     primers_merged.to_csv(all_primers_output_path, index=False)
 
     primers_df = pd.read_csv(all_primers_output_path)
-    database = "data/coli_other_contanminants.fasta"
+    database = "data/coli_other_contaminants.fasta"
 
     if args.no_coli == False:
         print(f'Removing primers with cross-hybridization with E .coli and other contaminating DNAs')

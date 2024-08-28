@@ -44,68 +44,52 @@ optimizations:
     k: 10
 
 codon_opt: 'hybrid'                     # use_best_codon, harmonize_rca, hybrid, none
- 
+
+pct: 20
+
 species: e_coli                         # taxids work as do species names
 
-codon_tbl: "cocoputs"                   # can be "kazusa" or "none"
+codon_tbl: "cocoputs"                   # can be "kazusa", "cocoputs", or "none"
 
 deintronize: "off"     
 
 
 ############################ CLONING PARAMETERS ###############################
 
-# these are the outer overhangs used for cloning into the pIGGY vectors
-ext_overhangs:
-  - AATG
+ext_overhangs:                          # outer overhangs used for cloning 
+  - AATG                                # into vector
   - GCTT
+
+base_5p_end: "AATG"                     # Generates AATG on the 5'end 
+base_3p_end: "GCTT"                     # GCTT on 3' end
+
+pcr_5p_cut: "CGTCTCA"   # BsmBI sites    # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"   # BsmBI sites    # Sequence added on 3' end of oligos
+
+
 
 ########################### TWO-STEP PARAMETERS #################################
 
-two_step: "off"               # can turn it off with the '--two_step off' flag
-two_step_length: 1104         # first step frament max length
+two_step: "off"                              
+two_step_length: 1104                    # first step frament max length
 
-# Adds BsmBI sites to the first step fragments that are used for second step 
-# cloning. Only relevant if two_step is enable
-two_step_5p_end: "AATGCGTCTCA"
+two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"
 
-
-# Adds BsmBI sites to the first step fragments that are used for second step 
-# cloning. Only relevant if two_step is enable
-two_step_5p_end: "AATGCGTCTCA"
-two_step_3p_end: "AGAGACGGCTT"
-
-# Generates AATG on the 5'end of a CDS, and GCTT on 3' end. 
-base_5p_end: "AATG"
-base_3p_end: "GCTT"
-
-# The IIS sequences appended to the 5' end of each first-step oligo is defined 
-# here. This adds BsaI sites. 
-pcr_5p_cut: "CGTCTCA"
-pcr_3p_cut: "AGAGACG"
 
 ########################### HINGING PARAMETERS #################################
 
-# Increase to 250 for 300 bp oligos; decrease to 150 for 200 bp oligos.
-# Decrease to 198 if you are cloning with BbsI w/ 250 bp oligos
-segment_length: 200
+oligo_length: 250                        # Max oligo length 
+primer_length: 18                        # Barcode primer length 
 
-# max_fragments: Max number of fragments per PCR reaction.
-max_fragments: 18
+max_fragments: 18                        # Max fragments per PCR reaction.
 
-# radius value used by goldenhinges
-radius: 8
+radius: 8                                # radius value used by goldenhinges
+n_tries: 10                              # Number of overhang sets to test.
 
-# row of barcode primers file to start from
-primer_index: 1
+primer_index: 1                          # row of barcodes file to start from
 
-# Fidelity scoring data; multiple datasets are in the data folder 
+# data files
 fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
-
 ohsets: 'data/hf_oh_sets.xlsx'
-
-# n_tries: Number of overhang sets to test for generating hinges.
-n_tries: 10
-
-# file with indexing primers. 
 index_primers: "data/10K_primers_renamed.csv"

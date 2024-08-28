@@ -86,4 +86,15 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 # Ensure iggypop.py is executable
 chmod +x "$SCRIPT_DIR/iggypop.py"
 
+# Download the donor_200.h5 and acceptor_200.h5 files to the data/ folder
+echo "Downloading donor_200.h5 and acceptor_200.h5 to the data/ folder..."
+
+DATA_DIR="$SCRIPT_DIR/data"
+mkdir -p "$DATA_DIR"
+
+wget -O "$DATA_DIR/donor_200.h5" "https://git.unistra.fr/nscalzitti/spliceator/-/raw/master/Models/donor_200.h5"
+wget -O "$DATA_DIR/acceptor_200.h5" "https://git.unistra.fr/nscalzitti/spliceator/-/raw/master/Models/acceptor_200.h5"
+
+echo "Files downloaded to the data/ folder."
+
 echo "Setup complete. Please restart your terminal or run 'source ~/.bashrc' to update your PATH if necessary."

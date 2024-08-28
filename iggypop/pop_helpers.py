@@ -1025,3 +1025,19 @@ def call_tweaker_2(log_file, tweak_n):
     # Print the output and error messages
     print(result.stdout)
     print(result.stderr)
+
+def calculate_segment_length(pcr_5p_cut, primer_length, oligo_length):
+    """
+    Calculate the segment length based on the given parameters.
+
+    Parameters:
+    base_5p_end (str): The 5' base sequence.
+    primer_length (int): The length of the primer.
+    oligo_length (int): The total length of the oligo.
+
+    Returns:
+    int: The calculated segment length.
+    """
+    segment_length = oligo_length - (2 * len(pcr_5p_cut) + 2 * primer_length)
+    return segment_length
+

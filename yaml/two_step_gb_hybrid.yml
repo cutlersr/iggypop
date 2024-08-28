@@ -80,7 +80,9 @@ two_step_3p_end: "AGAGACGGCTT"
 
 ########################### HINGING PARAMETERS #################################
 
-segment_length: 198                      # Decreased to 198 for BbsI cloning 
+oligo_length: 250                        # Max oligo length 
+primer_length: 18                        # Barcode primer length 
+
 max_fragments: 18                        # Max fragments per PCR reaction.
 
 radius: 8                                # radius value used by goldenhinges
@@ -88,7 +90,7 @@ n_tries: 10                              # Number of overhang sets to test.
 
 primer_index: 1                          # row of barcodes file to start from
 
-# data diles
+# data files
 fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
 ohsets: 'data/hf_oh_sets.xlsx'
 index_primers: "data/10K_primers_renamed.csv"

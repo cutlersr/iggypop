@@ -47,6 +47,8 @@ codon_opt: 'use_best_codon'          # use_best_codon, harmonize_rca, hybrid, no
  
 species: arabidopsis                    # taxids work as do species names
 
+pct: 20                                 # target divergence from sequence in hybrid mode only
+
 codon_tbl: "cocoputs"                   # can be "kazusa" or "none"
 
 deintronize: "off"     
@@ -61,8 +63,8 @@ ext_overhangs:                          # outer overhangs used for cloning
 base_5p_end: "AATGCGGTCTCTA"            # Inserts an in-frame BsaI+AATG and
 base_3p_end: "GCTTAGAGACCGCTT"          # GCTT+BsaI on ends for MoClo ORF
 
-pcr_5p_cut: "GAAGACAA"  # BbsI sites    # Sequence added on 5' end of oligos   
-pcr_3p_cut: "AAGTCTTC"  # BbsI sites    # Sequence added on 3' end of oligos
+pcr_5p_cut: "CGTCTCA"   # BsmBI sites    # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"   # BsmBI sites    # Sequence added on 3' end of oligos
 
 
 
@@ -77,7 +79,9 @@ two_step_3p_end: "AGAGACGGCTT"
 
 ########################### HINGING PARAMETERS #################################
 
-segment_length: 200                      # Decreased to 198 for BbsI cloning 
+oligo_length: 250                        # Max oligo length 
+primer_length: 18                        # Barcode primer length 
+
 max_fragments: 18                        # Max fragments per PCR reaction.
 
 radius: 8                                # radius value used by goldenhinges
