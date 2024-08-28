@@ -73,7 +73,7 @@ You can also change settings on the command line. To use `use_best_codon` optimi
 
 .. code:: bash
 
-    ./iggypop.py cds  --i in/cds_test.fasta  --species s_scerevisiae   \
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \
                       --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \
                       --codon_opt use_best_codon  --oligo_length 300   \
 
