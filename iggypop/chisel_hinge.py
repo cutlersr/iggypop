@@ -96,7 +96,7 @@ def chisel(
             )
             for entry in data.get("constraints", [])
         ]
-        print(constraints)
+
     except Exception as e:
         log_and_print(f"Error parsing constraints: {e}", log_file, quiet)
         return None

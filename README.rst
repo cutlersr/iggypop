@@ -69,7 +69,7 @@ The `dnachisel` parameters for sequence optimization can be set in a yaml file u
         # Force changes to be synonymous  
           - type: EnforceTranslation
 
-You can also change settings on the command line. To use `use_best_codon` optimization, an *S. cerevisie* codon table, BsaI sites for assemblies, and 300 bp oligos:
+You can also change settings on the command line. To use `use_best_codon` optimization, an *S. cerevisiea* codon table, BsaI sites for assemblies, and 300 bp oligos:
 
 .. code:: bash
 
@@ -103,7 +103,7 @@ We recommend you check the formatting produced by `iggypop format` in Snapgene, 
 Design features
 =====
 
-The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well. Based on our lab's prime use cases the **cds mode defaults to an arabidopsis codon table and the gb mode to an e_coli table**.
+The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well. 
 
 
 MoClo-compatible CDSs
@@ -158,6 +158,12 @@ The two main methods of optimizing seqeunces are match_codon_usage (MCU) which r
 .. code:: bash
 
     ./iggypop.py cds --i in/test.fasta --codon_opt hybrid --pct 30 --o hybrid
+
+
+Codon tables
+=====
+
+For cds mode, a condensed local version of the cocoputs database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses a Kazusa codon table. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table and the gb mode to an *E.coli* codon table**. To change this use the `--species flag`; TaxIDs or condensed names will work. For the monkeyflower *Erythranthe guttata* you could use `--species e_guttata` or `--species 4155` (the TaxID for *Erythranthe guttata*). TaxIDs can be looked up at NCBI; since species names change, try a TaxID if your species name does not work.
 
 
 Reports & quiet
