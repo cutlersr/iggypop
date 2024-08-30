@@ -52,7 +52,7 @@ Coding Sequence Mode
 
 
 
-CDS mode is used to design oligos for reassembling coding sequences. It requires fasta formatted ORFs. The default `yaml parameters <yaml/moclo_cds_mcu.yml>` design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
+CDS mode is used to design oligos for reassembling coding sequences. It requires fasta formatted ORFs. The default `yaml parameters <https://github.com/cutlersr/iggypop/blob/main/yaml/moclo_cds_mcu.yml>` design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
 
 .. code:: bash
 
