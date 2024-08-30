@@ -8,7 +8,7 @@ def initialize(run_type="cds"):
     # Parse arguments based on the run_type and set defaults
     if run_type == "cds":
         args = parse_arguments(run_type, default_yml='yaml/moclo_cds_mcu.yml')
-    elif run_type == "gb":
+    elif run_type == "gb" or run_type == "format":
         args = parse_arguments(run_type, default_yml='yaml/gb_mcu.yml')
     else:
         print("Please use a valid run type (gb or cds)")
@@ -108,7 +108,7 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
     )
 
     # Codon optimization arguments
-    if run_type == 'cds':
+    if run_type == 'cds' or run_type == 'format':
         codon_group = parser.add_argument_group('Codon Optimization Options')
 
         codon_group.add_argument(

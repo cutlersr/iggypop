@@ -49,7 +49,7 @@ pct: 20                                 # target divergence from sequence in hyb
  
 species: e_coli                         # taxids work as do species names
 
-codon_tbl: "cocoputs"                   # can be "kazusa" or "none"
+codon_tbl: "kazusa"                     # can only be kazusa for gb formatting
 
 deintronize: "off"     
 
@@ -63,8 +63,8 @@ ext_overhangs:                          # outer overhangs used for cloning
 base_5p_end: "AATG"                     # Generates AATG on the 5'end 
 base_3p_end: "GCTT"                     # GCTT on 3' end
 
-pcr_5p_cut: "CGTCTCA"   # BsmBI sites    # Sequence added on 5' end of oligos   
-pcr_3p_cut: "AGAGACG"   # BsmBI sites    # Sequence added on 3' end of oligos
+pcr_5p_cut: "CGTCTCA"   # BsmBI sites   # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
 
 
 ########################### TWO-STEP PARAMETERS #################################

@@ -49,7 +49,7 @@ pct: 20
  
 species: e_coli                         # taxids work as do species names
 
-codon_tbl: "cocoputs"                   # can be "kazusa" or "none"
+codon_tbl: "kazusa"                     # can be "kazusa" or "none"
 
 deintronize: "off"     
 

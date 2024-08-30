@@ -1,0 +1,120 @@
+LOCUS       HBG_GGGATAAT.1          2399 bp    DNA     linear   SYN 18-AUG-2024
+DEFINITION  HBG_GGGATAAT.1.
+ACCESSION   HBG_GGGATAAT
+VERSION     HBG_GGGATAAT.1
+KEYWORDS    HBG_GGGATAAT.1.
+SOURCE      HBG_GGGATAAT.1
+  ORGANISM  HBG_GGGATAAT.1.
+            .
+FEATURES             Location/Qualifiers
+     regulatory      7..23
+                     /standard_name="T7 promoter"
+     5'UTR           24..31
+                     /label="T7_UTR"
+     RBS             57..79
+                     /standard_name="RBS"
+     CDS             87..1214
+                     /standard_name="TK"
+     RBS             1221..1243
+                     /standard_name="RBS"
+     CDS             1251..1622
+                     /standard_name="ble"
+     RBS             1629..1651
+                     /standard_name="RBS"
+     CDS             1659..2372
+                     /standard_name="superfolder GFP"
+     regulatory      2382..2399
+                     /standard_name="lambda t0 terminator (fragment)"
+     misc_feature    7..23
+                     /label="@AvoidChanges"
+     misc_feature    24..31
+                     /label="@AvoidChanges"
+     misc_feature    57..79
+                     /label="@AvoidChanges"
+     misc_feature    87..1214
+                     /label="@EnforceTranslation"
+     misc_feature    87..1214
+                     /label="~use_best_codon(species=51173)"
+     misc_feature    87..1214
+                     /label="@EnforceChanges(minimum=20%)"
+     misc_feature    1221..1243
+                     /label="@AvoidChanges"
+     misc_feature    1251..1622
+                     /label="@EnforceTranslation"
+     misc_feature    1251..1622
+                     /label="~use_best_codon(species=51173)"
+     misc_feature    1251..1622
+                     /label="@EnforceChanges(minimum=20%)"
+     misc_feature    1629..1651
+                     /label="@AvoidChanges"
+     misc_feature    1659..2372
+                     /label="@EnforceTranslation"
+     misc_feature    1659..2372
+                     /label="~use_best_codon(species=51173)"
+     misc_feature    1659..2372
+                     /label="@EnforceChanges(minimum=20%)"
+     misc_feature    2382..2399
+                     /label="@AvoidChanges"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=BsaI_site, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=BsmBI_site, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=BbsI_site, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=SapI_site, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=BtgZI, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=AAAAAA, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidPattern(pattern=CCCCCC, strand=both)"
+     misc_feature    1..2399
+                     /label="@AvoidHairpins(stem_size=20, hairpin_window=250)"
+     misc_feature    1..2399
+                     /label="@EnforceGCContent(mini=0.2, maxi=0.6, window=60)"
+     misc_feature    1..2399
+                     /label="~UniquifyAllKmers(include_reverse_complement=True,
+                     k=10)"
+ORIGIN
+        1 cgaaattaat acgactcact atagggataa tacaacggtt tccctctaca aataattttg
+       61 tttaacttta agaaggagat atacatatgg catcataccc ttgtcaccag cacgcatctg
+      121 ccttcgatca ggccgcccgc tcacgcggcc actcaaaccg tcgcacagcc cttcgcccgc
+      181 gccgtcaaca ggaggctact gaggttcgcc ttgagcaaaa gatgcccacg cttcttcgcg
+      241 tatacattga tggaccgcat gggatgggga aaacgacgac gactcaactt ctggtagccc
+      301 ttggaagccg tgatgatatc gtttatgtcc ctgaaccgtt gacgtattgg caagtattag
+      361 gggcaagtga aaccattgcc aacatttaca ccacgcagca tcgtttagac cagggggaaa
+      421 tctctgcagg tgatgctgcc gttgtgatga ctagcgccca gatcaccatg ggaatgccgt
+      481 acgcggtgac tgacgcggtt ttggcccccc atatcggggg tgaggctggc tcatcccatg
+      541 ctccccctcc cgcgctgacc ttgatctttg atcgccaccc aatcgccgca ctgctttgct
+      601 accccgcggc gcgttacctg atgggatcta tgactccaca agcggtactt gcgtttgtcg
+      661 cgcttatccc ccctaccctg ccggggacga acattgtctt gggagctctt ccggaagatc
+      721 gtcatatcga tcgccttgca aaacgtcaac gtccaggaga acgccttgat ctggctatgt
+      781 tggcggcgat tcgccgtgta tatgggttac ttgctaacac cgtccgttac ttgcagggtg
+      841 gagggagttg gcgtgaggat tggggccaac tttccggcac cgcagtaccg ccacaaggtg
+      901 ctgaaccgca gtccaatgcc ggtccacgtc cccacatcgg tgatacttta ttcacgttgt
+      961 tccgtgcgcc cgagcttttg gcgccaaatg gagatcttta taacgtgttc gcctgggcgt
+     1021 tagacgtctt ggcgaaacgc cttcgtccca tgcatgtttt catcttagat tatgaccaga
+     1081 gccctgctgg atgtcgtgac gcactgctgc aacttacatc gggtatggta cagacacatg
+     1141 tcacaacccc aggtagtatc cccaccattt gtgatttggc gcgtaccttt gcgcgtgaaa
+     1201 tgggggaggc aaattgagaa tttgtttaac tttaagaagg agatatacat atggccaaac
+     1261 ttacaagtgc agttccggtc ttgacagccc gcgatgtcgc gggggcggta gagttttgga
+     1321 ctgaccgttt agggttttct cgcgacttcg tcgaggatga cttcgcgggt gtcgttcgcg
+     1381 atgatgtcac tcttttcatc agtgctgtac aggatcaggt agtaccggat aacacactgg
+     1441 cctgggtatg ggtccgtggg ttggatgagc tttatgccga gtggtcagaa gtagtttcaa
+     1501 cgaactttcg tgatgcaagt ggtccggcaa tgacggagat tggggagcag ccttggggtc
+     1561 gtgaatttgc gctgcgcgac ccggctggta attgcgtcca tttcgtggcg gaagaacagg
+     1621 attgagaatt tgtttaactt taagaaggag atatacatat gcgtaaaggc gaagagctgt
+     1681 tcactggtgt cgtccctatt ctggtggaac tggatggtga tgtcaacggt cataagtttt
+     1741 ccgtgcgtgg cgagggtgaa ggtgacgcaa ctaatggtaa actgacgctg aagttcatct
+     1801 gtactactgg taaactgcca gtaccttggc cgactctggt aacgacgctg acttatggtg
+     1861 ttcagtgctt tgctcgttat ccggaccaca tgaagcagca tgacttcttc aagtccgcca
+     1921 tgccggaagg ctatgtgcag gaacgcacga tttcatttaa ggatgacggc acgtacaaaa
+     1981 cgcgtgcgga agtgaaattt gaaggcgata ccctggtaaa ccgcattgag ctgaaaggca
+     2041 ttgactttaa agaagacggc aatatcctgg gccataagct ggaatacaat tttaacagcc
+     2101 acaatgttta catcaccgcc gataaacaaa aaaatggcat taaagcgaat ttcaaaattc
+     2161 gccacaacgt ggaggatggc agcgtgcagc tggctgatca ctaccagcaa aacactccaa
+     2221 tcggtgatgg tcctgttctg ctgccagaca atcactatct gagcacgcaa agcgttctgt
+     2281 ctaaagatcc gaacgagaaa cgcgatcaca tggttctgct ggagttcgta accgcagcgg
+     2341 gcatcacgca cggtatggat gaactgtaca aatgagaact cttgttcaga acgctcggt
+//
