@@ -2,21 +2,23 @@
 iggypop
 ==========================
 
-**indexed golden gate DNA assembly by PCRing oligo pool templates**
-===================================================================
+**indexed golden gate assembly by PCRing barcoded oligo pools**
+==========================
 
 
-iggypop is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded pieces that can be reassembled by golden gate cloning. The assembly overhangs are selected using pre-computed, high-fidelity sets, and the fragmented genes are amplified from oligo pools using experimentally validated barcode primer pairs.
+iggypop is a pipeline for creating synthetic genes at $3.00 - $7.00 per Kb in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded pieces that can be reassembled by golden gate assembly. High-fidelity assembly overhangs are rapidly selected from pre-computed sets, and the fragmented genes are amplified from oligo pools using experimentally validated barcode primer pairs.
 
 iggypop enables end-to-end design, assembly, and validation of 100s of genetic parts in a single experiment.
-
 
 .. image:: png/overview.png
    :alt: Overview
 
 
+
 Installation
 ============
+
+
 
 **Linux**
 
@@ -27,7 +29,9 @@ Installation
     python -m venv .venv
     source .venv/bin/activate
     chmod +x setup.sh
-    ./setup.sh
+    sudo ./setup.sh
+
+
 
 **Docker**
 
@@ -47,14 +51,17 @@ Coding Sequence Mode
 ---------------------
 
 
+
+CDS mode is used to design oligos for reassembling coding sequences. It requires fasta formatted ORFs. The default yaml parameters<yaml/moclo_cds_mcu.yml> design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
+
 .. code:: bash
 
     # CDS in FASTA format
     ./iggypop.py cds --i in/test.fasta --o test_oligos
 
-Coding sequences are optimized using `dnachisel` and then fragmented using `goldenhinges`. Barcodes and cut sites are then added to each fragment to yield oligos that can be amplified with gene-specific primers and assembled.
 
-The `dnachisel` parameters for sequence optimization can be set in a yaml file using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. For example, to exclude BsaI sites, prevent changes to the first 200 base pairs, and enforce synonymous changes to the coding sequence, you would include the following in your yaml file:
+
+Sequence optimization parameters are set in yaml files using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. The following yaml snippet excludes BsaI sites, prevent changes to the first 200 base pairs of the sequencs, and enforces synonymous changes to the coding sequence:
 
 .. code:: yaml
 
@@ -69,15 +76,20 @@ The `dnachisel` parameters for sequence optimization can be set in a yaml file u
         # Force changes to be synonymous  
           - type: EnforceTranslation
 
-You can also change settings on the command line. To use `use_best_codon` optimization, an *S. cerevisiea* codon table, BsaI sites for assemblies, and 300 bp oligos:
+
+
+You can also change settings on the command line. This will use `use_best_codon` optimization, an *S. cerevisiea* codon table, BsaI sites for assemblies, and 300 bp oligos:
+
+
 
 .. code:: bash
 
-    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiea    \
                       --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \
-                      --codon_opt use_best_codon  --oligo_length 300   \
+                      --codon_opt use_best_codon  --oligo_length 300
 
-The default cds yaml parameters design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
+
+Command line arguments override the paramaters set in the yaml file.
 
 
 Genbank File Mode
@@ -87,12 +99,16 @@ The parameters for optimized GenBank files are set with annotations according to
 
 .. code:: bash
 
-    # Format a Genbank file using parameters in a yaml
-    ./iggypop.py format --i in/test_unformatted.gb    \ 
+    # Format a Genbank file 
+    
+    ./iggypop.py format --i in/test_unformatted.gb    \
                         --o in/test_formatted.gb      \
-                        --yml yaml/gb_mcu.yml         \
-
-    # Run the formatted Genbank file
+       # optionally override the defaults 			  \
+                        --species b_subtilis		  \
+                        --codon_opt use_best_codon    
+    					
+    
+    # Then run the formatted Genbank file to generate oligos
     ./iggypop.py gb  --i in/test_formatted.gb --o test_oligos
 
 
@@ -100,10 +116,12 @@ We recommend you check the formatting produced by `iggypop format` in Snapgene, 
 
 
 
-Design features
-===============
+Design
+=====
 
-The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well. 
+The yaml/ `folder <yaml/>`_ contains parameter files for some common design strategies. 
+
+ 
 
 
 MoClo-compatible CDSs
@@ -115,10 +133,11 @@ The `moclo` yaml files have paramaters to design reusable CDSs by adding a short
    :alt: MoClo Compatibility
 
 
+
 Two-step assembly
 -------------------
 
-For target sequences longer than 3 Kb (~18 fragments 250 bp oligos), the frequency of proper assemblies is low enough that it can be better to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks assembled and cloned with BbsI; the fragments are then assembled into the final sequence using BsmBI in the second step. You can change the enzymes used and fragment size in the yaml file if needed. The figure below shows the first and last oligos of a 2-step assembly. The CDS mode is designed to generate MoClo-compatible CDSs; the gb versions skips the MoClo compatibility.
+For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos), the frequency of proper assemblies is low enough that it can be more efficient to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks assembled and cloned with BbsI; the fragments are then assembled into the final sequence using BsmBI in the second step. You can change the enzymes used and fragment size in the yaml file if needed. The figure below shows the first and last oligos of a 2-step assembly. The CDS mode is designed to generate MoClo-compatible CDSs; the gb versions skips the MoClo compatibility.
 
 .. image:: png/two_step.png
    :alt: Two-step Assembly
@@ -126,6 +145,7 @@ For target sequences longer than 3 Kb (~18 fragments 250 bp oligos), the frequen
 .. code:: bash
 
     ./iggypop.py gb --i in/test.gb --two_step on  --o two_step
+
 
 
 Versioning
@@ -150,7 +170,8 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
     ./iggypop.py cds  --i in/test.fasta --deintronize on --o deintronized
 
 
-Hybrid codon optimization
+
+`Hybrid` codon optimization
 -----------------
 
 The two main methods of optimizing seqeunces are match_codon_usage (MCU) which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have CAI values of ~0.75 and UBC generates CAI values of 1. In some cases you may want CAI values in between those ranges, for example if you want to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` paramater determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct paramater to hit the CAI value you're looking for. This is a bit oif a hack based on this comment at the DNAChisel repo. 
@@ -160,22 +181,36 @@ The two main methods of optimizing seqeunces are match_codon_usage (MCU) which r
     ./iggypop.py cds --i in/test.fasta --codon_opt hybrid --pct 30 --o hybrid
 
 
+
+Codon tables
+=====
+
+For cds mode, a condensed local version of the [cocoputs](https://pubmed.ncbi.nlm.nih.gov/31029701/) database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table and gb mode defaults to an *E.coli* codon table**. To change this use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
+
+
+
+For the monkeyflower *Erythranthe guttata* you could:
+
+.. code:: bash
+
+	# short name, species name, or taxid work cds mode
+	./iggypop.py cds  --i in/test.fasta --species e_guttata
+	./iggypop.py cds  --i in/test.fasta --species Erythranthe guttata	
+	./iggypop.py cds  --i in/test.fasta --species 4155
+	
+	# taxid requried for gb mode	
+	./iggypop.py gb  --i in/test.gb --species 4155
+	
+	# these work in gb: 
+
+
+
+
 Reports & quiet
 -----------------
 
 You can generate dnachisel report with --reports; if you want iggypop to print less to the screen use --quiet
 
-
-Codon tables
-============
-
-CDS mode
---------
-For cds mode, a condensed local version of the cocoputs database is used for codon table lookups by default; you can use Kazusa by `--codon_tbl kazusa` or in a yaml file. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table**. To change the codon table used,  use the `--species` flag; TaxIDs or condensed names will work. For example, for the monkeyflower *Erythranthe guttata* you could use `--species e_guttata` or `--species 4155` (its TaxID).
-
-GB mode
---------
-For gb mode, the species is specified in the genbank annotations that get passed to dnachisel; this requires use of a Kazusa codon table. To change the species use the --species flag with `./iggypop.py format`. TaxIDs work in this context too, but only a few abbreviations work (e_coli, c_elegans, b_subtilis, s_cerevisiae, h_sapiens, d_melanogaster). Note: **gb mode defaults to an *E.coli* codon table**. 
 
 
 Vectors
@@ -183,9 +218,6 @@ Vectors
 
 We've developed a series of pPOP vectors for the one-step and two-step cloning modes; they are derivatives of pUPD2 and pCAMBIA. Sequences can be found `here <#vectors>`_.
 
-
-Barcodes & overhangs
-====================
 
 Barcode primers
 ----------------
@@ -222,7 +254,7 @@ The following command will do a run with a target of a set of 20 overhangs. Due 
         --alpha 2.4              \
         --beta 2.4               \
         --tournament_size 4 
-
+    
     # then run this from the directory with all of your results
     Rscript scripts/process_gagga_runs.R --top_percent=2 --n_cliques=30
 
@@ -230,3 +262,5 @@ The data below shows the fidelities obtained for a run of 4,500 plant transcript
 
 .. image:: png/fidelity_plot.png
    :alt: fidelity_plot
+
+.
