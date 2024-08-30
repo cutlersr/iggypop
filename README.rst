@@ -137,7 +137,7 @@ The `moclo` yaml files have paramaters to design reusable CDSs by adding a short
 Two-step assembly
 -------------------
 
-For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos), the frequency of proper assemblies is low enough that it can be more efficient to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks assembled and cloned with BbsI; the fragments are then assembled into the final sequence using BsmBI in the second step. You can change the enzymes used and fragment size in the yaml file if needed. The figure below shows the first and last oligos of a 2-step assembly. The CDS mode is designed to generate MoClo-compatible CDSs; the gb versions skips the MoClo compatibility.
+For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos), the frequency of proper assemblies is low enough that it can be more efficient to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks that are assembled with BbsI; once validated, they are then assembled into the final sequence using BsmBI in the second step. The figure below shows the first and last oligos of a 2-step assembly. The cds mode defaults are for MoClo-compatibility; the gb versions not.
 
 .. image:: png/two_step.png
    :alt: Two-step Assembly
@@ -151,7 +151,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expresion between codon optimized of the same amino acid sequence. The `--repeats` parameter allows you to genrate multiple versions. This example generates five versions of a three gene operon with each ORF being optimized using using match_codon_usage. 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three gene operon; each ORF being is optimized using using match_codon_usage (based on the parameters set in the input file '<in/test.gb>'_). 
 
 
 .. code:: bash
