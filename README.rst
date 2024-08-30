@@ -52,7 +52,7 @@ Coding Sequence Mode
 
 
 
-CDS mode is used to design oligos for reassembling coding sequences. It requires fasta formatted ORFs. The default yaml parameters<yaml/moclo_cds_mcu.yml> design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
+CDS mode is used to design oligos for reassembling coding sequences. It requires fasta formatted ORFs. The default `yaml parameters<yaml/moclo_cds_mcu.yml>` design MoClo compatible ORFs that lack common gg sites (BsaI, BsmBI, BbsI, SapI, BtgZI), match Arabidopsis codon usage, minimize micro-homologies (10 bp repeats) and hairpins, have G/C content ≤ 0.60.
 
 .. code:: bash
 
@@ -103,8 +103,8 @@ The parameters for optimized GenBank files are set with annotations according to
     
     ./iggypop.py format --i in/test_unformatted.gb    \
                         --o in/test_formatted.gb      \
-       # optionally override the defaults 			  \
-                        --species b_subtilis		  \
+       # optionally override the defaults             \
+                        --species b_subtilis          \
                         --codon_opt use_best_codon    
     					
     
