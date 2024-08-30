@@ -759,7 +759,6 @@ def report_gb_cai(input_genbank, output_genbank, species):
 
 
     codon_usage_table = get_codons_table(species)
-
     def extract_cds_and_calculate_cai(genbank_file, codon_usage_table):
         records = SeqIO.parse(genbank_file, "genbank")
         data = []

@@ -3,7 +3,7 @@ iggypop
 ==========================
 
 **indexed golden gate DNA assembly by PCRing oligo pool templates**
-==========================
+===================================================================
 
 
 iggypop is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded pieces that can be reassembled by golden gate cloning. The assembly overhangs are selected using pre-computed, high-fidelity sets, and the fragmented genes are amplified from oligo pools using experimentally validated barcode primer pairs.
@@ -101,7 +101,7 @@ We recommend you check the formatting produced by `iggypop format` in Snapgene, 
 
 
 Design features
-=====
+===============
 
 The yaml/ `folder <#yaml>`_ contains parameter files for some common design strategies. The yamls are well-commented and easy to modify if you want custom design parameters. You can set almost every design parameter on the command line as well. 
 
@@ -150,7 +150,7 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
     ./iggypop.py cds  --i in/test.fasta --deintronize on --o deintronized
 
 
-`Hybrid` codon optimization
+Hybrid codon optimization
 -----------------
 
 The two main methods of optimizing seqeunces are match_codon_usage (MCU) which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have CAI values of ~0.75 and UBC generates CAI values of 1. In some cases you may want CAI values in between those ranges, for example if you want to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` paramater determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct paramater to hit the CAI value you're looking for. This is a bit oif a hack based on this comment at the DNAChisel repo. 
@@ -160,17 +160,22 @@ The two main methods of optimizing seqeunces are match_codon_usage (MCU) which r
     ./iggypop.py cds --i in/test.fasta --codon_opt hybrid --pct 30 --o hybrid
 
 
-Codon tables
-=====
-
-For cds mode, a condensed local version of the cocoputs database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses a Kazusa codon table. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table and the gb mode to an *E.coli* codon table**. To change this use the `--species flag`; TaxIDs or condensed names will work. For the monkeyflower *Erythranthe guttata* you could use `--species e_guttata` or `--species 4155` (the TaxID for *Erythranthe guttata*). TaxIDs can be looked up at NCBI; since species names change, try a TaxID if your species name does not work.
-
-
 Reports & quiet
 -----------------
 
 You can generate dnachisel report with --reports; if you want iggypop to print less to the screen use --quiet
 
+
+Codon tables
+============
+
+CDS mode
+--------
+For cds mode, a condensed local version of the cocoputs database is used for codon table lookups by default; you can use Kazusa by `--codon_tbl kazusa` or in a yaml file. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table**. To change the codon table used,  use the `--species` flag; TaxIDs or condensed names will work. For example, for the monkeyflower *Erythranthe guttata* you could use `--species e_guttata` or `--species 4155` (its TaxID).
+
+GB mode
+--------
+For gb mode, the species is specified in the genbank annotations that get passed to dnachisel; this requires use of a Kazusa codon table. To change the species use the --species flag with `./iggypop.py format`. TaxIDs work in this context too, but only a few abbreviations work (e_coli, c_elegans, b_subtilis, s_cerevisiae, h_sapiens, d_melanogaster). Note: **gb mode defaults to an *E.coli* codon table**. 
 
 
 Vectors
@@ -178,6 +183,9 @@ Vectors
 
 We've developed a series of pPOP vectors for the one-step and two-step cloning modes; they are derivatives of pUPD2 and pCAMBIA. Sequences can be found `here <#vectors>`_.
 
+
+Barcodes & overhangs
+====================
 
 Barcode primers
 ----------------

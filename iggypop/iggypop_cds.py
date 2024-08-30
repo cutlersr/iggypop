@@ -226,8 +226,9 @@ if __name__ == "__main__":
             )
 
         # Convert species to NCBI taxID for dnachisel
-        if species == "arabidopsis":
-            species = '3702'
+        if codon_tbl == "kazusa": 
+            if species == "arabidopsis" | species=="a_thaliana":
+                species = '3702'
 
         # Load codon table for specified species using NCBI taxID
         try:
@@ -235,7 +236,6 @@ if __name__ == "__main__":
 
                 if species == "arabidopsis":
                     species = 'a_thaliana'
-                    print("using AT")
 
                 codon_table, species_name = calculate_codon_frequencies(
                     file_path='data/cleaned_coco.tsv',
