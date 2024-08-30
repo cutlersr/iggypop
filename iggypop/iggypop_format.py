@@ -147,6 +147,7 @@ if __name__ == "__main__":
 
     # Convert species to NCBI taxID for dnachisel
     if codon_tbl == "kazusa": 
+<<<<<<< HEAD
         if species == "arabidopsis" | species=="a_thaliana":
             species = '3702'
             print("using TaxID 3702 for Arabidopsis thaliana")
@@ -154,6 +155,15 @@ if __name__ == "__main__":
     if codon_tbl == "kazusa": 
         if species == "arabidopsis" | species=="a_thaliana":
             species = '3702'
+=======
+        if species == "arabidopsis" or species=="a_thaliana":
+            species = '3702'
+            print("using TaxID 3702 for Arabidopsis thaliana")
+
+    if codon_tbl == "cocoputs": 
+        print("you can't use cocoputs with gb mode; run with `--codon_tbl kazusa` and supply a TaxID.")
+        sys.exit()
+>>>>>>> 859ef2c692fa823da7849a7837b90addd124d241
 
 
     annotate_genbank()
