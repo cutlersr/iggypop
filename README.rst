@@ -151,7 +151,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three gene operon; each ORF being is optimized using using match_codon_usage (based on the parameters set in the input file '<in/test.gb>'_). 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three gene operon; each ORF being is optimized using using match_codon_usage (based on the parameters set in the input `file <in/test.gb>`_). 
 
 
 .. code:: bash
