@@ -556,194 +556,6 @@ def custom_warning_handler(message, category, filename, lineno, file=None, line=
     else:
         warnings.showwarning(message, category, filename, lineno, file, line)
 
-
-def annotate_genbank(input_file, output_file, yaml_file, id=None, pct=20):
-    try:
-        # Load the GenBank file
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            records = list(SeqIO.parse(input_file, "genbank"))
-            for warning in w:
-                custom_warning_handler(warning.message, warning.category, warning.filename, warning.lineno)
-
-        if not records:
-            raise ValueError("No records found in the GenBank file.")
-
-        # Load the YAML file
-        with open(yaml_file, 'r') as yf:
-            yaml_data = yaml.safe_load(yf)
-
-        # Extract species and codon_opt from YAML data
-        species = yaml_data.get('species', 'none')
-        codon_opt = yaml_data.get('codon_opt', 'none')
-
-        # Annotate records using the parsed YAML data
-        annotated_records = annotate_from_yaml(yaml_data, species, codon_opt, records, pct)
-
-        # Write the modified records back to the output file
-        with open(output_file, "w") as output_handle:
-            SeqIO.write(annotated_records, output_handle, "genbank")
-
-        # Post-process the output file to replace the specific label
-        with open(output_file, "r") as file:
-            content = file.read()
-
-        # Perform the replacement
-        content = content.replace(
-            f'                     /label="~EnforceChanges(minimum_percent={pct})"',
-            f'                     /label="@EnforceChanges(minimum={pct}%)"'
-        )
-
-        # Write the modified content back to the file
-        with open(output_file, "w") as file:
-            file.write(content)
-
-        print(f"Annotation completed successfully. Output written to {output_file}")
-
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        print("Please check the inputs and try again.")
-
-
-def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
-    try:
-        regulatory_features = [
-            "promoter", "terminator", "RBS", "regulatory",
-            "rep_origin", "protein_bind", "tRNA", "oriT",
-            "stem_loop", "enhancer", "5'UTR", "3'UTR",
-            "polyA_signal", "LTR", "misc_binding", "tRNA",
-            "rRNA", "misc_RNA"
-        ]
-
-        for record in records:
-            new_features = []  # Collect new features here
-            for feature in record.features:
-                try:
-                    if feature.type in regulatory_features:
-                        avoid_changes_feature = SeqFeature(
-                            feature.location,
-                            type="misc_feature",
-                            qualifiers={"label": "@AvoidChanges"}
-                        )
-                        new_features.append(avoid_changes_feature)
-
-                    elif feature.type in ["CDS", "ORF"]:
-                        misc_feature = SeqFeature(
-                            feature.location,
-                            type="misc_feature",
-                            qualifiers={"label": "@EnforceTranslation"}
-                        )
-                        new_features.append(misc_feature)
-
-                        if codon_opt == 'match_codon_usage':
-                            codon_feature = SeqFeature(
-                                feature.location,
-                                type="misc_feature",
-                                qualifiers={"label": f"~match_codon_usage(species={species})"}
-                            )
-                            new_features.append(codon_feature)
-
-                        elif codon_opt == 'use_best_codon':
-                            codon_feature = SeqFeature(
-                                feature.location,
-                                type="misc_feature",
-                                qualifiers={"label": f"~use_best_codon(species={species})"}
-                            )
-                            new_features.append(codon_feature)
-
-                        elif codon_opt == 'hybrid':
-                            codon_feature = SeqFeature(
-                                feature.location,
-                                type="misc_feature",
-                                qualifiers={"label": f"~use_best_codon(species={species})"}
-                            )
-                            new_features.append(codon_feature)
-                            enforce_changes_feature = SeqFeature(
-                                feature.location,
-                                type="misc_feature",
-                                qualifiers={"label": f"~EnforceChanges(minimum_percent={pct})"}
-                            )
-                            new_features.append(enforce_changes_feature)
-
-                        elif codon_opt == 'harmonize_rca':
-                            codon_feature = SeqFeature(
-                                feature.location,
-                                type="misc_feature",
-                                qualifiers={"label": f"~match_codon_usage(species={species})"}
-                            )
-                            new_features.append(codon_feature)
-                except Exception as e:
-                    print(f"Error processing feature {feature.type}: {e}")
-                    return records
-
-            # Append all new features to the record
-            record.features.extend(new_features)
-
-            try:
-                for constraint in yaml_data.get("constraints", []):
-                    if constraint['type'] == "EnforceTranslation":
-                        continue
-                    label = create_feature_label("@", constraint)
-                    misc_feature = SeqFeature(
-                        FeatureLocation(0, len(record)),
-                        type="misc_feature",
-                        qualifiers={"label": label}
-                    )
-                    record.features.append(misc_feature)
-            except Exception as e:
-                print(f"Error processing constraints from YAML data: {e}")
-                return records
-
-            try:
-                for optimization in yaml_data.get("optimizations", []):
-                    label = create_feature_label("~", optimization)
-                    misc_feature = SeqFeature(
-                        FeatureLocation(0, len(record)),
-                        type="misc_feature",
-                        qualifiers={"label": label}
-                    )
-                    record.features.append(misc_feature)
-            except Exception as e:
-                print(f"Error processing optimizations from YAML data: {e}")
-                return records
-
-        return records
-    except Exception as e:
-        print(f"An error occurred during annotation: {e}")
-        return records
-
-
-def create_feature_label(prefix, data):
-    try:
-        label = f"{prefix}{data['type']}"
-        additional_info = [
-            f"{key}={value}" for key, value in data.items() if key != 'type'
-        ]
-        if additional_info:
-            label += f"({', '.join(additional_info)})"
-        return label
-    except KeyError as e:
-        print(f"Missing key in data: {e}")
-        print("Please ensure the YAML data contains the correct keys.")
-        return f"{prefix}unknown"
-
-def adjust_feature_locations(features, offset):
-    adjusted_features = []
-    for feature in features:
-        if feature.location is not None:
-            start = feature.location.start + offset
-            end = feature.location.end + offset
-            new_location = FeatureLocation(
-                start, end, strand=feature.location.strand
-            )
-            new_feature = SeqFeature(
-                location=new_location, type=feature.type,
-                qualifiers=feature.qualifiers
-            )
-            adjusted_features.append(new_feature)
-    return adjusted_features
-
-
 def log_and_print(message, log_file, quiet="off", width=80):
     lines = message.split('\n')
     wrapped_message = '\n'.join([
@@ -756,7 +568,6 @@ def log_and_print(message, log_file, quiet="off", width=80):
 
 
 def report_gb_cai(input_genbank, output_genbank, species):
-
 
     codon_usage_table = get_codons_table(species)
     def extract_cds_and_calculate_cai(genbank_file, codon_usage_table):
@@ -824,15 +635,10 @@ def calculate_codon_frequencies(
 
     DNAChisel's built-in codon table is based on the outdated Kazusa dataset and lacking
     data for many species and fails when the Kazusa website goes down. We use this as
-    a function as a preferred alternative for generating codon usage tables. The function
+    as a preferred alternative for generating codon usage tables. The function
     generates a usage table for a specified species using a trimmed down version of 
     the cocoputs dataset. The function loads codon frequency data by species name or NCBI 
-    taxonomic ID. If a species name is provided, the function searches for it in the dataset 
-    and selects the species with the highest number of codons if multiple matches are found; 
-    this is becasue the cocoputs data set is large and often contains many entries for the
-    same species. The codon frequencies are then calculated for each amino acid based on the 
-    species-specific codon usage data. The result is a dictionary mapping amino acids to 
-    their codon frequencies, along with the species name.
+    taxonomic ID.
 
     See: Zhou, Z., Dang, Y., Zhou, M., Li, L., Yu, C. H., Fu, J., Chen, S., & Liu, Y. (2016). 
     Codon usage is an important determinant of gene expression levels largely through its 
