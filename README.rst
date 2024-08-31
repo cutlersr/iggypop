@@ -179,7 +179,7 @@ For cds mode, a condensed local version of the `cocoputs <https://pubmed.ncbi.nl
 
 
 
-For the monkeyflower *Erythranthe guttata* you could:
+To optimized for the monkeyflower *Erythranthe guttata*, you could:
 
 .. code:: bash
 
@@ -188,10 +188,11 @@ For the monkeyflower *Erythranthe guttata* you could:
 	./iggypop.py cds  --i in/test.fasta --species Erythranthe guttata	
 	./iggypop.py cds  --i in/test.fasta --species 4155
 	
-	# taxid requried for gb mode	
-	./iggypop.py gb  --i in/test.gb --species 4155
-	
-	# these work in gb: 
+	# taxid required for gb files	
+	./iggypop.py format  --i in/test_unformatted.gb --species 4155	
+
+	# these short names work to format gb files: arabidopsis, e_coli, s_cerevisiae, b_subtilis, c_elegans, d_melanogaster, m_musculus, h_sapiens
+
 
 
 
