@@ -164,7 +164,7 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
 `Hybrid` codon optimization
 -----------------
 
-The two main methods of optimizing sequences are match_codon_usage (MCU), which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have `CAI <https://en.wikipedia.org/wiki/Codon_Adaptation_Index.>'_values of ~0.75, and UBC generates CAI values 1. In some cases, you may want CAI values between those ranges, for example, to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` parameter determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct parameter to hit your desired CAI value.
+The two main methods of optimizing sequences are match_codon_usage (MCU), which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have `CAI <https://en.wikipedia.org/wiki/Codon_Adaptation_Index.>`_values of ~0.75, and UBC generates CAI values 1. In some cases, you may want CAI values between those ranges, for example, to create many versions of high CAI sequences (UBC usually generates only one sequence). The --codon_opt  hybrid parameter allows this with the `--pct` parameter determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct parameter to hit your desired CAI value.
 
 .. code:: bash
 
@@ -175,7 +175,7 @@ The two main methods of optimizing sequences are match_codon_usage (MCU), which 
 Codon tables
 =====
 
-For cds mode, a condensed local version of the 'cocoputs <https://pubmed.ncbi.nlm.nih.gov/31029701>'_ database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases, **cds mode defaults to an arabidopsis codon table, and gb mode defaults to an *E.coli* codon table**. To change this, use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
+For cds mode, a condensed local version of the `cocoputs <https://pubmed.ncbi.nlm.nih.gov/31029701>`_ database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases, **cds mode defaults to an arabidopsis codon table, and gb mode defaults to an *E.coli* codon table**. To change this, use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
 
 
 
