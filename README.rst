@@ -109,7 +109,7 @@ We recommend you check the formatting produced by `./iggypop.py format` in Snapg
 Design
 =====
 
-The yaml/ `folder <yaml/>`_ contains parameter files for some common design strategies. 
+The `yaml/ <yaml/>`_ folder contains parameter files for some common design strategies. 
 
  
 
