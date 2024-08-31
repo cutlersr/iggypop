@@ -6,7 +6,7 @@ import warnings
 from initialization import *
 from pop_helpers import *
 
-def annotate_genbank():
+def annotate_genbank(comment):
     try:
         # Load the GenBank file
         with warnings.catch_warnings(record=True) as w:
@@ -57,17 +57,21 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
     ]
 
     for record in records:
-        new_features = []  # Collect new features here
+        original_features = list(record.features)  # Copy original features
+        record.features = []  # Clear original list to avoid duplicates
+        new_features = [] 
 
-        # Handle regulatory features
-        for feature in record.features:
+        for feature in original_features:
+            record.features.append(feature)  # Re-add original feature
+
+            # Handling for various feature types with their corresponding misc_features
             if feature.type in regulatory_features:
                 avoid_changes_feature = SeqFeature(
                     feature.location,
                     type="misc_feature",
                     qualifiers={"label": "@AvoidChanges"}
                 )
-                new_features.append(avoid_changes_feature)
+                record.features.append(avoid_changes_feature)
 
             elif feature.type in ["CDS", "ORF"]:
                 misc_feature = SeqFeature(
@@ -75,15 +79,16 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                     type="misc_feature",
                     qualifiers={"label": "@EnforceTranslation"}
                 )
-                new_features.append(misc_feature)
+                record.features.append(misc_feature)
 
+                # Handling codon options with corresponding features
                 if codon_opt == 'match_codon_usage':
                     codon_feature = SeqFeature(
                         feature.location,
                         type="misc_feature",
                         qualifiers={"label": f"~match_codon_usage(species={species})"}
                     )
-                    new_features.append(codon_feature)
+                    record.features.append(codon_feature)
 
                 elif codon_opt == 'use_best_codon':
                     codon_feature = SeqFeature(
@@ -91,7 +96,7 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                         type="misc_feature",
                         qualifiers={"label": f"~use_best_codon(species={species})"}
                     )
-                    new_features.append(codon_feature)
+                    record.features.append(codon_feature)
 
                 elif codon_opt == 'hybrid':
                     codon_feature = SeqFeature(
@@ -99,13 +104,14 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                         type="misc_feature",
                         qualifiers={"label": f"~use_best_codon(species={species})"}
                     )
-                    new_features.append(codon_feature)
+                    record.features.append(codon_feature)
+
                     enforce_changes_feature = SeqFeature(
                         feature.location,
                         type="misc_feature",
                         qualifiers={"label": f"~EnforceChanges(minimum_percent={pct})"}
                     )
-                    new_features.append(enforce_changes_feature)
+                    record.features.append(enforce_changes_feature)
 
                 elif codon_opt == 'harmonize_rca':
                     codon_feature = SeqFeature(
@@ -113,11 +119,41 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                         type="misc_feature",
                         qualifiers={"label": f"~match_codon_usage(species={species})"}
                     )
-                    new_features.append(codon_feature)
+                    record.features.append(codon_feature)
 
-        # Create features for constraints from YAML
+                # Add comment feature last
+                comment_feature = SeqFeature(
+                    feature.location,
+                    type="misc_feature",
+                    qualifiers={"note": comment}  # Using 'note' as the key for the comment
+                )
+                record.features.append(comment_feature)
+
+        # Remove duplicates
+        unique_features = []
+        seen = set()
+        for f in record.features:
+            identifier = (
+                f.type, 
+                str(f.location), 
+                tuple((k, tuple(v) if isinstance(v, list) else v) for k, v in f.qualifiers.items())
+            )
+            if identifier not in seen:
+                seen.add(identifier)
+                unique_features.append(f)
+
+        record.features = unique_features  # Assign unique features back to the record
+
+        # Marker for global constraints and optimizations
+        global_marker = SeqFeature(
+            FeatureLocation(0, len(record)),
+            type="misc_feature",
+            qualifiers={"note": "__Global constraints & optimizations start here__"})
+        record.features.append(global_marker)
+
+        # Append additional global features that are not tied directly to existing features
         for constraint in yaml_data.get("constraints", []):
-            if constraint['type'] == "EnforceTranslation":  # Skip if the constraint is of type "EnforceTranslation"
+            if constraint['type'] == "EnforceTranslation":  # Skip if not applicable
                 continue
             label = create_feature_label("@", constraint)
             constraint_feature = SeqFeature(
@@ -127,7 +163,6 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
             )
             new_features.append(constraint_feature)
 
-        # Create features for optimizations from YAML
         for optimization in yaml_data.get("optimizations", []):
             label = create_feature_label("~", optimization)
             optimization_feature = SeqFeature(
@@ -137,33 +172,71 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
             )
             new_features.append(optimization_feature)
 
-        record.features.extend(new_features)
+        record.features.extend(new_features)  # Finally, extend the features list with the new features
+
     return records
 
+
+def lookup_taxid(input_value, data):
+    if not isinstance(data, pd.DataFrame):
+        raise ValueError("Data should be a pandas DataFrame.")
+
+    bypass_list = {'e coli', 's cerevisiae', 'b subtilis', 'c elegans', 'd melanogaster', 'm musculus', 'h sapiens'}
+    normalized_input = input_value.replace('_', ' ').lower()
+    
+    if normalized_input in bypass_list:
+        return input_value, f"No Taxid lookup for {input_value}."
+
+    if isinstance(input_value, int) or input_value.isdigit():  # Ensure numeric input is handled correctly
+        input_value = int(input_value)  # Convert to integer if it's a digit string
+        matches = data[data['Taxid'] == input_value]
+    elif "_" in input_value:
+        matches = data[data['short_name'] == input_value]
+    else:
+        matches = data[data['Species'].str.lower() == input_value.lower()]
+
+    if len(matches) == 0:
+        return None, "No matches found. Please verify your input."
+    elif len(matches) > 1 and "_" in input_value:
+        species_list = matches['Species'].tolist()
+        taxid_list = matches['Taxid'].tolist()
+        return None, f"Multiple matches found: {list(zip(species_list, taxid_list))}. Please specify a unique species name or Taxid."
+    
+    taxid = matches['Taxid'].iloc[0]
+    species = matches['Species'].iloc[0]
+    short_name = matches['short_name'].iloc[0]
+    comment = f"Taxid {taxid}: {species} ({short_name})"
+    return taxid, comment
 
 if __name__ == "__main__":
     tag, ofile, log_file_path, updated_defaults = initialize("format")
     globals().update(vars(updated_defaults))
 
-    # Convert species to NCBI taxID for dnachisel
-    if codon_tbl == "kazusa": 
-<<<<<<< HEAD
-        if species == "arabidopsis" | species=="a_thaliana":
-            species = '3702'
-            print("using TaxID 3702 for Arabidopsis thaliana")
+    codon_data_path = "data/cleaned_coco.tsv"
+    codon_data = pd.read_csv(codon_data_path, sep='\t')
 
-    if codon_tbl == "kazusa": 
-        if species == "arabidopsis" | species=="a_thaliana":
-            species = '3702'
-=======
-        if species == "arabidopsis" or species=="a_thaliana":
-            species = '3702'
-            print("using TaxID 3702 for Arabidopsis thaliana")
+    # Handling specific species mapping
+    if species.lower() in ["arabidopsis", "a_thaliana"]:
+        species = '3702'
+        print("Using TaxID 3702 for Arabidopsis thaliana")
 
-    if codon_tbl == "cocoputs": 
-        print("you can't use cocoputs with gb mode; run with `--codon_tbl kazusa` and supply a TaxID.")
+    # Lookup species TaxID or handle predefined species
+    result = lookup_taxid(species, codon_data)
+
+    if result[0] is None:
+        # Print the error or warning message and exit the script if no or multiple matches are found
+        print(result[1])
         sys.exit()
->>>>>>> 859ef2c692fa823da7849a7837b90addd124d241
 
+    # Extract taxid and comment if a valid match was found
+    species, comment = result
+    print(comment)
 
-    annotate_genbank()
+    # Check for specific codon table conditions
+    if codon_tbl == "cocoputs": 
+        print("Note: you can't use cocoputs data in gb mode; Kazusa tables will be used.")
+        sys.exit()
+
+    # Proceed with annotation process if everything is valid
+    annotate_genbank(comment)
+
