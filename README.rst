@@ -78,13 +78,13 @@ Sequence optimization parameters are set in yaml files using `dnachisel` `specif
 
 
 
-You can also change settings on the command line. This will use `use_best_codon` optimization, an *S. cerevisiea* codon table, BsaI sites for assemblies, and 300 bp oligos:
+You can also change settings on the command line. This will use `use_best_codon` optimization, an *S. cerevisiae* codon table, BsaI sites for assemblies, and 300 bp oligos:
 
 
 
 .. code:: bash
 
-    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiea    \
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \
                       --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \
                       --codon_opt use_best_codon  --oligo_length 300
 
