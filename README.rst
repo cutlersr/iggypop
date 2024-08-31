@@ -65,20 +65,20 @@ Sequence optimization parameters are set in YAML files using `dnachisel` `specif
 
 .. code:: yaml
     constraints
-          - type: AvoidPattern			# Pattern/RE site to avoid
+          - type: AvoidPattern          # Pattern/RE site to avoid
             pattern: BsaI_site
             strand: both    
-          - type: AvoidChanges			# Prevent changes in the first 200 base pairs
+          - type: AvoidChanges          # Prevent changes in the first 200 base pairs
             location: [1, 200]
-          - type: EnforceTranslation		# Force changes to be synonymous  
+          - type: EnforceTranslation        # Force changes to be synonymous  
 
 
 You can also change settings on the command line, which overrides the parameters in the YAML file.
 
 .. code:: bash
-    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \	# use S. cerevisiae codon table
-                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \	# use BsaI ends instead of default BsmBI
-                      --codon_opt use_best_codon  --oligo_length 300		# ubc w/ 300 bp oligos
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \    # use S. cerevisiae codon table
+                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \    # use BsaI ends instead of default BsmBI
+                      --codon_opt use_best_codon  --oligo_length 300        # ubc w/ 300 bp oligos
 
 
 
@@ -96,7 +96,7 @@ The parameters for optimizing GenBank files are set with annotations according t
        # optionally override the defaults             \
                         --species b_subtilis          \
                         --codon_opt use_best_codon    
-    					
+                        
     
     # Then run the formatted Genbank file to generate oligos
     ./iggypop.py gb  --i in/test_formatted.gb --o test_oligos
@@ -183,15 +183,15 @@ To optimized for the monkeyflower *Erythranthe guttata*, you could:
 
 .. code:: bash
 
-	# short name, species name, or taxid work cds mode
-	./iggypop.py cds  --i in/test.fasta --species e_guttata
-	./iggypop.py cds  --i in/test.fasta --species Erythranthe guttata	
-	./iggypop.py cds  --i in/test.fasta --species 4155
-	
-	# taxid required for gb files	
-	./iggypop.py format  --i in/test_unformatted.gb --species 4155	
+    # short name, species name, or taxid work cds mode
+    ./iggypop.py cds  --i in/test.fasta --species e_guttata
+    ./iggypop.py cds  --i in/test.fasta --species Erythranthe guttata   
+    ./iggypop.py cds  --i in/test.fasta --species 4155
+    
+    # taxid required for gb files   
+    ./iggypop.py format  --i in/test_unformatted.gb --species 4155  
 
-	# these short names work to format gb files: arabidopsis, e_coli, s_cerevisiae, b_subtilis, c_elegans, d_melanogaster, m_musculus, h_sapiens
+    # these short names work to format gb files: arabidopsis, e_coli, s_cerevisiae, b_subtilis, c_elegans, d_melanogaster, m_musculus, h_sapiens
 
 
 
