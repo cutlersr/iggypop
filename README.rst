@@ -141,7 +141,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three-gene operon; each ORF being is optimized using match_codon_usage (based on the parameters set in the input `file <in/test.gb>`_). 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three-gene operon; each ORF being is optimized using match_codon_usage (based on the parameters set in the `test.gb <in/test.gb>`_ file). 
 
 
 .. code:: bash
@@ -153,7 +153,7 @@ Given the low cost of oligos per gene, you may want to test different versions o
 Deintronization
 -----------------
 
-Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `./iggypop.py cds --deintronize on`, a chiseled CDS is generated, passed to a splicing model from the `Spliceator` `project <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
+Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `./iggypop.py cds --deintronize on`, a chiseled CDS is generated, passed to a splicing model from the `Spliceator <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_ project. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
 
 .. code:: bash
 
@@ -164,7 +164,7 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
 `Hybrid` codon optimization
 -----------------
 
-The two main methods of optimizing sequences are match_codon_usage (MCU), which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have `CAI <https://en.wikipedia.org/wiki/Codon_Adaptation_Index.>`_values of ~0.75, and UBC generates CAI values 1. In some cases, you may want CAI values between those ranges, for example, to create many versions of high CAI sequences (UBC usually generates only one sequence). The --codon_opt  hybrid parameter allows this with the `--pct` parameter determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct parameter to hit your desired CAI value.
+The two main methods of optimizing sequences are match_codon_usage (MCU), which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have `CAI <https://en.wikipedia.org/wiki/Codon_Adaptation_Index>`_ values of ~0.75, and UBC generates CAI values 1. In some cases, you may want CAI values between those ranges, for example, to create many versions of high CAI sequences (UBC usually generates only one sequence). The --codon_opt  hybrid parameter allows this with the `--pct` parameter determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct parameter to hit your desired CAI value.
 
 .. code:: bash
 
