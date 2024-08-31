@@ -61,41 +61,31 @@ CDS mode is used to design oligos for reassembling coding sequences. It requires
 
 
 
-Sequence optimization parameters are set in yaml files using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. The following yaml snippet excludes BsaI sites, prevent changes to the first 200 base pairs of the sequencs, and enforces synonymous changes to the coding sequence:
+Sequence optimization parameters are set in YAML files using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. The following YAML snippet sets dnachisel constraints to exclude BsaI sites, prevent changes to the first 200 base pairs of the sequence, and enforce synonymous changes:
 
 .. code:: yaml
-
     constraints
-        # RE sites to avoid
-          - type: AvoidPattern
+          - type: AvoidPattern			# Pattern/RE site to avoid
             pattern: BsaI_site
             strand: both    
-        # Prevent changes in the first 200 base pairs
-          - type: AvoidChanges
+          - type: AvoidChanges			# Prevent changes in the first 200 base pairs
             location: [1, 200]
-        # Force changes to be synonymous  
-          - type: EnforceTranslation
+          - type: EnforceTranslation		# Force changes to be synonymous  
 
 
-
-You can also change settings on the command line. This will use `use_best_codon` optimization, an *S. cerevisiae* codon table, BsaI sites for assemblies, and 300 bp oligos:
-
-
+You can also change settings on the command line, which overrides the parameters in the YAML file.
 
 .. code:: bash
+    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \	# use S. cerevisiae codon table
+                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \	# use BsaI ends instead of default BsmBI
+                      --codon_opt use_best_codon  --oligo_length 300		# ubc w/ 300 bp oligos
 
-    ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \
-                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \
-                      --codon_opt use_best_codon  --oligo_length 300
-
-
-Command line arguments override the paramaters set in the yaml file.
 
 
 Genbank File Mode
 ------------------
 
-The parameters for optimized GenBank files are set with annotations according to `dnachisel's genbank API <https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html>`_. Adding annotations is a bit of a pain, but you can use `iggypop format` to speed this up; the optimization parameters are specified in a yaml file; once formatted you can run with `iggypop.py gb`
+The parameters for optimizing GenBank files are set with annotations according to `dnachisel's genbank API <https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html>`_. `./iggypop.py format` is used to annotate the gb file using parameters specified in a YAML; once formatted, oligos can are then generated with `./iggypop.py gb`
 
 .. code:: bash
 
@@ -112,7 +102,7 @@ The parameters for optimized GenBank files are set with annotations according to
     ./iggypop.py gb  --i in/test_formatted.gb --o test_oligos
 
 
-We recommend you check the formatting produced by `iggypop format` in Snapgene, Geneious, Benchling, or your favorite viewer.
+We recommend you check the formatting produced by `./iggypop.py format` in Snapgene, Geneious, Benchling, or your favorite viewer.
 
 
 
@@ -127,7 +117,7 @@ The yaml/ `folder <yaml/>`_ contains parameter files for some common design stra
 MoClo-compatible CDSs
 -----------------------
 
-The `moclo` yaml files have paramaters to design reusable CDSs by adding a short 5' BsaI/ATTG on the 5' end and a 3' GCTT/BsaI. The CDSs are first assembled with BsmBI and the final clones are MoClo compatible (i.e., BsaI digestion will release an ORF with AATG/GCTT overhangs). The figure below zooms in on the first and last oligonucleotides of an assembly to illustrate the mapping between parameters set in the yml file and the designed sequence. This is the default design mode; see the yaml folder for other options. 
+The `moclo` YAML files have parameters to design reusable CDSs by adding a 5' BsaI/ATTG on the 5' end and a 3' GCTT/BsaI. The CDSs are first assembled with BsmBI, and the final clones are compatible with MoClo (i.e., BsaI digestion will release an ORF with AATG/GCTT overhangs). The figure below zooms in on the first and last oligonucleotides of an assembly to illustrate the mapping between parameters set in the YAML file and the designed sequence. This is the default design mode; see the YAML folder for other options. 
 
 .. image:: png/molco.png
    :alt: MoClo Compatibility
@@ -137,7 +127,7 @@ The `moclo` yaml files have paramaters to design reusable CDSs by adding a short
 Two-step assembly
 -------------------
 
-For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos), the frequency of proper assemblies is low enough that it can be more efficient to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` yaml files have parameters to break a sequence into ~ 1 Kb chunks that are assembled with BbsI; once validated, they are then assembled into the final sequence using BsmBI in the second step. The figure below shows the first and last oligos of a 2-step assembly. The cds mode defaults are for MoClo-compatibility; the gb versions not.
+For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos), the frequency of proper assemblies is low enough that it can be more efficient to break the target sequences into smaller step one fragments that are cloned, sequence validated and then used for second step assemblies to yield the final target. The `two_step` YAML files have parameters to break a sequence into ~ 1 Kb chunks assembled with BbsI; once validated, they are assembled into the final sequence using BsmBI in the second step. The figure below shows the first and last oligos of a 2-step assembly. The cds mode defaults are for MoClo-compatibility; the gb versions not.
 
 .. image:: png/two_step.png
    :alt: Two-step Assembly
@@ -151,7 +141,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three gene operon; each ORF being is optimized using using match_codon_usage (based on the parameters set in the input `file <in/test.gb>`_). 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three-gene operon; each ORF being is optimized using match_codon_usage (based on the parameters set in the input `file <in/test.gb>`_). 
 
 
 .. code:: bash
@@ -163,7 +153,7 @@ Given the low cost of oligos per gene, you may want to test different versions o
 Deintronization
 -----------------
 
-Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `iggypop cds --deintronize on`, a chiseled CDS is generated and passed to a Convolutional Neural Network splicing model from the `Spliceator` `project <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
+Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `./iggypop.py cds --deintronize on`, a chiseled CDS is generated, passed to a splicing model from the `Spliceator` `project <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
 
 .. code:: bash
 
@@ -174,7 +164,7 @@ Sequences ported from other organisms or newly designed sequences sometimes cont
 `Hybrid` codon optimization
 -----------------
 
-The two main methods of optimizing seqeunces are match_codon_usage (MCU) which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have CAI values of ~0.75 and UBC generates CAI values of 1. In some cases you may want CAI values in between those ranges, for example if you want to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` paramater determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct paramater to hit the CAI value you're looking for. This is a bit oif a hack based on this comment at the DNAChisel repo. 
+The two main methods of optimizing sequences are match_codon_usage (MCU), which randomly samples codons based on their usage frequency, and use_best_codon (UBC). MCU generates sequences that typically have `CAI <https://en.wikipedia.org/wiki/Codon_Adaptation_Index.>'_values of ~0.75, and UBC generates CAI values 1. In some cases, you may want CAI values between those ranges, for example, to create many versions of high CAI sequences (UBC usually generates only 1 sequence). The --codon_opt  hybrid parameter allows this with the `--pct` parameter determining the target sequence difference from the input sequence (the default values shoot for ~20% difference). You may need to tweak the pct parameter to hit your desired CAI value.
 
 .. code:: bash
 
@@ -185,7 +175,7 @@ The two main methods of optimizing seqeunces are match_codon_usage (MCU) which r
 Codon tables
 =====
 
-For cds mode, a condensed local version of the [cocoputs](https://pubmed.ncbi.nlm.nih.gov/31029701/) database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases **cds mode defaults to an arabidopsis codon table and gb mode defaults to an *E.coli* codon table**. To change this use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
+For cds mode, a condensed local version of the [cocoputs](https://pubmed.ncbi.nlm.nih.gov/31029701/) database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases, **cds mode defaults to an arabidopsis codon table, and gb mode defaults to an *E.coli* codon table**. To change this, use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
 
 
 
@@ -209,7 +199,7 @@ For the monkeyflower *Erythranthe guttata* you could:
 Reports & quiet
 -----------------
 
-You can generate dnachisel report with --reports; if you want iggypop to print less to the screen use --quiet
+You can generate a dnachisel report with `--reports`; if you want iggypop to print less to the screen use `--quiet`
 
 
 
@@ -235,13 +225,15 @@ Our barcode primers were designed to have balanced Tms, lack commonly used restr
 Overhangs
 -------------
 
-We use the `goldenhinges` packages to select overhangs for reassembling chiseled sequences. Given a sequence and fragment sizes, `golden hinges` searches for overhang solutions within a given distance from ideal target cut sites. `golden hinges` can limit the overhangs allowable to a user-specified list. So, if you provide `goldenhinges` with a pre-computed list of 20 overhangs with an overall assembly fidelity of 98%, any subset selected from that list will possess at least 98% fidelity (usually much higher for small subsets). To create an efficient pipeline for selecting high-fidelity overhangs, we pre-computed a large number of high-fidelity overhang sets using `iggypop.py gagga`; these are passed as constraints to `goldenhinges`. `iggypop` searches through these to identify `n_tries` solutions, and returns the highest fidelity set obtained.
+We use the `goldenhinges` packages to select overhangs for reassembling chiseled sequences. Given a sequence and fragment sizes, `golden hinges` searches for overhang solutions within a given distance from ideal target cut sites. `golden hinges` can limit the overhangs allowable to a user-specified list. So, if you provide `goldenhinges` with a pre-computed list of 20 overhangs with an overall assembly fidelity of 98%, any subset selected from that list will possess at least 98% fidelity (usually much higher for small subsets). To create an efficient pipeline for selecting high-fidelity overhangs, we pre-computed a large number of high-fidelity overhang sets using `iggypop.py gagga`; these are passed as constraints to `goldenhinges`. `iggypop` searches through these to identify `n_tries` solutions, and returns the highest fidelity set obtained. The data below show the fidelities obtained for a run of 4,500 plant transcription factors using AATG/GCTT cloning overhang recombination with our overhang sets; in this run, the mean fragment number is 7 (~1.2 kB), and the mean assembly fidelity is predicted, to be 99.5%.
 
-The overhang sets we use (`ohsets.csv`) were generated using a genetic algorithm and a Monte Carlo optimizer. The sets were optimized with `AATG, GCTT` as the `fixed_overhangs` (i.e., external cloning overhangs); AATG and GCTT have near-perfect fidelity and are MoClo-compliant for CDSs, so it's easy to create high-fidelity sets using them. Fidelities are calculated using `Potapov et al. <https://pubs.acs.org/doi/10.1021/acssynbio.8b00333>`_ data for one-hour incubations at 25 ºC using T4 DNA ligase; you can change this with the `potapov_data` setting. You can specify whatever external overhangs you want but check with NEB's `fidelity calculator <https://ligasefidelity.neb.com/viewset/run.cgi>`_ to ensure they are a high-fidelity pair first.
+.. image:: png/fidelity_plot.png
+   :alt: fidelity_plot
 
-For the overhang sets used, we ran a few thousand gaga runs on UCR's high-performance computing cluster and filtered the results to select the highest-scoring sets and maximally diverse subsets.
+.
 
-The following command will do a run with a target of a set of 20 overhangs. Due to the way GAs work, sets with repeated sequences can arise; the `alpha` and `beta` parameters below control a penalty function that reduces repeated overhangs.
+The overhang sets we use (`hf_oh_sets.xlsx`) were generated using both genetic algorithm and Monte Carlo optimizers. The sets were optimized with `AATG, GCTT` as the `fixed_overhangs` (i.e., external cloning overhangs); AATG and GCTT have near-perfect fidelity and are MoClo-compliant for CDSs, so it's easy to create high-fidelity sets using them. Fidelities are calculated using `Potapov et al. <https://pubs.acs.org/doi/10.1021/acssynbio.8b00333>`_ data for one-hour incubations at 25 ºC using T4 DNA ligase; you can change this with the `potapov_data` setting. You can specify whatever external overhangs you want, but check with NEB's `fidelity calculator <https://ligasefidelity.neb.com/viewset/run.cgi>`_ to ensure they are a high-fidelity pair first. The following command will do a run with a target of a set of 20 overhangs. Due to how GAs work, sets with repeated sequences can arise; the `alpha` and `beta` parameters below control a penalty function that reduces repeated overhangs. For the overhang sets used, we ran a few thousand gaga runs on UCR's high-performance computing cluster and filtered the results to select the highest-scoring sets and maximally diverse subsets.
+
 
 .. code:: bash
 
@@ -258,9 +250,3 @@ The following command will do a run with a target of a set of 20 overhangs. Due 
     # then run this from the directory with all of your results
     Rscript scripts/process_gagga_runs.R --top_percent=2 --n_cliques=30
 
-The data below shows the fidelities obtained for a run of 4,500 plant transcription factors using AATG/GCTT cloning overhangs; in this run the mean fragment number is 7 (~1.2 kB) and the mean assembly fidelity is predicted to be 99.5%.
-
-.. image:: png/fidelity_plot.png
-   :alt: fidelity_plot
-
-.
