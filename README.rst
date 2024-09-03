@@ -79,7 +79,7 @@ You can also change settings on the command line, which overrides the parameters
 .. code:: bash
 
     ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \    # use S. cerevisiae codon table
-                      --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \    # use BsaI ends instead of default BsmBI
+                      --pcr_5p_cut AGAGACG  --pcr_3p_cut CGTCTCA     \    # use BsaI ends instead of default BsmBI
                       --codon_opt use_best_codon  --oligo_length 300        # ubc w/ 300 bp oligos
 
 
