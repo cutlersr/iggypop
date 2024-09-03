@@ -143,7 +143,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of a three-gene operon; each ORF being is optimized using match_codon_usage (based on the parameters set in the `test.gb <in/test.gb>`_ file). 
+Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of the `input <in/test.gb>`_. 
 
 
 .. code:: bash
@@ -177,11 +177,7 @@ The two main methods of optimizing sequences are match_codon_usage (MCU), which 
 Codon tables
 =====
 
-For cds mode, a condensed local version of the `cocoputs <https://pubmed.ncbi.nlm.nih.gov/31029701>`_ database is used for codon table lookups. For gb mode, the species is specified in the annotation passed to dnachisel, which uses Kazusa codon tables. Based on our lab's most common use cases, **cds mode defaults to an arabidopsis codon table, and gb mode defaults to an *E.coli* codon table**. To change this, use the `--species flag`; TaxIDs or condensed names will work  for cds mode; except for a small number of common short names, TaxIDs are required for gb mode. 
-
-
-
-To optimized for the monkeyflower *Erythranthe guttata*, you could:
+For cds mode, a condensed local version of the `cocoputs <https://pubmed.ncbi.nlm.nih.gov/31029701>`_ database is used for codon table lookups (but this can be changed using the `--codon_tbl kazusa` flag). Gb mode uses Kazusa codon tables. Based on our lab's most common use cases, **cds mode defaults to an arabidopsis codon table, and gb mode defaults to an *E.coli* codon table**. To change this, use the `--species flag`. To optimize for the monkeyflower *Erythranthe guttata*, these all work:
 
 .. code:: bash
 
@@ -189,14 +185,6 @@ To optimized for the monkeyflower *Erythranthe guttata*, you could:
     ./iggypop.py cds  --i in/test.fasta --species e_guttata
     ./iggypop.py cds  --i in/test.fasta --species Erythranthe guttata   
     ./iggypop.py cds  --i in/test.fasta --species 4155
-    
-    # taxid required for gb files   
-    ./iggypop.py format  --i in/test_unformatted.gb --species 4155  
-
-    # these short names work to format gb files: arabidopsis, e_coli, s_cerevisiae, b_subtilis, c_elegans, d_melanogaster, m_musculus, h_sapiens
-
-
-
 
 
 Reports & quiet
