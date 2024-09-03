@@ -143,8 +143,7 @@ For target sequences longer than 3 Kb (~16-18 fragments encoded in 250 bp oligos
 Versioning
 ---------------------
 
-Given the low cost of oligos per gene, you may want to test different versions of the same coding sequence (there is substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions. This example generates five versions of the `input <in/test.gb>`_. 
-
+You may want to test different versions of the same coding sequence, as there can be substantial variation in expression between codon-optimized variants of the same amino acid sequence. The `--repeats` parameter allows you to generate multiple versions.
 
 .. code:: bash
 
@@ -155,7 +154,7 @@ Given the low cost of oligos per gene, you may want to test different versions o
 Deintronization
 -----------------
 
-Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `./iggypop.py cds --deintronize on`, a chiseled CDS is generated, passed to a splicing model from the `Spliceator <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_ project. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The cleaned sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
+Sequences ported from other organisms or newly designed sequences sometimes contain cryptic introns that reduce or kill expression in a eukaryotic host. With `./iggypop.py cds --deintronize on`, a chiseled CDS is generated, passed to a splicing model from the `Spliceator <https://link.springer.com/article/10.1007/s00438-016-1258-6>`_ project. Potential intron donor and acceptor sites are identified, if any, and fed back to `dnachisel` and eliminated using `@AvoidPattern`. The chiseled sequence is reanalyzed and continues up to 5 times or until a deintronized CDS is identified.
 
 .. code:: bash
 
@@ -197,13 +196,15 @@ You can generate a dnachisel report with `--reports`; if you want iggypop to pri
 Vectors
 =======
 
-We've developed a series of pPOP vectors for the one-step and two-step cloning modes; they are derivatives of pUPD2 and pCAMBIA. Sequences can be found `here <#vectors>`_.
+We've developed a series of pPOP vectors for the one-step and two-step cloning modes; they are derivatives of pUPD2 and pCAMBIA. Sequences can be found `here <vectors/>`_.
 
 
 Barcode primers
 ----------------
 
-Our barcode primers were designed to have balanced Tms, lack commonly used restriction sites, not dimerize, and be as small as possible (to maximize the sequence per oligo dedicated to the target, i.e., to maximize the `--segment_length` parameter). In addition, we wanted to minimize potential cross-hybridization of the primers to prevent mis-amplification and off-target hybridization in complex oligonucleotide pools. We also sought to reduce cross-hybridization/amplification of contaminant DNAs (*E. coli*, T7, T4, others). To accomplish this, a large set of 18 bp primers was generated with `primer3`; these were then scored for potential cross-hybridization/amplification and amplification of contaminant DNAs using `MFEprimer3 <https://academic.oup.com/nar/article/47/W1/W610/5486745>`_. The top primers with the lowest cross-hybridization/amplification scores were retained for the final `set <data/10K_primers_renamed.csv>`_. We've tested many of these pairs in oligo pools, and only ~1% failed, so it is pretty reliable; 350 pairs are currently validated. We've purged the pairs we know are defective and will update the primer file as we get more validation. You probably don't need to start from scratch, but if you do, here's the pipeline...
+Our barcode primers were designed to have balanced Tms, lack commonly used restriction sites, not dimerize, and be as small as possible (to maximize the sequence per oligo dedicated to the target). In addition, we wanted to minimize off-target hybridization between barcodes and eliminate amplification of common contaminating DNAs (*E. coli*, T7, T4, others). To accomplish this, a large set of 18 bp primers was generated with `primer3`; `MFEprimer3 <https://academic.oup.com/nar/article/47/W1/W610/5486745>`_ was then used to minimize barcodes that cross-hybridized with one another or  were predicted to produce amplicons from contaminant DNA. 350 pairs of primers designed with this pipeline have been experimentally validated; 4 of 350 designs failed. We've purged the pairs we know are defective and will update the primer file as we get more validation. 
+
+You probably don't need to start from scratch, but if you do, here's the pipeline:
 
 .. code:: bash
 
@@ -216,14 +217,14 @@ Our barcode primers were designed to have balanced Tms, lack commonly used restr
 Overhangs
 -------------
 
-We use the `goldenhinges` packages to select overhangs for reassembling chiseled sequences. Given a sequence and fragment sizes, `golden hinges` searches for overhang solutions within a given distance from ideal target cut sites. `golden hinges` can limit the overhangs allowable to a user-specified list. So, if you provide `goldenhinges` with a pre-computed list of 20 overhangs with an overall assembly fidelity of 98%, any subset selected from that list will possess at least 98% fidelity (usually much higher for small subsets). To create an efficient pipeline for selecting high-fidelity overhangs, we pre-computed a large number of high-fidelity overhang sets using `iggypop.py gagga`; these are passed as constraints to `goldenhinges`. `iggypop` searches through these to identify `n_tries` solutions, and returns the highest fidelity set obtained. The data below show the fidelities obtained for a run of 4,500 plant transcription factors using AATG/GCTT cloning overhang recombination with our overhang sets; in this run, the mean fragment number is 7 (~1.2 kB), and the mean assembly fidelity is predicted, to be 99.5%.
+We use `goldenhinges` to select fragment junctions and assembly overhangs. Given an input sequence, target fragment length, and list of candidate overhangs, `goldenhinges` searches for solutions within a given radius of the ideal target cut sites. To produce high-fidelity assemblies, we limit `goldenhinges` overhang choices to pre-computed high-fidelity overhang sets; `iggypop` searches through these sets to identify `n_tries` solutions, and returns the highest fidelity set obtained. The data below show the fidelities obtained for a run of 4,500 plant transcription factors using AATG/GCTT cloning overhang recombination with our overhang sets; in this run, the mean fragment number is 7 (~1.2 kB), and the mean assembly fidelity is predicted, to be 99.5%.
 
 .. image:: png/fidelity_plot.png
    :alt: fidelity_plot
 
 .
 
-The overhang sets we use (`hf_oh_sets.xlsx`) were generated using both genetic algorithm and Monte Carlo optimizers. The sets were optimized with `AATG, GCTT` as the `fixed_overhangs` (i.e., external cloning overhangs); AATG and GCTT have near-perfect fidelity and are MoClo-compliant for CDSs, so it's easy to create high-fidelity sets using them. Fidelities are calculated using `Potapov et al. <https://pubs.acs.org/doi/10.1021/acssynbio.8b00333>`_ data for one-hour incubations at 25 ºC using T4 DNA ligase; you can change this with the `potapov_data` setting. You can specify whatever external overhangs you want, but check with NEB's `fidelity calculator <https://ligasefidelity.neb.com/viewset/run.cgi>`_ to ensure they are a high-fidelity pair first. The following command will do a run with a target of a set of 20 overhangs. Due to how GAs work, sets with repeated sequences can arise; the `alpha` and `beta` parameters below control a penalty function that reduces repeated overhangs. For the overhang sets used, we ran a few thousand gaga runs on UCR's high-performance computing cluster and filtered the results to select the highest-scoring sets and maximally diverse subsets.
+The overhang sets we use (`hf_oh_sets.xlsx`) were generated using both genetic algorithm and Monte Carlo optimizers. The sets were optimized with `AATG, GCTT` as the `fixed_overhangs` (i.e., external cloning overhangs); AATG and GCTT have near-perfect fidelity and are MoClo-compliant for CDSs, so it's easy to create high-fidelity sets using them. Fidelities are calculated using `Potapov et al. <https://pubs.acs.org/doi/10.1021/acssynbio.8b00333>`_ data for one-hour incubations at 25 ºC using T4 DNA ligase; you can change this with the `potapov_data` setting. You can specify whatever external overhangs you want but check with NEB's `fidelity calculator <https://ligasefidelity.neb.com/viewset/run.cgi>`_ to ensure they are a high-fidelity pair first. The following command will do a run with a target of a set of 20 overhangs. Due to how GAs work, sets with repeated sequences can arise; the `alpha` and `beta` parameters below control a penalty function that reduces repeated overhangs. For the overhang sets used, we ran a few thousand gaga runs on UCR's high-performance computing cluster and filtered the results to select the highest-scoring sets and maximally diverse subsets.
 
 
 .. code:: bash
