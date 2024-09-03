@@ -70,7 +70,8 @@ Sequence optimization parameters are set in YAML files using `dnachisel` `specif
             strand: both    
           - type: AvoidChanges          # Prevent changes in the first 200 base pairs
             location: [1, 200]
-          - type: EnforceTranslation        # Force changes to be synonymous
+          - type: EnforceTranslation    # Force changes to be synonymous
+
 
 You can also change settings on the command line, which overrides the parameters in the YAML file.
 
