@@ -64,6 +64,7 @@ CDS mode is used to design oligos for reassembling coding sequences. It requires
 Sequence optimization parameters are set in YAML files using `dnachisel` `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_. The following YAML snippet sets dnachisel constraints to exclude BsaI sites, prevent changes to the first 200 base pairs of the sequence, and enforce synonymous changes:
 
 .. code:: yaml
+
     constraints
           - type: AvoidPattern          # Pattern/RE site to avoid
             pattern: BsaI_site
@@ -76,6 +77,7 @@ Sequence optimization parameters are set in YAML files using `dnachisel` `specif
 You can also change settings on the command line, which overrides the parameters in the YAML file.
 
 .. code:: bash
+
     ./iggypop.py cds  --i in/cds_test.fasta  --species s_cerevisiae    \    # use S. cerevisiae codon table
                       --base_3p_end AGAGACG  --base_5p_end CGTCTCA     \    # use BsaI ends instead of default BsmBI
                       --codon_opt use_best_codon  --oligo_length 300        # ubc w/ 300 bp oligos
