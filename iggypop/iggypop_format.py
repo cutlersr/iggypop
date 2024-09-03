@@ -145,11 +145,11 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
         record.features = unique_features  # Assign unique features back to the record
 
         # Marker for global constraints and optimizations
-        global_marker = SeqFeature(
-            FeatureLocation(0, len(record)),
-            type="misc_feature",
-            qualifiers={"note": "__Global constraints & optimizations start here__"})
-        record.features.append(global_marker)
+#        global_marker = SeqFeature(
+#            FeatureLocation(0, len(record)),
+#            type="misc_feature",
+#            qualifiers={"note": "__Global constraints & optimizations start here__"})
+#        record.features.append(global_marker)
 
         # Append additional global features that are not tied directly to existing features
         for constraint in yaml_data.get("constraints", []):
@@ -224,7 +224,6 @@ if __name__ == "__main__":
     result = lookup_taxid(species, codon_data)
 
     if result[0] is None:
-        # Print the error or warning message and exit the script if no or multiple matches are found
         print(result[1])
         sys.exit()
 
@@ -234,7 +233,7 @@ if __name__ == "__main__":
 
     # Check for specific codon table conditions
     if codon_tbl == "cocoputs": 
-        print("Note: you can't use cocoputs data in gb mode; Kazusa tables will be used.")
+        print("Note: you can't use cocoputs data in gb mode; rerun with `--codon_tbl kazusa`.")
         sys.exit()
 
     # Proceed with annotation process if everything is valid
