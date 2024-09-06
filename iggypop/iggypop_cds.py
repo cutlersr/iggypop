@@ -353,8 +353,7 @@ if __name__ == "__main__":
                                 )
 
                             results_path = (
-                                f'out/{tag}/{current_seq_id}_chisel_'
-                                f'{last_try + 1}'
+                                f'out/{tag}/reports/{current_seq_id}_chisel'
                             )
 
                             chiseled_sequence = chisel(
@@ -716,7 +715,6 @@ if __name__ == "__main__":
             with open(f'out/{tag}/cai_max_dif_set.fasta', 'w') as fasta_out, \
                     open(f'out/{tag}/cai_max_diff_table.txt', 'w') as table_out:
                 for record in SeqIO.parse(f'out/{tag}/max_diff_subsets.fasta', 'fasta'):
-                    codon_table = get_codons_table(species)
                     cai = calculate_cai(str(record.seq), codon_table)
                     record.description += f" CAI:{cai:.3f}"
                     SeqIO.write(record, fasta_out, 'fasta')

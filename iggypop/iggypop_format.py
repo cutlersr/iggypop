@@ -176,38 +176,6 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
 
     return records
 
-
-def lookup_taxid(input_value, data):
-    if not isinstance(data, pd.DataFrame):
-        raise ValueError("Data should be a pandas DataFrame.")
-
-    bypass_list = {'e coli', 's cerevisiae', 'b subtilis', 'c elegans', 'd melanogaster', 'm musculus', 'h sapiens'}
-    normalized_input = input_value.replace('_', ' ').lower()
-    
-    if normalized_input in bypass_list:
-        return input_value, f"No Taxid lookup for {input_value}."
-
-    if isinstance(input_value, int) or input_value.isdigit():  # Ensure numeric input is handled correctly
-        input_value = int(input_value)  # Convert to integer if it's a digit string
-        matches = data[data['Taxid'] == input_value]
-    elif "_" in input_value:
-        matches = data[data['short_name'] == input_value]
-    else:
-        matches = data[data['Species'].str.lower() == input_value.lower()]
-
-    if len(matches) == 0:
-        return None, "No matches found. Please verify your input."
-    elif len(matches) > 1 and "_" in input_value:
-        species_list = matches['Species'].tolist()
-        taxid_list = matches['Taxid'].tolist()
-        return None, f"Multiple matches found: {list(zip(species_list, taxid_list))}. Please specify a unique species name or Taxid."
-    
-    taxid = matches['Taxid'].iloc[0]
-    species = matches['Species'].iloc[0]
-    short_name = matches['short_name'].iloc[0]
-    comment = f"Taxid {taxid}: {species} ({short_name})"
-    return taxid, comment
-
 if __name__ == "__main__":
     tag, ofile, log_file_path, updated_defaults = initialize("format")
     globals().update(vars(updated_defaults))
