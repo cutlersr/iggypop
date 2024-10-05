@@ -36,8 +36,8 @@ optimizations:
   - type: EnforceGCContent              # enforce GC content 
     mini: 0.52                          # within these bounds  
     maxi: 0.65
-    window: 60
-    boost: 2
+    window: 6
+    boost: 4
 
 
 

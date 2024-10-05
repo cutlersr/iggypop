@@ -37,7 +37,7 @@ optimizations:
     mini: 0.50                          # within these bounds  
     maxi: 0.65
     window: 60
-    boost: 2
+    boost: 4
 
 
 codon_opt: 'match_codon_usage'          # others options: use_best_codon, harmonize_rca, hybrid, none

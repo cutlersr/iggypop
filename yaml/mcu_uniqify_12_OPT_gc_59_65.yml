@@ -40,6 +40,7 @@ optimizations:
     boost: 4
 
 
+
 codon_opt: 'match_codon_usage'                       # others options: use_best_codon, harmonize_rca, hybrid, none
 
 pct: 20                                 # target divergence from sequence in **hybrid mode only**
@@ -67,8 +68,8 @@ pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
 
 ########################### TWO-STEP PARAMETERS #################################
 
-two_step: "on"                              
-two_step_length: 2000                    # first step fragment max length
+two_step: "on"                               
+two_step_length: 1700                    # first step fragment max length
 
 two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"

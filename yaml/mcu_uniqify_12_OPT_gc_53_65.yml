@@ -1,8 +1,25 @@
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
 mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
-                                       # 'no_hinge' to only returning chiseled sequences
+
 constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BbsI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
+
   - type: EnforceTranslation            # force changes to be synonymous
 
 
@@ -17,9 +34,11 @@ optimizations:
     k: 12
 
   - type: EnforceGCContent              # enforce GC content 
-    mini: 0.45                           # within these bounds  
+    mini: 0.53                          # within these bounds  
     maxi: 0.65
     window: 60
+    boost: 4
+
 
 
 codon_opt: 'match_codon_usage'                       # others options: use_best_codon, harmonize_rca, hybrid, none
@@ -49,8 +68,8 @@ pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
 
 ########################### TWO-STEP PARAMETERS #################################
 
-two_step: "off"                              
-two_step_length: 1104                    # first step fragment max length
+two_step: "on"                               
+two_step_length: 1700                    # first step fragment max length
 
 two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"
