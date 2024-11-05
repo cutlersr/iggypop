@@ -1,3 +1,22 @@
+"""
+This contains the main sequence optimization and fragmentation functions: 
+
+    dnachisel domestication and optimization
+    overhang selection 
+    fidelity scoring.
+
+Functions:
+- `chisel`: Executes DNA optimization based on constraints and optimizations loaded from a YAML file.
+- `find_cut_solution`: Identifies optimal cut sites for the sequence using high-fidelity overhang sets and 
+  fidelity scores, ensuring assembly efficiency and fidelity.
+- `get_overhang_sets`: Loads and filters high-fidelity overhang sets from the `hingesets` file
+- `extract_four_mers_around_cuts`: Extracts four-base overhangs around cut points, considering a defined 
+  radius around each cut site.
+- `check_membership`: Checks if possible overhangs extracted from around the cut sire for cloning are 
+   included in the high-fidelity overhang set being tested from the `hingesets` file.
+- `compute_target_scores`: Computes on-target and off-target fidelity scores based on Potapov data
+"""
+
 import os
 import sys
 import re
@@ -41,6 +60,8 @@ from dnachisel import (
 )
 from python_codon_tables import get_codons_table
 from Bio.Align import PairwiseAligner
+
+
 
 # Ignore warnings
 warnings.simplefilter(action='ignore', category=Warning)

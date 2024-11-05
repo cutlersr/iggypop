@@ -1,3 +1,32 @@
+"""
+This script handles initialization and configuration for the sequence optimization pipeline, 
+
+`initialize`: Manages the setup process by parsing command-line arguments, loading default 
+values based on the run type (CDS or GenBank mode), and creating output directories 
+with unique tags to avoid overwriting existing data.
+
+`parse_arguments`: Defines and parses command-line arguments for the sequence optimization 
+pipeline, allowing for customization of input/output paths, codon optimization preferences, 
+assembly options, and miscellaneous settings.
+
+`set_defaults`: Sets default values for various parameters based on the run type, providing 
+baseline settings for codon optimization, overhang sequences, assembly options, and other 
+pipeline configurations.
+
+`load_config_and_set_globals`: Loads YAML configuration, merges it with default settings, 
+and applies any command-line overrides, providing a final set of parameters for the run.
+
+`copy_analysis_assets`: Copies the specified input FASTA and YAML files, along with analysis 
+scripts, to the output directory to ensure all resources are available for downstream analysis.
+
+Additional Functions:
+- `call_tweaker_2`: Executes an external script to generate variations in chiseled sequences.
+- `read_log_and_identify_failures`: Reads the log file to identify any sequences that 
+  failed during processing.
+- `check_ext_overhangs`: Verifies whether external overhangs meet fidelity requirements, 
+  warning the user if low-fidelity overhangs are requested.
+"""
+
 import os
 import argparse
 import yaml
@@ -7,15 +36,15 @@ def initialize(run_type="cds"):
     
     # Parse arguments based on the run_type and set defaults
     if run_type == "cds":
-        args = parse_arguments(run_type, default_yml='yaml/moclo_cds_mcu.yml')
+        args = parse_arguments(run_type, default_yml='yaml/domesticate_cds.yml')
     elif run_type == "gb" or run_type == "format":
-        args = parse_arguments(run_type, default_yml='yaml/gb_mcu.yml')
+        args = parse_arguments(run_type, default_yml='yaml/domesticate_gb.yml')
     else:
         print("Please use a valid run type (gb or cds)")
         sys.exit(1)
 
     # Load default values
-    default_values = set_defaults()
+    default_values = set_defaults(run_type)
 
     # Load YAML configuration and apply command-line arguments
     updated_args, tag = load_config_and_set_globals(args, default_values)
@@ -34,10 +63,9 @@ def initialize(run_type="cds"):
         counter += 1
     tag = new_tag
 
-    new_dir = os.path.join(base_dir, tag)
-    os.makedirs(new_dir)
-    ofile = os.path.join(new_dir, tag)
-    log_file_path = os.path.join(new_dir, f"log.txt")
+    if updated_args.taxIDs:
+        print_taxIDs()
+        sys.exit(0)
 
     # Copy input files and analysis scripts to the results folder
     fasta_file_path = f'{updated_args.i}'
@@ -47,17 +75,19 @@ def initialize(run_type="cds"):
         "iggypop/pop_helpers.py", "iggypop/intron_stuff.py"
     ]
 
-    if updated_args.taxIDs:
-        print_taxIDs()
-        sys.exit(0)
+    new_dir = os.path.join(base_dir, tag)
+    ofile = os.path.join(new_dir, tag)
+    log_file_path = os.path.join(new_dir, f"log.txt")
 
-    copy_analysis_assets(fasta_file_path, yml_file_path, tag, script_paths)
+    if run_type != "format":
+        os.makedirs(new_dir)
+        copy_analysis_assets(fasta_file_path, yml_file_path, tag, script_paths)
 
     return tag, ofile, log_file_path, updated_args
 
 
 
-def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
+def parse_arguments(run_type="cds", default_yml='yaml/domesticate_cds.yml'):
 
     parser = argparse.ArgumentParser(
         description=(
@@ -87,7 +117,7 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
         '--yml', default=default_yml, type=str, metavar='',
         help=' (str) YAML file that defines the run paramaters\n'
              ' Parameters set on the command line override those in\n'
-             ' the yaml file. Default is yaml/default.yml.\n'
+             ' the yaml file. Default is yaml/domesticate_cds.yml.\n'
              ' See the yaml/ folder for many common workflows.\n'
     )
 
@@ -113,8 +143,8 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
 
         codon_group.add_argument(
             '--codon_opt', type=str, choices=[
-                ' use_best_codon', 'match_codon_usage', 'harmonize_rca', 'hybrid', 
-                ' one'
+                'use_best_codon', 'match_codon_usage', 'harmonize_rca', 'hybrid', 
+                'none'
             ], metavar='',
             help='(str) Codon optimization method:\n'
                  '  use_best_codon - Use the best codon for\n'
@@ -172,6 +202,13 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
                  ' enable deinitronization mode; experimental fature\n'
         )
 
+        codon_group.add_argument(
+            '--require_orf', type=str, choices=[
+                'on', 'off'
+            ], metavar='',
+            help='(str) ignore the requirements of an orf\n'
+        )
+
     # Codon optimization arguments
     tweak_group = parser.add_argument_group('Repeated Design Options')
 
@@ -201,12 +238,13 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
     assembly_group = parser.add_argument_group('Assembly Options')
 
     assembly_group.add_argument(
-        '--two_step', type=str, choices=[
-                'on', 'off'
-            ], metavar='',
-            help='(str) On enables two-step assemblies; if you\n'
-             ' use this mode, use the two_step.yml file\n'
-             ' and pay close attention to ends & enzymes.\n'
+        '--two_step', type=str, metavar='',
+            help='(str) "on" to activate (default is off).\n'
+    )
+
+    assembly_group.add_argument(
+        '--two_step_length', type=int, metavar='',
+            help='(int) maximum length for two-step fragments.\n'
     )
 
     assembly_group.add_argument(
@@ -339,43 +377,49 @@ def parse_arguments(run_type="cds", default_yml='yaml/moclo_cds.yml'):
     return parser.parse_args()
 
 
-def set_defaults():
+def set_defaults(run_type):
     default_values = {
         'base_5p_end': 'AATGCGGTCTCTA',
         'base_3p_end': 'GCTTAGAGACCGCTT',
         'ext_overhangs': ['AATG', 'GCTT'],
         'allowed_chars': "ATGC",
         'two_step': "off",
-        'two_step_length': 1104,
-        'two_step_5p_end': 'AATGGGTCTCA',
-        'two_step_3p_end': 'TGAGACCGCTT',
+        'two_step_length': 1500,
+        'two_step_5p_end': 'AATGCGTCTCA',
+        'two_step_3p_end': 'AGAGACGGCTT',
+        'pcr_5p_cut': "CGTCTCA",    
+        'pcr_3p_cut': "AGAGACG",  
         'primer_length': 18,
         'oligo_length': 250,
+        'require_orf': 'on',         
         'fidelity_data': 'data/FileS03_T4_18h_25C.xlsx',
-        'ohsets': 'data/hf_oh_sets.xlsx',
+        'ohsets': 'data/hingesets.xlsx',
         'mode': 'chisel',
         'species': 'arabidopsis',
         'primer_index': 1,
         'codon_tbl': "cocoputs",
-        'original_species': False,
+        'original_species': 'none',
         'n_tries': 10,
-        'max_fragments': 18,
+        'max_fragments': 50,
         'radius': 8,
-        'index_primers': 'data/10K_primers_renamed.csv',
-        'pcr_5p_cut': "CGTCTCA",
-        'pcr_3p_cut': "AGAGACG",
+        'index_primers': 'data/indexsets.csv',
         'tweak_n': "False",
         'tweak_cai': 0.8,
         'deintronize': 'off',
-        'original_species': 'none',
         'taxIDs': False,
         'seed': False,
         'pct': 20,
         'repeats': 1,
-        'codon_opt': 'match_codon_usage',
-        'quiet': 'off'
+        'codon_opt': 'none',
+        'quiet': 'off',
     }
+
+    if run_type == "gb":
+        default_values['species'] = 'e_coli'
+        default_values['codon_tbl'] = 'kazusa'
+
     return default_values
+
 
 
 def load_config_and_set_globals(args, default_values):
@@ -530,7 +574,7 @@ def check_ext_overhangs(overhangs):
             print(f'')             
             print(f'The external overhangs you would like to use – {overhangs} – have low ligation fidelity.') 
             print(f'')             
-            print(f"The following cloning overhangs wont't work with the default data/hf_oh_sets.xlsx sets:")
+            print(f"The following cloning overhangs wont't work with the default data/hingesets.xlsx sets:")
             print(f"'GGAC', 'CGCG', 'GGCC', 'GCCA', 'CCGC', 'GGCG', 'GTCG', 'TCGC', 'GGGT', 'GGGG', 'TGCG'")
             print(f"'TAAA', 'GCAT', 'GGCT', 'TTTA', 'GCGG', 'TATA', 'GGAT', 'CCCC', 'GGGC', 'GCGT', 'TTAA'")
             print(f"'GGAG', 'GGTG'")

@@ -9,9 +9,10 @@ from datetime import datetime
 """
  This script analyzes a set of candidate barcodes to identify maximally 
  different subsets. It does this by computing pairwise edit distances for 
- all candidates, then selecting maximally distant subsets. It pre-filters 
- sequences with homonucleotide repeats. The script can also save and load 
- distance matrices for efficient reuse if needed.
+ all candidates, then selecting maximally distant subsets using farthest 
+ point sampling. It pre-filters sequences with homonucleotide repeats. 
+ The script can also save and load distance matrices for efficient reuse 
+ if needed.
 
  The input CSV file needs either or both of the following columns:
  - 'F_seq': Forward sequences of the barcodes.
@@ -21,7 +22,7 @@ from datetime import datetime
  sequences.
 
  We used this script to select our barcodes for nanopore amplicon sequencing,
- identifying a subset of 18 18-mers with an average edit distance of ~10
+ identifying a subset of 18-mers with an average edit distance of ~10
  and minimum of 8.
 """
 

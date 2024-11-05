@@ -251,7 +251,7 @@ primers_out <- out %>%
 chisels_out <- out %>% 
   group_by(base_id) %>% 
   slice_head(n = 1) %>%
-  transmute(chisels = str_c(">", base_id, "_", primer_index, "\n", 
+  transmute(chisels = str_c(">", base_id, " ", primer_index, "\n", 
                             chiseled_seq, "\n")) %>% 
   ungroup() %>%
   select(chisels) 
@@ -346,9 +346,9 @@ if (opt$run_type == "cds") {
 
 # Construct the file paths
 oligos_file_path <- file.path(
-  paste0(opt$output_file, "_oligo_pool_to_order.fasta"))
+  paste0(opt$output_file, "_oligo_pool.fasta"))
 primers_file_path <- file.path(
-  paste0(opt$output_file, "_pcr_primers_required.fasta"))
+  paste0(opt$output_file, "_index_primers_required.fasta"))
 seqs_file_path <- file.path(
   paste0(opt$output_file, "_designed_seqs.fasta"))
 nano_file_path <- file.path(
@@ -382,8 +382,7 @@ cat(str_c("The barcodes used start at index ", opt$primer_index,
           " to add new barcodes in your next run.\n\n"))
 
 cat(str_c(n_distinct(modified_fragments_df$base_id), 
-          " sequence(s) poppified into ", i, 
-          " PCR fragment pools.\n\nResults saved to:\n\n ", 
+          " sequence(s) poppified.\n\nResults saved to:\n\n ", 
           paste0(opt$output_file, "_all_data.xlsx\n "), 
-          paste0(opt$output_file, "_oligo_pool_to_order.fasta\n "), 
-          paste0(opt$output_file, "_pcr_primers_required.fasta\n "))) 
+          paste0(opt$output_file, "_oligo_pool.fasta\n "), 
+          paste0(opt$output_file, "_index_primers_required.fasta\n "))) 

@@ -13,11 +13,21 @@ constraints:
   - type: AvoidPattern
     pattern: BbsI_site
     strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
 
   - type: EnforceTranslation            # force changes to be synonymous
 
+codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
 
-codon_opt: 'use_best_codon'          # use_best_codon, harmonize_rca, hybrid, none
+optimizations:
+  - type: UniquifyAllKmers              # optimize to minimize 10 bp repeats
+    include_reverse_complement: True
+    k: 12
  
 species: arabidopsis                    # taxids work as do species names
 

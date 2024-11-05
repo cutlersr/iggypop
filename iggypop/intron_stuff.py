@@ -13,7 +13,7 @@ import logging
 import absl.logging
 from contextlib import redirect_stdout, redirect_stderr
 
-# Function to process datasets
+# Process datasets
 def intron_seqs_to_avoid(data_set):
     intron_seqs = []
     intron_locs_left = []

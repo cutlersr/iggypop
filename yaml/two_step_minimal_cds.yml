@@ -22,6 +22,11 @@ constraints:
 
   - type: EnforceTranslation            # force changes to be synonymous
 
+optimizations:
+  - type: UniquifyAllKmers              # optimize to minimze 12 bp repeats
+    include_reverse_complement: True
+    k: 12
+
 codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
  
 species: arabidopsis                    # taxids work as do species names

@@ -1,3 +1,19 @@
+"""
+This script annotates GenBank files based on a default or user-provided YAML configuration, 
+adding protection labels for regulatory features and applying custom constraints or optimizations.
+
+`create_feature_label` generates feature labels for annotations based on required dnachisel prefixes 
+('@' for constraints or '~' for optimizations).
+
+`annotate_from_yaml` is responsible for reading the YAML and applying constraints and
+optimizations. @AvoidChanges tags are added to regulatory features; coding sequences and ORFS
+are annotated with @EnforceTranslation and any codon optimization methods if requested.
+
+`annotate_genbank` manages the GenBank and YAML file loading, applies annotations,and writes updated 
+records.
+
+"""
+
 import argparse
 import yaml
 from Bio import SeqIO
@@ -6,23 +22,37 @@ import warnings
 from initialization import *
 from pop_helpers import *
 
+def create_feature_label(prefix, data):
+    try:
+        label = f"{prefix}{data['type']}"
+        additional_info = [
+            f"{key}={value}" for key, value in data.items() if key != 'type'
+        ]
+        if additional_info:
+            label += f"({', '.join(additional_info)})"
+        return label
+    except KeyError as e:
+        print(f"Missing key in data: {e}")
+        print("Please ensure the YAML data contains the correct keys.")
+        return f"{prefix}unknown"
+
 def annotate_genbank(comment):
     try:
         # Load the GenBank file
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            records = list(SeqIO.parse(i, "genbank"))  # 'i' needs definition where it's used or passed
+            records = list(SeqIO.parse(i, "genbank")) 
             for warning in w:
                 custom_warning_handler(warning.message, warning.category, warning.filename, warning.lineno)
         if not records:
             raise ValueError("No records found in the GenBank file.")
 
         # Load the YAML file
-        with open(yml, 'r') as yf:  # 'yaml' here is ambiguous as it is also the name of the imported module
+        with open(yml, 'r') as yf:  
             yaml_data = yaml.safe_load(yf)
 
         # Annotate records using the parsed YAML data
-        annotated_records = annotate_from_yaml(yaml_data, species, codon_opt, records, pct)  # 'pct' also needs definition
+        annotated_records = annotate_from_yaml(yaml_data, species, codon_opt, records, pct)  
 
         # Write the modified records back to the output file
         with open(o, "w") as output_handle:
@@ -48,6 +78,8 @@ def annotate_genbank(comment):
         print("Please check the inputs and try again.")
 
 def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
+
+# update this for other feature types you want to protect
     regulatory_features = [
         "promoter", "terminator", "RBS", "regulatory",
         "rep_origin", "protein_bind", "tRNA", "oriT",
@@ -64,7 +96,7 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
         for feature in original_features:
             record.features.append(feature)  # Re-add original feature
 
-            # Handling for various feature types with their corresponding misc_features
+            # Add @AvoidChanges and other misc annotations based on gb record's base annotations
             if feature.type in regulatory_features:
                 avoid_changes_feature = SeqFeature(
                     feature.location,
@@ -125,7 +157,7 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                 comment_feature = SeqFeature(
                     feature.location,
                     type="misc_feature",
-                    qualifiers={"note": comment}  # Using 'note' as the key for the comment
+                    qualifiers={"note": comment}
                 )
                 record.features.append(comment_feature)
 
@@ -172,7 +204,7 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
             )
             new_features.append(optimization_feature)
 
-        record.features.extend(new_features)  # Finally, extend the features list with the new features
+        record.features.extend(new_features) 
 
     return records
 
@@ -180,30 +212,30 @@ if __name__ == "__main__":
     tag, ofile, log_file_path, updated_defaults = initialize("format")
     globals().update(vars(updated_defaults))
 
-    codon_data_path = "data/cleaned_coco.tsv"
-    codon_data = pd.read_csv(codon_data_path, sep='\t')
+    codon_tbl = "kazusa"
 
-    # Handling specific species mapping
-    if species.lower() in ["arabidopsis", "a_thaliana"]:
-        species = '3702'
-        print("Using TaxID 3702 for Arabidopsis thaliana")
+    if codon_opt != "none":
+        codon_data_path = "data/cleaned_coco.tsv"
+        codon_data = pd.read_csv(codon_data_path, sep='\t')
 
-    # Lookup species TaxID or handle predefined species
-    result = lookup_taxid(species, codon_data)
+        # Handling specific species mapping
+        if species.lower() in ["arabidopsis", "a_thaliana"]:
+            species = '3702'
+            print("Using TaxID 3702 for Arabidopsis thaliana")
 
-    if result[0] is None:
-        print(result[1])
-        sys.exit()
+        # Lookup species TaxID or handle predefined species
+        result = lookup_taxid(species, codon_data, "gb")
 
-    # Extract taxid and comment if a valid match was found
-    species, comment = result
-    print(comment)
+        if result[0] is None:
+            print(result[1])
+            sys.exit()
 
-    # Check for specific codon table conditions
-    if codon_tbl == "cocoputs": 
-        print("Note: you can't use cocoputs data in gb mode; rerun with `--codon_tbl kazusa`.")
-        sys.exit()
+        # Extract taxid and comment if a valid match was found
+        species, comment = result
+        print(comment)
 
-    # Proceed with annotation process if everything is valid
+    else:
+        comment = species
+
     annotate_genbank(comment)
 

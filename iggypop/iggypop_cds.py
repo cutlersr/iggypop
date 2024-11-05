@@ -324,7 +324,7 @@ if __name__ == "__main__":
                     if not check_orf(
                         original_sequence, seq_id, allowed_chars,
                         segment_length, log_file
-                    ):
+                    ) and require_orf != "off":
                         break
 
                     if codon_opt == 'harmonize_rca' and original_species == 'none':
@@ -448,11 +448,11 @@ if __name__ == "__main__":
                                         last_try += 1
                                         continue
 
-                            else:
-                                # Add 5' and 3' ends to the chiseled sequence
-                                chiseled_sequence = (
-                                    base_5p_end + original_sequence + base_3p_end
-                                )
+#                            else:
+#                                # Add 5' and 3' ends to the chiseled sequence
+#                                chiseled_sequence = (
+#                                    base_5p_end + original_sequence + base_3p_end
+#                                )
 
                         except Exception as e:
                             log_and_print(

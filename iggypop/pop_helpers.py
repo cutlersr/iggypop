@@ -186,7 +186,6 @@ def check_orf(
         )
         if log_file:
             print("\n\n..........................................................\n")
-            print(log_message)
             log_file.write(log_message)
         return False
     
@@ -846,13 +845,16 @@ def calculate_segment_length(pcr_5p_cut, primer_length, oligo_length):
     segment_length = oligo_length - (2 * len(pcr_5p_cut) + 2 * primer_length)
     return segment_length
 
-def lookup_taxid(input_value, data):
+def lookup_taxid(input_value, data, mode="cds"):
     if not isinstance(data, pd.DataFrame):
         raise ValueError("Data should be a pandas DataFrame.")
 
     bypass_list = {'e coli', 's cerevisiae', 'b subtilis', 'c elegans', 'd melanogaster', 'm musculus', 'h sapiens'}
     normalized_input = input_value.replace('_', ' ').lower()
     
+    if normalized_input in bypass_list and mode == "gb":
+        return input_value, input_value
+
     if normalized_input in bypass_list:
         return input_value, f"No Taxid lookup for {input_value}."
 
@@ -876,3 +878,19 @@ def lookup_taxid(input_value, data):
     short_name = matches['short_name'].iloc[0]
     comment = f"Taxid {taxid}: {species} ({short_name})"
     return taxid, comment
+
+def adjust_feature_locations(features, offset):
+    adjusted_features = []
+    for feature in features:
+        if feature.location is not None:
+            start = feature.location.start + offset
+            end = feature.location.end + offset
+            new_location = FeatureLocation(
+                start, end, strand=feature.location.strand
+            )
+            new_feature = SeqFeature(
+                location=new_location, type=feature.type,
+                qualifiers=feature.qualifiers
+            )
+            adjusted_features.append(new_feature)
+    return adjusted_features

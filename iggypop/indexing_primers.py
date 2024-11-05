@@ -1,20 +1,3 @@
-import os
-import tempfile
-import random
-import re
-from multiprocessing import Pool, cpu_count
-import multiprocessing
-import pandas as pd
-import argparse
-import primer3
-import glob
-from pathlib import Path
-import subprocess
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from Bio.Seq import Seq
-from concurrent.futures import ProcessPoolExecutor
-import datetime
-
 """
 This script is used to design primer pairs that act as indexing barcodes 
 to allow amplification of specific targets from oligo pools. It generates 
@@ -59,6 +42,24 @@ Outputs to `out/primers` directory.
 MFEprimer executable needs to be in the data directory; a linux version 
 is included in the repo.
 """
+
+import os
+import tempfile
+import random
+import re
+from multiprocessing import Pool, cpu_count
+import multiprocessing
+import pandas as pd
+import argparse
+import primer3
+import glob
+from pathlib import Path
+import subprocess
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from Bio.Seq import Seq
+from concurrent.futures import ProcessPoolExecutor
+import datetime
+
 
 # Sequences to exclude from primers:
 # BsaI, BbsI, BfuAO,BsmBI, BspMI, Esp3I, PaqCI, SapI, EcoRI, HindIII
@@ -418,7 +419,7 @@ def mfeprimer(seq_num, all_primers, mfeprimer_path, temp_file_suffix):
 
 def run_mfeprimer_multicore(all_primers,
                             mfeprimer_path='./data/mfeprimer-3.3.1-linux-386',
-                            num_cores=10):
+                            num_cores=11):
     analysis_results = []
 
     with ProcessPoolExecutor(max_workers=num_cores) as executor:
@@ -494,8 +495,9 @@ def rescore_existing_file(file_path, mfeprimer_path, num_cores):
     primers_df = pd.read_csv(file_path)
 
     required_columns = [
-        'name', 'F_seq', 'R_seq', 'R_seq_rc', 'F_Tm', 'R_Tm', 'Tm_avg',
-        'F_Dg', 'R_Dg', 'Dg_avg', 'pcr_check', 'relocated from'
+        'name', 'F_seq', 'R_seq', 'R_seq_rc', 'F_Tm', 'R_Tm', 'Tm_avg'
+#        'F_Dg', 'R_Dg', 'Dg_avg' 
+        #'pcr_check', 'relocated from'
     ]
     if not all(col in primers_df.columns for col in required_columns):
         raise ValueError(f"The CSV file must contain the following columns: {required_columns}")
@@ -561,7 +563,7 @@ def rescore_existing_file(file_path, mfeprimer_path, num_cores):
 
     # Calculate the off-target binding score
     try:
-        primers_df['off_target_binding'] = (
+        primers_df['indset_cross_binding'] = (
             primers_df[['F_bind_plus', 'F_bind_minus', 'R_bind_plus', 'R_bind_minus']].sum(axis=1) - 2
         ).fillna(0)
     except KeyError as e:
@@ -587,9 +589,8 @@ def rescore_existing_file(file_path, mfeprimer_path, num_cores):
 
     # Select and reorder the relevant columns for the final output
     output_columns = [
-        'name', 'F_seq', 'R_seq', 'R_seq_rc', 'F_Tm', 'R_Tm', 'Tm_avg',
-        'F_Dg', 'R_Dg', 'Dg_avg', 'hairpins', 'dimers', 'off_target_binding',
-        'pcr_check', 'relocated from', 'contaminant_binding'
+        'name', 'F_seq', 'R_seq', 'R_seq_rc', 'F_Tm', 'R_Tm', 'Tm_avg','off_target_binding','contaminant_binding'
+#        'F_Dg', 'R_Dg', 'Dg_avg', 'hairpins', 'dimers','validated', 'relocated from'
     ]
 
     for col in output_columns:

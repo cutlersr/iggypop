@@ -33,6 +33,10 @@ data/acceptor_200.h5
 data/donor_200.h5
 
 
-# Ignore all files in the logs directory
+# Ignore all files in the out folder
 out/
 
+# Ignore all files in the out folder
+in/
+
+yaml/*
