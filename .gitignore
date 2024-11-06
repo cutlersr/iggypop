@@ -40,3 +40,14 @@ out/
 in/
 
 yaml/*
+!yaml/domesticate_cds_ubc.yml
+!yaml/domesticate_two_step_gb.yml
+!yaml/domesticate_two_step_cds.yml
+!yaml/domesticate_two_step_cds_mcu.yml
+!yaml/domesticate_two_step_gb_mcu.yml
+!yaml/domesticate_two_step_gb_ubc.yml
+!yaml/domesticate_two_step_gb_hybrid.yml
+!yaml/domesticate_two_step_cds_hybrid.yml
+!yaml/domesticate_two_step_cds_ubc.yml
+!yaml/domesticate_cds_hybrid.yml
+!yaml/domesticate_cds_mcu.yml
