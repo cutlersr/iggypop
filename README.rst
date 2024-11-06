@@ -7,6 +7,7 @@ Indexed Golden Gate Assembly of Fragments PCR Amplified from Oligo Pools
 
 **iggypop** is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded oligos that can be reassembled by Golden Gate cloning. The overhangs are selected using pre-computed, high-fidelity hingesets, and the fragmented genes are amplified from oligo pools using experimentally validated indexsets primers. Reactions are assembled and cloned into pPOP vectors and then nanopore sequenced using barcoded amplicons and the `iggyseq` pipeline.
 
+
 Installation
 ------------
 
@@ -30,6 +31,7 @@ Installation
     cd iggypop
     docker build -t iggypop .
     docker run -it -v $(pwd):/app iggypop
+
 
 Fragmenting and Optimizing Coding Sequences
 -------------------------------------------
@@ -60,6 +62,7 @@ The default `iggypop.py cds` settings design ORFs that:
 
 Modify as needed.
 
+
 Genbank File Mode
 -----------------
 
@@ -83,12 +86,14 @@ Review `./iggypop format` output in your viewer, then generate oligos:
 
     ./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP"
 
+
 GoldenBraid / MoClo Compatible CDSs
 -----------------------------------
 
 Default `./iggypop cds` sequences are GoldenBraid/MoClo compatible with 5'-BsaI-AATG and GCTT-BsaI-3'. Adjust `base_5p_end` and `base_3p_end` as needed.
 
 .. image:: png/goldenbraid.png
+
 
 Two-Step Assembly
 -----------------
@@ -103,6 +108,7 @@ Use the provided two_step yaml files:
 
     ./iggypop.py cds --i "in/RUBY.fasta" --o "RUBY_two_step" --yml "yaml/two_step_cds.yml"
 
+
 Changing Cloning Overhangs & Assembly Enzyme
 --------------------------------------------
 
@@ -110,10 +116,11 @@ You can change the external overhangs and enzyme for cloning:
 
 .. code-block:: bash
 
-    ./iggypop.py cds --i "test/RUBY.fasta" \
-        --pcr_5p_cut GGTCTCA  --pcr_3p_cut AGAGACC \ # BsaI
-        --base_5p_end AAAA    --base_3p_end GCCG \ # new cloning ends
+    ./iggypop.py cds --i "test/RUBY.fasta"          \
+        --pcr_5p_cut GGTCTCA  --pcr_3p_cut AGAGACC  \ # BsaI
+        --base_5p_end AAAA    --base_3p_end GCCG    \ # new cloning ends
         --ext_overhangs AAAA GCCG
+
 
 Combining Runs
 --------------
@@ -138,6 +145,7 @@ Use `assemble_fragments.py` to simulate oligo assembly:
 
     python scripts/assemble_fragments.py --i "oligo_order.fasta" --o "assembled_ej_oligos.fasta"
 
+
 Versioning
 ----------
 
@@ -147,35 +155,42 @@ Use the `repeat` option for multiple optimized versions:
 
     ./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs" --codon_opt "match_codon_usage" --repeats 5
 
+
 Chisel Only
 -----------
 
 `--mode no_hinge` outputs only dnachisel'd sequences.
+
 
 Reports
 -------
 
 `--reports` enables dnachisel's report function, adding a sub-folder with changes for each sequence.
 
+
 Quiet Mode
 ----------
 
 `--quiet on` suppresses most terminal output.
+
 
 Reproducibility
 ---------------
 
 Set `--seed 123` to force a specific seed.
 
+
 pPOP-vectors
 ------------
 
 The pPOP vectors support one-step and two-step cloning and plant transformation. Find sequences [here].
 
+
 iggyseq
 -------
 
 `iggyseq` identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. See more details in the documentation.
+
 
 hingesets
 ---------
@@ -183,6 +198,7 @@ hingesets
 `iggypop` uses `goldenhinges` to identify overhang solutions using precomputed `hingesets`.
 
 .. image:: png/fidelity_plot.png
+
 
 custom hingesets
 ----------------
@@ -202,10 +218,12 @@ Process multiple runs with `process_gagga_runs.R`:
 
     Rscript scripts/process_gagga_runs.R --top_percent=2 --n_cliques=30
 
+
 indexsets
 ---------
 
 `indexsets` primers are designed to minimize cross-hybridization and unwanted amplifications.
+
 
 custom indexsets
 ----------------
