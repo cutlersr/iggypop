@@ -1,8 +1,8 @@
-iggyPOP
+iggypop
 ========
 
-### Indexed Golden Gate Assembly of Fragments PCR Amplified from Oligo Pools
-
+Indexed Golden Gate Assembly of Fragments PCR Amplified from Oligo Pools
+-------------------------------------------
 .. image:: png/overview.png
 
 **iggypop** is a pipeline for creating synthetic genes at $3.00 - $7.00 per kB in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into barcoded oligos that can be reassembled by Golden Gate cloning. The overhangs are selected using pre-computed, high-fidelity hingesets, and the fragmented genes are amplified from oligo pools using experimentally validated indexsets primers. Reactions are assembled and cloned into pPOP vectors and then nanopore sequenced using barcoded amplicons and the `iggyseq` pipeline.
