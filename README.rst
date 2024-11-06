@@ -34,20 +34,21 @@ Installation
 Fragmenting and Optimizing Coding Sequences
 -------------------------------------------
 
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled. Sequence domestication and optimization is conducted using `dnachisel`; optimization parameters can be set in a yaml file using dnachisel's built-in `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_; several yaml files used in our common workflows are in the `/yaml` folder.
+
 .. code-block:: bash
 
     ./iggypop.py cds --i "in/10_TFs.fasta" --o "10_TFs"
 
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled. Sequence domestication and optimization is conducted using `dnachisel`; parameters are set in a yaml file using dnachisel's built-in `specifications <https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html>`_; several yaml files used in our common workflows are in the `/yaml` folder.
 
-To codon optimize with an *E. coli* codon table, use BsaI sites for assembly, and synthesize 300 bp oligos:
+The default paramaters can be modified by creating new yaml files or from the command line. To codon optimize with an *E. coli* codon table, use BsaI sites for assembly, and synthesize 300 bp oligos:
 
 .. code-block:: bash
 
-    ./iggypop.py cds \
-        --i "test/10_TFs.fasta" --o "10_TFs_coli_mcu" \
-        --base_5p_end "GGTCTCA" --base_3p_end "AGAGACC" \ # BsaI instead of BsmBI
-        --codon_opt "match_codon_usage" --species "e_coli" \
+    ./iggypop.py cds                                        \
+        --i "test/10_TFs.fasta" --o "10_TFs_coli_mcu"       \
+        --base_5p_end "GGTCTCA" --base_3p_end "AGAGACC"     \ # BsaI instead of BsmBI
+        --codon_opt "match_codon_usage" --species "e_coli"  \
         --oligo_length 300  # default is 250
 
 The default `iggypop.py cds` settings design ORFs that:
@@ -190,9 +191,9 @@ Use `iggypop gagga` to create new `hingesets`:
 
 .. code-block:: bash
 
-    iggypop gagga \
-        --set_size=20 --pop_size=1000 \
-        --min_improve=.0005 --alpha 2.4 \
+    iggypop gagga                        \
+        --set_size=20 --pop_size=1000    \
+        --min_improve=.0005 --alpha 2.4  \
         --beta 2.4 --tournament_size 4
 
 Process multiple runs with `process_gagga_runs.R`:
@@ -213,9 +214,9 @@ Use the pipeline below for custom indexsets:
 
 .. code-block:: bash
 
-    ./iggypop primers \
-        --num_sequences 10 --opt_tm 60 \
-        --opt_size 18 --gc_content 0.5 \
+    ./iggypop primers                   \
+        --num_sequences 10 --opt_tm 60  \
+        --opt_size 18 --gc_content 0.5  \
         --max_size 18 --min_size 18
 
 Example `MFEprimer3` output for scoring primers:
