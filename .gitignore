@@ -37,7 +37,6 @@ data/ignore
 
 scripts/insert_linkers.py
 scripts/future
-scripts/
 
 # Ignore all files in the out folder
 out/
