@@ -237,14 +237,11 @@ def parse_arguments(run_type="cds", default_yml='yaml/domesticate_cds.yml'):
     # Assembly options
     assembly_group = parser.add_argument_group('Assembly Options')
 
-    assembly_group.add_argument(
-        '--two_step', type=str, metavar='',
-            help='(str) "on" to activate (default is off).\n'
-    )
 
     assembly_group.add_argument(
         '--two_step_length', type=int, metavar='',
             help='(int) maximum length for two-step fragments.\n'
+            ' remember to use a two-step yaml\n'
     )
 
     assembly_group.add_argument(
@@ -384,7 +381,7 @@ def set_defaults(run_type):
         'ext_overhangs': ['AATG', 'GCTT'],
         'allowed_chars': "ATGC",
         'two_step': "off",
-        'two_step_length': 1500,
+        'two_step_length': 1200,
         'two_step_5p_end': 'AATGCGTCTCA',
         'two_step_3p_end': 'AGAGACGGCTT',
         'pcr_5p_cut': "CGTCTCA",    

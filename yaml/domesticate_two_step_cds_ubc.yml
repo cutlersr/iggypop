@@ -31,9 +31,9 @@ optimizations:
     include_reverse_complement: True
     k: 12
 
-codon_opt: 'use_best_codon'                       # use_best_codon, harmonize_rca, hybrid, none
- 
+codon_opt: 'use_best_codon'             # use_best_codon, harmonize_rca, hybrid, none
 
+ 
 ############################ CLONING PARAMETERS ###############################
 
 ext_overhangs:                          # outer overhangs used for cloning 
@@ -51,7 +51,7 @@ pcr_3p_cut: "AAGTCTTC"  # BbsI sites    # Sequence added on 3' end of oligos
 ########################### TWO-STEP PARAMETERS #################################
 
 two_step: "on"                              
-two_step_length: 1200                    # first step frament max length
+two_step_length: 1300                    # first step frament max length
 
 two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"

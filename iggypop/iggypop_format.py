@@ -153,13 +153,14 @@ def annotate_from_yaml(yaml_data, species, codon_opt, records, pct):
                     )
                     record.features.append(codon_feature)
 
-                # Add comment feature last
-                comment_feature = SeqFeature(
-                    feature.location,
-                    type="misc_feature",
-                    qualifiers={"note": comment}
-                )
-                record.features.append(comment_feature)
+                if codon_opt != 'none':
+                    # Add comment feature last
+                    comment_feature = SeqFeature(
+                        feature.location,
+                        type="misc_feature",
+                        qualifiers={"note": comment}
+                    )
+                    record.features.append(comment_feature)
 
         # Remove duplicates
         unique_features = []

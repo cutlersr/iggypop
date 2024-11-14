@@ -9,36 +9,18 @@ SOURCE      synthetic
 FEATURES             Location/Qualifiers
      promoter        1237..1271
                      /label="J23119 promoter"
-     misc_feature    1237..1271
-                     /label="@AvoidChanges"
      RBS             1279..1290
                      /note:="strong bacterial ribosome binding site (Elowitz and
                      Leibler, 2000)"
                      /note:="B0034"
                      /label="RBS"
-     misc_feature    1279..1290
-                     /label="@AvoidChanges"
      CDS             1297..2010
                      /label="superfolder GFP"
-     misc_feature    1297..2010
-                     /label="@EnforceTranslation"
-     misc_feature    1297..2010
-                     /note="arabidopsis"
      terminator      2058..2129
                      /label="rrnB T1 terminator"
-     misc_feature    2058..2129
-                     /label="@AvoidChanges"
      terminator      2132..2226
-                     /note="pLannotate"
                      /label="lambda t0 terminator"
-     misc_feature    2132..2226
-                     /label="@AvoidChanges"
-     misc_feature    1..3188
-                     /label="@AvoidPattern(pattern=BsaI_site, strand=both)"
-     misc_feature    1..3188
-                     /label="@AvoidPattern(pattern=BsmBI_site, strand=both)"
-     misc_feature    1..3188
-                     /label="@AvoidPattern(pattern=BbsI_site, strand=both)"
+
 ORIGIN
         1 aatgtaggtt agtctgaact gtgtactccg aaatagatat ccttccctct agtgccgcgg
        61 acttaggaac gcgaacgttg ctagacaaag cgcgttcgat agcacgggtc tattcgtgcc

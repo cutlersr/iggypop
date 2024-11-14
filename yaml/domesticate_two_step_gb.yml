@@ -13,11 +13,25 @@ constraints:
   - type: AvoidPattern
     pattern: BbsI_site
     strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
 
   - type: EnforceTranslation            # force changes to be synonymous
 
+  - type: AvoidHairpins                 # avoid hairpins
+    stem_size: 20
+    hairpin_window: 250
 
-codon_opt: 'none'                     # use_best_codon, harmonize_rca, match_codon_usage, none
+optimizations:
+  - type: UniquifyAllKmers              # optimize to minimize 12 bp repeats
+    include_reverse_complement: True
+    k: 12
+
+codon_opt: 'none'                       # use_best_codon, harmonize_rca, hybrid, none
 
 
 ############################ CLONING PARAMETERS ##############################################
@@ -37,7 +51,7 @@ pcr_3p_cut: "AAGTCTTC"  # BbsI sites    # Sequence added on 3' end of oligos
 ########################### TWO-STEP PARAMETERS ##############################################
 
 two_step: "on"                              
-two_step_length: 1200                    # first step frament max length
+two_step_length: 1300                    # first step frament max length
 
 two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"

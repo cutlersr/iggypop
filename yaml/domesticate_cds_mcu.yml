@@ -31,7 +31,8 @@ optimizations:
     include_reverse_complement: True
     k: 12
 
-codon_opt: 'match_codon_usage'                       # use_best_codon, harmonize_rca, hybrid, none
+codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
+
 
 ################################## CLONING PARAMETERS #######################################
 

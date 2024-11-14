@@ -27,11 +27,12 @@ constraints:
     hairpin_window: 250
 
 optimizations:
-  - type: UniquifyAllKmers              # optimize to minimize 10 bp repeats
+  - type: UniquifyAllKmers              # optimize to minimize 12 bp repeats
     include_reverse_complement: True
     k: 12
 
-codon_opt: 'use_best_codon'                       # use_best_codon, harmonize_rca, hybrid, none
+codon_opt: 'use_best_codon'             # use_best_codon, harmonize_rca, hybrid, none
+
 
 ################################## CLONING PARAMETERS #######################################
 
