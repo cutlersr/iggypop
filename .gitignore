@@ -1,6 +1,10 @@
 # Ignore all files with a .log extension
 *.log
 
+
+#obsidian folder
+.obsidian/
+
 # Ignore all files in the logs directory
 logs/
 

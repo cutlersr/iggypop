@@ -152,7 +152,7 @@ python scripts/assemble_fragments.py --i "oligo_order.fasta"          \
 
 ## Hinging
 
-Although our defaults settings work  well, you can see marginal increases in the predicted fidelity of your assemblies by increasing the search radius around target cut sites and/or increasing the number of hinge solutions evaluated. We only recommend changing these if your targets generate low fidelities (<95%) with defaults. Increasing the `radius` parameter can end up requiring more oligos to encode the same sequence, so change this parameter cautiously.
+Although our default settings work well, you can see marginal increases in the predicted fidelity of your assemblies by increasing the search `radius` around target cut sites and/or increasing the number of hinge solutions evaluated (`n_tries`). We only recommend changing these if your targets generate low fidelities (<95%) with defaults. Increasing the `radius` parameter can sometimes generate more oligos for the same target, so change this parameter cautiously.
 
 ```bash
 ./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs"  \
@@ -160,19 +160,25 @@ Although our defaults settings work  well, you can see marginal increases in the
 				 --n_tries 50                            \ #default is 10
 ```
 
+## Chiseling Only
+
+`--mode no_hinge` will outputs only dnachisel'd sequences.
+
+
+## Hinging Only
+
+`--mode no_mods` will run the hinging process and output indexed oligo for input sequences without making any changes to your input sequences.
+
 
 ## Versioning
 
-Use the "repeat" option for multiple optimized versions:
+Use the `repeat` option if you'd like to generate multiple optimized versions of a sequence:
 
 ```bash
-./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs" --codon_opt "match_codon_usage" --repeats 5
+./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs"        \
+                 --codon_opt "match_codon_usage" --repeats 5   
 ```
 
-
-## Chiseling Only
-
-`--mode no_hinge` outputs only dnachisel'd sequences.
 
 
 ## Reports
@@ -195,21 +201,21 @@ Set `--seed 123` to force a specific seed. The log files list the seeds used for
 
 `iggyseq` identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. See ... more details in the documentation.
 
+
 ## hingesets
 
 iggypop uses *goldenhinges* to identify overhang solutions using precomputed `hingesets`. The data below show the typical fidelities using a set of 4500 plant transcription factors.
 
 ![Fidelity Plot](png/fidelity_plot.png)
 
-## Custom hingesets
+### Custom hingesets
 
-Use gagga to create new hingesets:
+Use `gagga` to create new hingesets:
 
 ```bash
-./iggypop.py gagga                   \
-    --set_size=20 --pop_size=1000    \
-    --min_improve=.0005 --alpha 2.4  \
-    --beta 2.4 --tournament_size 4
+./iggypop.py gagga --set_size=20 --pop_size=1000      \
+                   --min_improve=.0005 --alpha 2.4    \
+                   --beta 2.4 --tournament_size 4
 ```
 
 Process multiple runs with `process_gagga_runs.R`:
@@ -218,21 +224,18 @@ Process multiple runs with `process_gagga_runs.R`:
 Rscript scripts/process_gagga_runs.R --top_percent=2 --n_cliques=30
 ```
 
+
 ## indexsets
 
 Our primers used for amplifying fragments from pools were designed to minimize cross-hybridization and unwanted amplifications.
 
-## Custom indexsets
+### Custom indexsets
 
 Use the pipeline below for custom indexsets:
 
 ```bash
 ./iggypop.py primers                   \
-    --num_sequences 10 --opt_tm 60  \
-    --opt_size 18 --gc_content 0.5  \
+    --num_sequences 10 --opt_tm 60     \
+    --opt_size 18 --gc_content 0.5     \
     --max_size 18 --min_size 18
 ```
-
-Example MFEprimer3 output for scoring primers:
-
-![MFEprimer3 Output](png/MFEprimer3_output.png)
