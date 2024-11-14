@@ -1,8 +1,6 @@
 iggypop
 ========
 
-Facile gene synthesis from oligo pools
--------------------------------------------
 .. image:: png/overview.png
 
 **iggypop** is a pipeline for designing and synthesizing genes at ~$3.00 per kb in oligo costs. It uses the Edinburgh Genome Foundry's `dnachisel <https://github.com/Edinburgh-Genome-Foundry/DnaChisel>`_ to optimize sequences and `goldenhinges <https://github.com/Edinburgh-Genome-Foundry/GoldenHinges>`_ to fragment them into indexed oligos that can be reassembled by Golden Gate cloning. Once assembled, sequence-verified constructs are identified by nanopore sequencing of barcoded amplicons.
