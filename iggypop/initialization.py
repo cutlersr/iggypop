@@ -28,12 +28,14 @@ Additional Functions:
 """
 
 import os
+import sys
 import argparse
 import yaml
 import shutil
 
 def initialize(run_type="cds"):
-    
+    import sys  # Ensure sys is imported if not already
+
     # Parse arguments based on the run_type and set defaults
     if run_type == "cds":
         args = parse_arguments(run_type, default_yml='yaml/domesticate_cds.yml')
@@ -48,6 +50,15 @@ def initialize(run_type="cds"):
 
     # Load YAML configuration and apply command-line arguments
     updated_args, tag = load_config_and_set_globals(args, default_values)
+
+    if updated_args.i:
+        fasta_file_path = f'{updated_args.i}'
+    else:
+        sys.exit("Please provide a valid input file.")
+
+    # **Add this check for input file existence**
+    if not os.path.isfile(fasta_file_path):
+        sys.exit(f"Error: Input file '{fasta_file_path}' does not exist.")
 
     # Generate output directory and log file
     tag = f"{updated_args.o}"
@@ -68,7 +79,6 @@ def initialize(run_type="cds"):
         sys.exit(0)
 
     # Copy input files and analysis scripts to the results folder
-    fasta_file_path = f'{updated_args.i}'
     yml_file_path = f'{updated_args.yml}'
     script_paths = [
         "iggypop.py", "iggypop/iggypop_cds.py", "iggypop/chisel_hinge.py",
@@ -418,7 +428,6 @@ def set_defaults(run_type):
     return default_values
 
 
-
 def load_config_and_set_globals(args, default_values):
     """
     Load the YAML configuration and update global settings.
@@ -436,28 +445,38 @@ def load_config_and_set_globals(args, default_values):
 
     # Load the YAML configuration
     config = {}
-    if 'yml' in args_dict and args_dict['yml'] and os.path.exists(args_dict['yml']):
-        with open(args_dict['yml'], 'r') as ymlfile:
-            config = yaml.safe_load(ymlfile) or {}
+    if 'yml' in args_dict and args_dict['yml']:
+        yml_path = args_dict['yml']
+        if os.path.exists(yml_path):
+            with open(yml_path, 'r') as ymlfile:
+                try:
+                    config = yaml.safe_load(ymlfile) or {}
+                except yaml.YAMLError as e:
+                    sys.exit(f"Error: Failed to parse YAML file '{yml_path}'.\n{e}")
+        else:
+            sys.exit(f"Error: YAML configuration file '{yml_path}' does not exist.")
+    else:
+        sys.exit("Error: No YAML configuration file specified.")
 
     # Merge values: start with defaults, then YAML config, then command-line args
     updated_values = {**default_values, **config}
 
     # Overwrite only with non-None values from command-line args
     for key, value in args_dict.items():
-        # For store_true type args, only override if explicitly provided
+        # For store_true/store_false type args, only override if explicitly provided
         if isinstance(value, bool) and value is None:
             continue
         if value is not None:
             updated_values[key] = value
 
+    # Check for missing required parameters
     missing_params = [key for key, value in updated_values.items() if value is None]
     if missing_params:
-        raise ValueError(f"Missing required parameters: {', '.join(missing_params)}")
+        sys.exit(f"Error: Missing required parameters: {', '.join(missing_params)}")
 
     # Convert updated_values to Namespace for easy access
     updated_args = argparse.Namespace(**updated_values)
-    tag = updated_values.get('tag', 'default_tag')
+    tag = updated_values.get('o', 'default_tag')
 
     return updated_args, tag
 

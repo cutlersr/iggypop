@@ -5,7 +5,7 @@
 ![Overview](png/overview.png)
 
 
-**iggypop** is a pipeline for designing and synthesizing large numbers of genes from oligonucleotide pools. Input sequences are fragmented  into segments that can be amplified using gene-specific index primers and  reassembled by Golden Gate cloning. Sequence-verified constructs are identified by nanopore sequencing of barcoded amplicons.
+**iggypop** is a pipeline for designing and synthesizing large numbers of genes from oligonucleotide pools. Input sequences are fragmented  into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
 
 
 ## Installation
@@ -33,33 +33,39 @@ docker run -it -v $(pwd):/app iggypop
 
 
 
-## Working with Fasta Formatted Coding Sequences
+## Working with Coding Sequences
 
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled. Sequence domestication and optimization is conducted using `dnachisel`; optimization parameters can be set in a YAML file using dnachisel's built-in [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html); several YAML files used in our common workflows are in the  [`yaml`](../yanml/) folder.
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package `dnachisel`; sequence optimization parameters sequence can be set in a YAML file using `dnachisel` [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html); several YAML files used in our common workflows are in the  [`yaml`](../yanml/) folder.
+
+To generate oligos using default settings:
 
 ```bash
 ./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs"
 ```
 
-
-The default parameters can be modified by creating new YAML files or from the command line. To codon optimize with an *E. coli* codon table, use BsaI sites for assembly, and synthesize 300 bp oligos:
-
-```bash
-./iggypop.py cds                                        \
-    --i "test/10_TFs.fasta" --o "10_TFs_coli_mcu"       \
-    --base_5p_end "GGTCTCA" --base_3p_end "AGAGACC"     \ # BsaI instead of BsmBI
-    --codon_opt "match_codon_usage" --species "e_coli"  \
-    --oligo_length 300  # default is 250
-```
-
-
-The default CDS settings design ORFs that:
+The default settings design ORFs that:
 
 - Lack common Golden Gate cloning sites (BsaI, BsmBI, BbsI, SapI, BtgZI)
 - Enforce synonymous changes
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Lack hairpins or repeats >12 bp
 - Are GoldenBraid / MoClo compatible (inner 5'-BsaI-AATG...GCTT-BsaI-3')
+
+
+The default parameters can be modified by creating new YAML files or using arguments on the command line. To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites for assembly, and synthesize 300 bp oligos:
+
+```bash
+./iggypop.py cds                                        \
+    --i "test/10_TFs.fasta" --o "10_TFs_coli_mcu"       \
+    --base_5p_end "GGTCTCA" --base_3p_end "AGAGACC"     \
+    --codon_opt "match_codon_usage" --species "e_coli"  \
+    --oligo_length 300
+```
+
+
+The default `iggypop.py cds` settings create GoldenBraid/MoClo-compatible level alpha/0 coding sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
+
+![GoldenBraid](png/goldenbraid.png)
 
 
 ## Working with GenBank Formatted Sequences
@@ -83,19 +89,6 @@ Check the output in your favorite viewer, then generate your oligos:
 ```bash
 ./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP"
 ```
-
-
-
-## Level 0 / Level-α CDS Modules
-
-The default `iggypop` settings create GoldenBraid/MoClo-compatible level 0 coding sequences with 5'-BsaI-AATG and GCTT-BsaI-3'. ends Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
-
-![GoldenBraid](png/goldenbraid.png)
-
-
-## pPOP-vectors
-
-The pPOP [`vectors`](../vectors/) support one-step and two-step cloning of level 0 / level α parts; the pPlantPOP-BsmBI vector supports `iggypop` assemblies of MoClo-compatible parts for direct testing *in planta* via Agrobacterium-mediated transformation.
 
 
 ## Two-Step Assemblies
@@ -177,7 +170,6 @@ Use the `repeat` option if you'd like to generate multiple optimized versions of
 ./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs"        \
                  --codon_opt "match_codon_usage" --repeats 5   
 ```
-
 
 
 ## Reports

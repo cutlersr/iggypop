@@ -553,7 +553,8 @@ if __name__ == "__main__":
                         )
 
                         try:
-                            start_time = datetime.datetime.now()
+
+#                            start_time = datetime.datetime.now()
 
                             (best_solution, seq_sets, fidelity_scores,
                              counter_value_for_best_solution) = find_cut_solution(
@@ -585,9 +586,9 @@ if __name__ == "__main__":
                                 df['Tries_for_hinges'] = counter_value
                                 df_all = pd.concat([df_all, df])
 
-                                finish_time = datetime.datetime.now()
-                                time_difference = (finish_time - start_time).total_seconds()
-                                log_and_print(f"Length(bp) & Time (s): {len(chiseled_sequence)}\t{time_difference:.3f}", log_file)
+#                                finish_time = datetime.datetime.now()
+#                                time_difference = (finish_time - start_time).total_seconds()
+#                                log_and_print(f"Length(bp) & Time (s): {len(chiseled_sequence)}\t{time_difference:.3f}", log_file)
 
 
                             else:
