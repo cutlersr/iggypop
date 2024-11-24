@@ -51,22 +51,38 @@ The default settings design ORFs that:
 - Lack hairpins or repeats >12 bp
 - Are GoldenBraid / MoClo compatible (inner 5'-BsaI-AATG...GCTT-BsaI-3')
 
-
-The default parameters can be modified by creating new YAML files or using arguments on the command line. To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites for assembly, and synthesize 300 bp oligos:
-
-```bash
-./iggypop.py cds                                        \
-    --i "test/10_TFs.fasta" --o "10_TFs_coli_mcu"       \
-    --base_5p_end "GGTCTCA" --base_3p_end "AGAGACC"     \
-    --codon_opt "match_codon_usage" --species "e_coli"  \
-    --oligo_length 300
-```
-
-
+##### MoClo compatibility:
 The default `iggypop.py cds` settings create GoldenBraid/MoClo-compatible level alpha/0 coding sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
 
 ![GoldenBraid](png/goldenbraid.png)
 
+##### Overriding defaults:
+The default parameters can be modified by creating new YAML files or using arguments on the command line.  To modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3' (which are required as terminal overhangs with the pPOP vectors):
+```bash
+./iggypop.py cds                                        \
+    --i "test/10_TFs.fasta" --o "10_TFs_not_moclo"      \
+    --base_5p_end "AATG" --base_3p_end "GCTT" 
+```
+
+##### Changing Cloning Overhangs
+You can change the external overhangs for cloning; all three parameters below need to be updated.
+
+```bash
+./iggypop.py cds --i "test/RUBY.fasta"          \
+    --base_5p_end AAAA    --base_3p_end GCCG    \
+    --ext_overhangs AAAA GCCG
+```
+
+
+##### Using different enzymes, oligo lengths, and codon optimization:
+To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites for assembly, and synthesize ≥300 bp oligonucleotides:
+```bash
+./iggypop.py cds                                               \
+    --i "test/10_TFs.fasta" --o "10_TFs_300bp_BsaI_coli_mcu"   \
+    --pcr_5p_cut "GGTCTCA" --pcr_3p_cut "AGAGACC"              \
+    --codon_opt "match_codon_usage" --species "e_coli"         \
+    --oligo_length 300
+```
 
 ## Working with GenBank Formatted Sequences
 
@@ -91,12 +107,12 @@ Check the output in your favorite viewer, then generate your oligos:
 ```
 
 
+
 ## Two-Step Assemblies
 
-For longer sequences >3 kb (~18 fragments with 250 bp oligos), we recommend that you use the two-step assembly mode, which breaks sequences into  "step one" blocks which are assembled from oligo pools using BbsI and the pPOP-BbsI vector. Once sequence validated step one clones are identified, the final genes are assembled using Golden Gate cloning using BsmBI into pPOP-BsmBI or pPlantPOP-BsmBI. 
+For longer sequences >3 kb (~18 fragments with 250 bp oligos), we recommend that you use the two-step assembly mode, which breaks sequences into  "step one" blocks which are assembled from oligo pools using BbsI and the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
 
 ![Two-Step Assembly](png/two_step.png)
-
 To do this, use the provided `two_step` YAML files:
 
 ```bash
@@ -105,17 +121,6 @@ To do this, use the provided `two_step` YAML files:
 ```
 
 
-
-## Changing Cloning Overhangs & Assembly Enzyme
-
-You can change the external overhangs and enzyme for cloning:
-
-```bash
-./iggypop.py cds --i "test/RUBY.fasta"          \
-    --pcr_5p_cut GGTCTCA  --pcr_3p_cut AGAGACC  \ # BsaI
-    --base_5p_end AAAA    --base_3p_end GCCG    \ # new cloning ends
-    --ext_overhangs AAAA GCCG
-```
 
 
 ## Combining Runs
@@ -148,8 +153,8 @@ Although our default settings work well, you can see marginal increases in the p
 
 ```bash
 ./iggypop.py cds --i "test/RUBY.fasta" --o "five_RUBYs"  \
-				 --radius 10                             \ #default is 8
-				 --n_tries 50                            \ #default is 10
+				 --radius 10                             \
+				 --n_tries 50                            
 ```
 
 ## Chiseling Only
