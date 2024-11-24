@@ -546,12 +546,15 @@ if __name__ == "__main__":
                                     df_all = pd.concat([df_all, df])
 
                     else:
+
                         log_and_print(f"Length: {len(chiseled_sequence)}", log_file, quiet)
                         log_and_print(
                             f"# segments: {seg_num}", log_file, quiet
                         )
 
                         try:
+                            start_time = datetime.datetime.now()
+
                             (best_solution, seq_sets, fidelity_scores,
                              counter_value_for_best_solution) = find_cut_solution(
                                 chiseled_sequence, overhang_sets, radius, ext_overhangs,
@@ -582,6 +585,11 @@ if __name__ == "__main__":
                                 df['Tries_for_hinges'] = counter_value
                                 df_all = pd.concat([df_all, df])
 
+                                finish_time = datetime.datetime.now()
+                                time_difference = (finish_time - start_time).total_seconds()
+                                log_and_print(f"Length(bp) & Time (s): {len(chiseled_sequence)}\t{time_difference:.3f}", log_file)
+
+
                             else:
                                 log_and_print(
                                     f"No solutions sets found for {current_seq_id}\n",
@@ -592,6 +600,7 @@ if __name__ == "__main__":
                                 f"{current_seq_id} FAILED hinge.\n"
                                 f"Exception occurred: {e}\n", log_file
                             )
+
 
                 if mode == 'no_hinge':
                     chiseled_sequence = (
