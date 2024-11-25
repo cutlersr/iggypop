@@ -5,7 +5,7 @@
 ![Overview](png/overview.png)
 
 
-**iggypop** is a pipeline for designing and synthesizing large numbers of genes from oligonucleotide pools. Input sequences are fragmented  into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
+**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented  into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
 
 
 ## Installation
@@ -35,7 +35,7 @@ docker run -it -v $(pwd):/app iggypop
 
 ## Working with Coding Sequences
 
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package `dnachisel`; sequence optimization parameters sequence can be set in a YAML file using `dnachisel` [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html); several YAML files used in our common workflows are in the  [`yaml`](../yanml/) folder.
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package `dnachisel`; sequence optimization parameters sequence can be set in a YAML file using `dnachisel` [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [`yaml`](../yanml/) folder.
 
 To generate oligos using default settings:
 
@@ -49,15 +49,15 @@ The default settings design ORFs that:
 - Enforce synonymous changes
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Lack hairpins or repeats >12 bp
-- Are GoldenBraid / MoClo compatible (inner 5'-BsaI-AATG...GCTT-BsaI-3')
+- Are GoldenBraid / MoClo compatible
 
 ##### MoClo compatibility:
-The default `iggypop.py cds` settings create GoldenBraid/MoClo-compatible level alpha/0 coding sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
+The default `iggypop.py cds` settings create sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
 
 ![GoldenBraid](png/goldenbraid.png)
 
 ##### Overriding defaults:
-The default parameters can be modified by creating new YAML files or using arguments on the command line.  To modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3' (which are required as terminal overhangs with the pPOP vectors):
+The default parameters can be modified by creating new YAML files or using arguments on the command line.  To modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3', which are required as terminal overhangs with the pPOP vectors:
 ```bash
 ./iggypop.py cds                                        \
     --i "test/10_TFs.fasta" --o "10_TFs_not_moclo"      \
