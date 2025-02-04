@@ -23,7 +23,7 @@ def parse_arguments():
     parser.add_argument('--forbidden_sequences', type=str, nargs='+', 
                         default=['GGAC', 'CGCG', 'GGCC', 'GCCA', 'CCGC', 'GGCG', 'GTCG', 'TCGC', 'GGGT', 'GGGG', 'TGCG', 
                         'TAAA', 'GCAT', 'GGCT', 'TTTA', 'GCGG', 'TATA', 'GGAT', 'CCCC', 'GGGC', 'GCGT', 'TTAA', 'GGAG', 'GGTG'],                    
-                        help='Sequences to omit from solution sets; default = the 10 worst seqs in Potapov dataset')
+                        help='Sequences to omit from solution sets; default = worst seqs in Potapov dataset')
 
     parser.add_argument('--pop_size', type=int, default=750, help='Population size for GA; default 500; reduce to speed up')
     parser.add_argument('--ngen', type=int, default=100, help='Number of generations')
