@@ -35,7 +35,7 @@ docker run -it -v $(pwd):/app iggypop
 
 ## Working with Coding Sequences
 
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package `dnachisel`; sequence optimization parameters sequence can be set in a YAML file using `dnachisel` [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [`yaml`](../yanml/) folder.
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters sequence can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [_yaml_](../yanml/) folder.
 
 To generate oligos using default settings:
 
@@ -45,8 +45,8 @@ To generate oligos using default settings:
 
 The default settings design ORFs that:
 
-- Lack common Golden Gate cloning sites (BsaI, BsmBI, BbsI, SapI, BtgZI)
-- Enforce synonymous changes
+- Lack common Golden Gate cut sites (BsaI, BsmBI, etc.)
+- Enforces synonymous changes
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Lack hairpins or repeats >12 bp
 - Are GoldenBraid / MoClo compatible
@@ -95,9 +95,9 @@ The parameters for optimizing GenBank files differ and use annotations added to 
 
 Default settings:
 
-- Remove common GG Sites: BsaI, BsmBI, BbsI, SapI, and BtgZI with `@AvoidPattern` tags
+- Remove common GG Sites (BsaI, BsmBI, etc. using `@AvoidPattern` tags)
 - Protect annotated regulatory sites with `@AvoidChanges` tags
-- Enforce synonymous changes to all annotated CDSs using `@EnforceTranslation` tag
+- Enforce synonymous changes to annotated CDSs using `@EnforceTranslation` tags
 - Assemble oligos ≤ 250 bp for BsmBI assembly using AATG/GCTT overhangs
 
 Check the output in your favorite viewer, then generate your oligos:
