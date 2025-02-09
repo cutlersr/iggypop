@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
         # Convert species to NCBI taxID for dnachisel
         if codon_tbl == "kazusa": 
-            if species == "arabidopsis" | species=="a_thaliana":
+            if species == "arabidopsis" or species=="a_thaliana":
                 species = '3702'
 
         # Load codon table for specified species using NCBI taxID
