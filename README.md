@@ -35,7 +35,7 @@ docker run -it -v $(pwd):/app iggypop
 
 ## Working with Coding Sequences
 
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters sequence can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [_yaml_](../yaml/) folder.
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters sequence can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [YAML folder](yaml/)
 
 To generate oligos using default settings:
 
