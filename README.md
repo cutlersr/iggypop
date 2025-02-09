@@ -205,7 +205,7 @@ Set `--seed 123` to force a specific seed. The log files list the seeds used for
 
 ## iggyseq
 
-`iggyseq` identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. See ... more details in the documentation.
+`iggyseq` identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The pipeline is available here: https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq.
 
 
 ## hingesets
