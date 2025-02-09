@@ -75,7 +75,7 @@ You can change the external overhangs for cloning; all three parameters below ne
 
 
 ##### Using different enzymes, oligo lengths, and codon optimization:
-To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites for assembly, and synthesize ≥300 bp oligonucleotides:
+To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites for assembly, and synthesize ≤300 bp oligonucleotides:
 ```bash
 ./iggypop.py cds                                               \
     --i "test/10_TFs.fasta" --o "10_TFs_300bp_BsaI_coli_mcu"   \
@@ -110,7 +110,7 @@ Check the output in your favorite viewer, then generate your oligos:
 
 ## Two-Step Assemblies
 
-For longer sequences >3 kb (~18 fragments with 250 bp oligos), we recommend that you use the two-step assembly mode, which breaks sequences into  "step one" blocks which are assembled from oligo pools using BbsI and the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
+For longer sequences (>2 kb), we recommend that you use the two-step assembly mode, which breaks sequences into  "step one" blocks which are assembled from oligo pools using BbsI and the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
 
 ![Two-Step Assembly](png/two_step.png)
 To do this, use the provided `two_step` YAML files:
