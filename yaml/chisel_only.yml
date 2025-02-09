@@ -1,0 +1,48 @@
+###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
+
+mode: "no_hinge"                       # this turns off the hinging functions and just chiselsthe inputs
+
+constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BbsI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
+
+  - type: EnforceTranslation            # force changes to be synonymous
+
+
+## You can add dnachisel optimizations here if you want them; commented out for this example ###
+#optimizations:
+#  - type: UniquifyAllKmers              # optimize to minimze 12 bp repeats
+#    include_reverse_complement: True
+#    k: 12
+#
+#  - type: EnforceGCContent              # enforce GC content 
+#    mini: 0.53                          # within these bounds  
+#    maxi: 0.65
+#    window: 60
+#    boost: 4
+
+
+
+############################ CLONING PARAMETERS ###############################
+  
+base_5p_end: ""                         # setting these to empty prevents modification of the input sequences ends
+base_3p_end: ""          
+
+pcr_5p_cut: ""    
+pcr_3p_cut: ""   
+
+

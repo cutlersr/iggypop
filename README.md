@@ -159,9 +159,19 @@ Although our default settings work well, you can see marginal increases in the p
 
 ## Chiseling Only
 
-`--mode no_hinge` will outputs only dnachisel'd sequences.
+`--mode no_hinge` will output only dnachisel'd sequences. This example domesticates a set of input sequences using `dnachisel`. This is a convenient way to access `dnachisel`'s large set of sequence optimization parameters through a yaml. 
 
+```bash
+./iggypop.py cds --i "test/edibles.fasta" --o "domesticated_edibles"  \
+				 --yml "yaml/chisel_only.yml"                      
+```
 
+This example domesticates and GC-boosts input coding sequences using the protocol used for STARBURST in Dvir *et al.* 2025.
+
+```bash
+./iggypop.py cds --i "test/edibles.fasta" --o "high_gc_edibles"  \
+				 --yml "yaml/chisel_only_gc_boost.yml"                      
+```
 ## Hinging Only
 
 `--mode no_mods` will run the hinging process and output indexed oligo for input sequences without making any changes to your input sequences.
