@@ -48,6 +48,8 @@ out/
 # Ignore all files in the out folder
 in/
 
+test/blah.fasta
+
 yaml/*
 !yaml/domesticate_cds_ubc.yml
 !yaml/domesticate_two_step_gb.yml
