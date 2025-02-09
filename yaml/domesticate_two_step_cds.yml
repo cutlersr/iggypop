@@ -1,3 +1,5 @@
+# This yaml domesticates a cds w/ 2-step assembly without codon optimization
+
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
 mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
@@ -62,8 +64,6 @@ two_step_3p_end: "AGAGACGGCTT"
 
 oligo_length: 250                        # Max oligo length 
 primer_length: 18                        # Barcode primer length 
-
-max_fragments: 24                        # Max fragments per PCR reaction.
 
 radius: 8                                # radius value used by goldenhinges
 n_tries: 10                              # Number of overhang sets to test.

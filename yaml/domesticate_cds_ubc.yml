@@ -1,3 +1,5 @@
+# This yaml domesticates a cds with use_best_codon (ubc) codon optimization
+
 ############################ SEQUENCE OPTIMIZATION PARAMETERS #################################
 
 mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
@@ -51,8 +53,6 @@ pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
 
 oligo_length: 250                        # Max oligo length; change as desired
 primer_length: 18                        # All indexsets primers are 18 bp
-
-max_fragments: 24                        # Max fragments per PCR reaction.
 
 radius: 8                                # radius value used by goldenhinges
 n_tries: 10                              # Number of overhang sets to test.

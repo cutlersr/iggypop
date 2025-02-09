@@ -61,4 +61,4 @@ yaml/*
 !yaml/domesticate_cds_hybrid.yml
 !yaml/domesticate_cds_mcu.yml
 !yaml/chisel_only.yml
-!yaml/chisel_only_gc_tune.yml
+!yaml/chisel_only_gc_boost.yml

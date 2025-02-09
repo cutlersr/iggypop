@@ -1,3 +1,5 @@
+# This yaml domesticates a cds and boosts its GC content
+
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
 mode: "no_hinge"                       # this turns off the hinging functions and just chisels the inputs

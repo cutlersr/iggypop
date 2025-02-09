@@ -1,3 +1,5 @@
+# This yaml domesticates a cds with match_codon_usage (mcu) codon optimization and two-step
+
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
 mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
@@ -31,7 +33,7 @@ optimizations:
     include_reverse_complement: True
     k: 12
 
-codon_opt: 'match_codon_usage'                       # use_best_codon, harmonize_rca, hybrid, none
+codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
  
 
 ############################ CLONING PARAMETERS ###############################
@@ -51,7 +53,7 @@ pcr_3p_cut: "AAGTCTTC"  # BbsI sites    # Sequence added on 3' end of oligos
 ########################### TWO-STEP PARAMETERS #################################
 
 two_step: "on"                              
-two_step_length: 1200                    # first step frament max length
+two_step_length: 1300                    # first step frament max length
 
 two_step_5p_end: "AATGCGTCTCA"           # BsmBI ends for second step cloning
 two_step_3p_end: "AGAGACGGCTT"
@@ -62,8 +64,6 @@ two_step_3p_end: "AGAGACGGCTT"
 
 oligo_length: 250                        # Max oligo length 
 primer_length: 18                        # Barcode primer length 
-
-max_fragments: 24                        # Max fragments per PCR reaction.
 
 radius: 8                                # radius value used by goldenhinges
 n_tries: 10                              # Number of overhang sets to test.

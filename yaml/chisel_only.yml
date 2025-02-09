@@ -1,3 +1,5 @@
+# This yaml domesticates CDSs without any other changes
+
 ###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
 
 mode: "no_hinge"                       # this turns off the hinging functions and just chiselsthe inputs
