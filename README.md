@@ -28,6 +28,8 @@ chmod +x setup.sh
 git clone github.com/cutlersr/iggypop
 cd iggypop
 docker build -t iggypop .
+source .venv/bin/activate
+chmod +x setup.sh
 docker run -it -v $(pwd):/app iggypop
 ```
 

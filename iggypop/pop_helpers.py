@@ -306,39 +306,30 @@ def calculate_cai(sequence, codon_usage_table):
     # Split sequence into codons
     codons = [sequence[i:i + 3] for i in range(0, len(sequence), 3)]
 
-    # Prepare to collect log frequencies
-    codon_log_frequencies = {}
-    best_log_frequencies = {}
+    relative_adaptiveness = []  # Stores w_i values
 
-    # First pass: determine the best log frequencies
-    for aa, codons_dict in codon_usage_table.items():
-        max_freq = max(codons_dict.values(), default=1e-4)  # Avoid log(0) issue
-        best_log_frequencies[aa] = np.log(max_freq)
-
-    # Second pass: collect all log frequencies and calculate relative adaptiveness
-    relative_adaptiveness = []
     for codon in codons:
-        aa = next(
-            (aa for aa, codons_dict in codon_usage_table.items() if codon in codons_dict), 
-            None
-        )
-        if not aa:
-            continue  # Skip if the codon doesn't correspond to any amino acid
+        # Find the amino acid corresponding to the codon
+        aa = next((aa for aa, codons_dict in codon_usage_table.items() if codon in codons_dict), None)
 
-        codon_freq = codon_usage_table[aa].get(codon, 1e-4)  # Again, prevent log(0)
-        codon_log_frequencies[codon] = np.log(codon_freq)
-        optimal_log_frequency = best_log_frequencies[aa]
-        current_log_frequency = codon_log_frequencies[codon]
-        ra = np.exp(current_log_frequency - optimal_log_frequency)
-        relative_adaptiveness.append(ra)
+        if not aa or aa == '*':  # Ignore stop codons
+            continue
 
-    # Calculate the geometric mean of relative adaptiveness
+        # Codon frequency and max frequency for that amino acid
+        codon_freq = codon_usage_table[aa].get(codon, 0)
+        max_freq = max(codon_usage_table[aa].values(), default=1e-4)
+
+        if codon_freq > 0:  # Ensure we don’t include zero-frequency codons
+            w_i = codon_freq / max_freq  # Relative adaptiveness
+            relative_adaptiveness.append(w_i)
+
+    # Compute geometric mean
     if relative_adaptiveness:
-        geometric_mean = np.exp(np.mean(np.log(relative_adaptiveness)))
+        cai_value = np.exp(np.mean(np.log(relative_adaptiveness)))  # Geometric mean
     else:
-        geometric_mean = 0  # Handle case with no valid codons
+        cai_value = 0  # If no valid codons were found, return 0
 
-    return geometric_mean
+    return cai_value
 
 def calculate_fidelity_score(
     sequences: list, potapov_data: pd.DataFrame

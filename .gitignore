@@ -62,5 +62,7 @@ yaml/*
 !yaml/domesticate_two_step_cds_ubc.yml
 !yaml/domesticate_cds_hybrid.yml
 !yaml/domesticate_cds_mcu.yml
+!yaml/domesticate_cds.yml
+!yaml/domesticate_gb.yml
 !yaml/chisel_only.yml
 !yaml/chisel_only_gc_boost.yml
