@@ -1,0 +1,67 @@
+# This yaml domesticates a gb with match_codon_usage (mcu) codon optimization
+
+############################ SEQUENCE OPTIMIZATION PARAMETERS #################################
+
+mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
+                                       # 'no_hinge' to only return chiseled sequences
+constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BbsI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
+
+  - type: EnforceTranslation            # force changes to be synonymous
+
+  - type: AvoidHairpins                 # avoid hairpins
+    stem_size: 20
+    hairpin_window: 250
+
+optimizations:
+  - type: UniquifyAllKmers              # optimize to minimize 12 bp repeats
+    include_reverse_complement: True
+    k: 12
+
+codon_opt: 'match_codon_usage'          # use_best_codon, harmonize_rca, hybrid, none
+
+
+################################## CLONING PARAMETERS #######################################
+
+ext_overhangs:                          # outer overhangs used for cloning 
+  - AATG                                # into pPOP vectors
+  - GCTT
+                                        
+base_5p_end: "AATG"             
+base_3p_end: "GCTT"           
+
+pcr_5p_cut: "CGTCTCA"   # BsmBI sites   # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
+
+
+################################# HINGING PARAMETERS #######################################
+
+oligo_length: 250                        # Max oligo length; change as desired
+primer_length: 18                        # All indexsets primers are 18 bp
+
+radius: 8                                # radius value used by goldenhinges
+n_tries: 10                              # Number of overhang sets to test.
+
+primer_index: 1                          # row of indexsets file to start from
+
+
+#################################### DATA FILES ###########################################
+
+fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
+ohsets: 'data/hingesets.xlsx'
+index_primers: "data/indexsets.csv"
