@@ -10,7 +10,7 @@
 
 ## Installation
 
-### Linux
+### Using conda in Linux or MacOS
 
 ```bash
 git clone github.com/cutlersr/iggypop
