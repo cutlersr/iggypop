@@ -10,14 +10,13 @@
 
 ## Installation
 
-### Linux
+### Using conda in Linux or MacOS
 
 ```bash
-# requires python 3.8
 git clone github.com/cutlersr/iggypop
 cd iggypop
-python3.8 -m venv .venv
-source .venv/bin/activate
+conda create -n iggypop python=3.9 r-base=4.3.3 -c conda-forge
+conda activate iggypop
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -138,14 +137,14 @@ Then combine files into one fasta file to create an oligo pool file for ordering
 
 ```bash
 cat out/juiceables/juiceables_oligo_pool.fasta \
-    out/edibles/edibles_oligo_pool.fasta > oligo_order.fasta
+    out/edibles/edibles_oligo_pool.fasta > out/oligo_order.fasta
 ```
 
 You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene:
 
 ```bash
-python scripts/assemble_fragments.py --i "oligo_order.fasta"          \
-                                     --o "assembled_ej_oligos.fasta"
+python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
+                                     --o "out/assembled_ej_oligos.fasta"
 ```
 
 
