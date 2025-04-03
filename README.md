@@ -17,7 +17,7 @@ git clone github.com/cutlersr/iggypop
 cd iggypop
 conda create -n iggypop python=3.9 r-base=4.3.3 -c conda-forge
 conda activate iggypop
-#If 'conda activate' fails, restart your terminal or source your shell config
+# if 'conda activate' fails, restart your terminal or source your shell config
 chmod +x setup.sh
 ./setup.sh
 ```

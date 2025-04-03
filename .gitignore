@@ -32,8 +32,6 @@ node_modules/
 barcodes/
 
 data/mfeprimer-3.3.1-linux-386
-data/acceptor_200.h5
-data/donor_200.h5
 data/indexsets_old.csv
 data/linkers.fasta
 data/unsed_ok_primers.csv
