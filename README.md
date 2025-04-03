@@ -10,14 +10,13 @@
 
 ## Installation
 
-### Linux
+### Using conda in Linux or MacOS
 
 ```bash
-# requires python 3.8
 git clone github.com/cutlersr/iggypop
 cd iggypop
-python3.8 -m venv .venv
-source .venv/bin/activate
+conda create -n iggypop python=3.9 r-base=4.3.3 -c conda-forge
+conda activate iggypop
 chmod +x setup.sh
 ./setup.sh
 ```
