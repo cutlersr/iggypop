@@ -10,14 +10,14 @@
 
 ## Installation
 
-### Linux
+### Using conda in Linux or MacOS
 
 ```bash
-# requires python 3.8
 git clone github.com/cutlersr/iggypop
 cd iggypop
-python3.8 -m venv .venv
-source .venv/bin/activate
+conda create -n iggypop python=3.9 r-base=4.3.3 -c conda-forge
+conda activate iggypop
+#If 'conda activate' fails, restart your terminal or source your shell config
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -28,8 +28,8 @@ chmod +x setup.sh
 git clone github.com/cutlersr/iggypop
 cd iggypop
 docker build -t iggypop .
-source .venv/bin/activate
 chmod +x setup.sh
+./setup.sh
 docker run -it -v $(pwd):/app iggypop
 ```
 
@@ -52,6 +52,14 @@ The default settings design ORFs that:
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Lack hairpins or repeats >12 bp
 - Are GoldenBraid / MoClo compatible
+
+To get reports of the changes made to your sequences, use--reports:
+
+```bash
+./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs" --reports
+```
+
+The final modified sequences designed, oligos, reports and logs are saved to out/10_TFs.
 
 ##### MoClo compatibility:
 The default `iggypop.py cds` settings create sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. Adjust the `base_5p_end` and `base_3p_end` parameters to modify this behavior. 
@@ -105,7 +113,7 @@ Default settings:
 Check the output in your favorite viewer, then generate your oligos:
 
 ```bash
-./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP"
+./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP" 
 ```
 
 
@@ -138,14 +146,14 @@ Then combine files into one fasta file to create an oligo pool file for ordering
 
 ```bash
 cat out/juiceables/juiceables_oligo_pool.fasta \
-    out/edibles/edibles_oligo_pool.fasta > oligo_order.fasta
+    out/edibles/edibles_oligo_pool.fasta > out/oligo_order.fasta
 ```
 
 You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene:
 
 ```bash
-python scripts/assemble_fragments.py --i "oligo_order.fasta"          \
-                                     --o "assembled_ej_oligos.fasta"
+python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
+                                     --o "out/assembled_ej_oligos.fasta"
 ```
 
 

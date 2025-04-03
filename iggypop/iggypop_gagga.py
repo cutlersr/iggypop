@@ -558,6 +558,6 @@ if not os.path.exists(f'out/gagga'):
     os.makedirs(f'out/gagga')
 
 # Post-processing and saving results
-process_and_save_top_solutions_to_excel(top_solutions, df, 'gagga.xlsx')
+process_and_save_top_solutions_to_excel(top_solutions, df, 'out/gagga/gagga.xlsx')
 
 

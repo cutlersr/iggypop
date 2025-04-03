@@ -46,17 +46,29 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Install Miniconda to provide the 'conda' command
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
+    /bin/bash /tmp/miniconda.sh -b -p /opt/conda && \
+    rm /tmp/miniconda.sh
+
+# Add Conda to PATH so that all subsequent RUN commands have access to it
+ENV PATH=/opt/conda/bin:$PATH
+
 # Set the working directory in the container
 WORKDIR /app
+
+# Copy the current directory contents into the container at /app
 COPY . /app
 
-# Update pip, setuptools, and wheel to the latest versions
+# Update pip, setuptools, and wheel to the latest versions and install Python dependencies
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt
 
-# Run setup script
+# Run the setup script (which uses conda); note that it should now find conda in PATH
 RUN chmod +x setup.sh && ./setup.sh
 
-# Ensure the script has executable permissions
+# Ensure the main application script has executable permissions
 RUN chmod +x /app/iggypop.py
 
+# Set the container's entry point to bash
+ENTRYPOINT ["/bin/bash"]

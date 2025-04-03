@@ -405,48 +405,48 @@ if __name__ == "__main__":
                                     log_file, quiet
                                 )
 
-                                if deintronize == "on":
+                            if deintronize == "on":
+                                log_and_print(
+                                    "scanning chiseled sequence for cryptic "
+                                    "introns", log_file
+                                )
+                                log_and_print(
+                                    "this may take a while...", log_file
+                                )
+
+                                intron, dico_donor, dico_acceptor = check_intron(
+                                    chiseled_sequence
+                                )
+
+                                if intron:
                                     log_and_print(
-                                        "scanning chiseled sequence for cryptic "
-                                        "introns", log_file
+                                        f"{current_seq_id} -- possible cryptic "
+                                        f"intron found, retrying\n", log_file
                                     )
-                                    log_and_print(
-                                        "this may take a while...", log_file
+                                    if dico_donor:
+                                        (donor_seqs, donor_locs_left,
+                                         donor_locs_right) = intron_seqs_to_avoid(
+                                            dico_donor
+                                        )
+                                    if dico_acceptor:
+                                        (acceptor_seqs, acceptor_locs_left,
+                                         acceptor_locs_right) = intron_seqs_to_avoid(
+                                            dico_acceptor
+                                        )
+
+                                    intron_constraints.extend(
+                                        donor_seqs + acceptor_seqs
+                                    )
+                                    loc_constraints_left.extend(
+                                        donor_locs_left + acceptor_locs_left
+                                    )
+                                    loc_constraints_right.extend(
+                                        donor_locs_right + acceptor_locs_right
                                     )
 
-                                    intron, dico_donor, dico_acceptor = check_intron(
-                                        chiseled_sequence
-                                    )
-
-                                    if intron:
-                                        log_and_print(
-                                            f"{current_seq_id} -- possible cryptic "
-                                            f"intron found, retrying\n", log_file
-                                        )
-                                        if dico_donor:
-                                            (donor_seqs, donor_locs_left,
-                                             donor_locs_right) = intron_seqs_to_avoid(
-                                                dico_donor
-                                            )
-                                        if dico_acceptor:
-                                            (acceptor_seqs, acceptor_locs_left,
-                                             acceptor_locs_right) = intron_seqs_to_avoid(
-                                                dico_acceptor
-                                            )
-
-                                        intron_constraints.extend(
-                                            donor_seqs + acceptor_seqs
-                                        )
-                                        loc_constraints_left.extend(
-                                            donor_locs_left + acceptor_locs_left
-                                        )
-                                        loc_constraints_right.extend(
-                                            donor_locs_right + acceptor_locs_right
-                                        )
-
-                                        original_sequence = chiseled_sequence
-                                        last_try += 1
-                                        continue
+                                    original_sequence = chiseled_sequence
+                                    last_try += 1
+                                    continue
 
 #                            else:
 #                                # Add 5' and 3' ends to the chiseled sequence
