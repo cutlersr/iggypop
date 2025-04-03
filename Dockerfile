@@ -60,3 +60,6 @@ RUN chmod +x setup.sh && ./setup.sh
 # Ensure the script has executable permissions
 RUN chmod +x /app/iggypop.py
 
+# Set the entry point as bash shell
+ENTRYPOINT ["/bin/bash"] 
+
