@@ -51,7 +51,10 @@ in/
 test/blah.fasta
 
 yaml/*
+!domesticate_cds_minimal.yml
 !yaml/domesticate_two_step_gb.yml
+!domesticate_cds_mcu_gc_53.yml
+!domesticate_cds_mcu_gc_53_two_step.yml
 !yaml/domesticate_two_step_cds.yml
 !yaml/domesticate_two_step_cds_mcu.yml
 !yaml/domesticate_two_step_gb_mcu.yml
