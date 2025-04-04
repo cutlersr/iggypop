@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 from Bio import SeqIO
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from pkg_resources import resource_filename
 import logging
 import absl.logging
