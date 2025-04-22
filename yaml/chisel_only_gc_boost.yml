@@ -1,0 +1,53 @@
+# This yaml domesticates a cds and boosts its GC content
+
+###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
+
+mode: "no_hinge"                       # this turns off the hinging functions and just chisels the inputs
+
+constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BbsI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: SapI_site
+    strand: both
+  - type: AvoidPattern
+    pattern: BtgZI
+    strand: both
+
+  - type: EnforceTranslation            # force changes to be synonymous
+
+optimizations:
+  - type: UniquifyAllKmers              # optimize to minimze 12 bp repeats
+    include_reverse_complement: True
+    k: 12
+
+  - type: EnforceGCContent              # optimize GC content
+    mini: 0.53                          # within these bounds  
+    maxi: 0.65
+    window: 60
+    boost: 4
+
+codon_opt: 'match_codon_usage'          # others options: use_best_codon, harmonize_rca, hybrid, none
+
+species: arabidopsis                    # taxids work as do species names an short names (a_thaliana)
+
+codon_tbl: "cocoputs"                   # can be kazusa or cocoputs
+
+
+############################ CLONING PARAMETERS ###############################
+  
+base_5p_end: ""                         # setting these to empty prevents modification of the input sequences ends
+base_3p_end: ""          
+
+pcr_5p_cut: ""    
+pcr_3p_cut: ""   
+
+

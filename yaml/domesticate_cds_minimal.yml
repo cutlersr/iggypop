@@ -1,0 +1,67 @@
+# This yaml domesticates a cds without codon optimization or any other sequence mods
+# and only removes the BsmBI site used for cloning into pPOP-BsmBI
+# uncomment or add additional sites depending on your cloning needs
+
+############################ SEQUENCE OPTIMIZATION PARAMETERS #################################
+
+constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+#  - type: AvoidPattern                # for more options.
+#    pattern: BsaI_site              
+#    strand: both                        
+  - type: AvoidPattern                 # used with MoClo/GoldenBraid and the base pPOP-BsmBI vector
+    pattern: BsmBI_site                # modify as needed
+    strand: both
+#  - type: AvoidPattern                 # used in MoClo
+#    pattern: BbsI_site
+#    strand: both 
+#  - type: AvoidPattern                 # used for loop assembly
+#    pattern: SapI_site
+#    strand: both
+#  - type: AvoidPattern                 # used in place of BsaI in GoldenBraid
+#    pattern: BtgZI
+#    strand: both
+
+  - type: EnforceTranslation            # force any changes made to be synonymous
+
+#  - type: AvoidHairpins                 # avoid hairpins
+#    stem_size: 20
+#    hairpin_window: 250
+
+#optimizations:
+#  - type: UniquifyAllKmers              # optimize to minimize 12 bp repeats
+#    include_reverse_complement: True
+#    k: 12
+
+codon_opt: 'none'                       # options are: use_best_codon, harmonize_rca, hybrid, none
+
+
+################################## CLONING PARAMETERS #######################################
+
+ext_overhangs:                          # outer overhangs used for cloning 
+  - AATG                                # into pPOP vectors
+  - GCTT
+                                        
+base_5p_end: "A"                        # Together w/ ATG creates AATG needed for cloning into pPOP
+base_3p_end: "GCTT"                     # GCTT for 3' end cloning into pPOP
+
+pcr_5p_cut: "CGTCTCA"                   # BsmBI sites   # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"                   # BsmBI sites   # Sequence added on 3' end of oligos
+
+
+################################# HINGING PARAMETERS #######################################
+
+oligo_length: 250                        # Max oligo length; change as desired
+primer_length: 18                        # All indexsets primers are 18 bp
+
+radius: 8                                # radius value used by goldenhinges
+n_tries: 10                              # Number of overhang sets to test.
+
+primer_index: 1                          # row of indexsets file to start from
+
+
+#################################### DATA FILES ###########################################
+
+fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
+ohsets: 'data/hingesets.xlsx'
+index_primers: "data/indexsets.csv"

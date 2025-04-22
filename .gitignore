@@ -1,0 +1,82 @@
+# Ignore all files with a .log extension
+*.log
+
+
+#obsidian folder
+.obsidian/
+
+# Ignore all files in the logs directory
+logs/
+
+# Ignore the bacthes file
+batches/
+
+# Ignore environment-specific files
+.env
+
+# Ignore compiled code
+*.class
+*.pyc
+*.o
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore node_modules directory (for Node.js projects)
+node_modules/
+
+# Ignore Python virtual environment directories
+.venv/
+
+# ignore files located in ignore folders
+**/ignore/
+
+barcodes/
+
+data/mfeprimer-3.3.1-linux-386
+data/indexsets_old.csv
+data/linkers.fasta
+data/unsed_ok_primers.csv
+data/ignore
+
+scripts/*
+!scripts/paste_primers_cmd.R
+!scripts/assemble_fragments.py
+!scripts/rescore.py
+!scripts/process_gagga_runs.R
+!scripts/process_gagga.py
+!scripts/barcode_selection.py
+
+
+# Ignore all files in the out folder
+out/*
+
+# Ignore all files in the out folder
+in/
+
+test/blah.fasta
+
+yaml/*
+!yaml/domesticate_cds_minimal.yml
+!yaml/domesticate_two_step_gb.yml
+!yaml/domesticate_cds_mcu_gc_53.yml
+!yaml/domesticate_cds_mcu_gc_53_two_step.yml
+!yaml/domesticate_two_step_cds.yml
+!yaml/domesticate_two_step_cds_mcu.yml
+!yaml/domesticate_two_step_gb_mcu.yml
+!yaml/domesticate_two_step_gb_ubc.yml
+!yaml/domesticate_two_step_gb_hybrid.yml
+!yaml/domesticate_two_step_cds_hybrid.yml
+!yaml/domesticate_two_step_cds_ubc.yml
+!yaml/domesticate_cds_ubc.yml
+!yaml/domesticate_cds_hybrid.yml
+!yaml/domesticate_gb_mcu.yml
+!yaml/domesticate_gb_ubc.yml
+!yaml/domesticate_gb_hybrid.yml
+!yaml/domesticate_cds_mcu.yml
+!yaml/domesticate_cds.yml
+!yaml/domesticate_gb.yml
+!yaml/chisel_only.yml
+!yaml/chisel_only_gc_boost.yml
+!yaml/promoters.yml

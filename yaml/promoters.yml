@@ -1,0 +1,56 @@
+###################### SEQUENCE OPTIMIZATION PARAMETERS #######################
+
+mode: "chisel"                         # 'no_mods' to skip chiseling (i.e. no sequence changes)
+                                       # 'no_hinge' to only returning chiseled sequences
+constraints:
+  # RE sites to avoid                  # https://edinburgh-genome-foundry.github.io/DnaChisel 
+  - type: AvoidPattern                 # for more options.
+    pattern: BsaI_site              
+    strand: both                        
+  - type: AvoidPattern
+    pattern: BsmBI_site
+    strand: both
+#  - type: AvoidPattern
+#    pattern: BbsI_site
+#    strand: both
+#  - type: AvoidPattern
+#    pattern: SapI_site
+#    strand: both
+#  - type: AvoidPattern
+#    pattern: BtgZI
+#    strand: both
+
+codon_opt: 'none'          # others options: use_best_codon, harmonize_rca, hybrid, none
+
+
+############################ CLONING PARAMETERS ###############################
+
+require_orf: "off"                      # ignore default behavior of expecting an orf
+
+ext_overhangs:                          # outer overhangs used for cloning 
+  - AATG                                # into vector
+  - GCTT
+  
+base_5p_end: "AATGGGTCTCTGGAG"          # BsaI+GGAG and for prommoters
+base_3p_end: "AATGAGAGACCGCTT"          # AATG+BsaI on ends for prommoters
+
+pcr_5p_cut: "CGTCTCA"   # BsmBI sites   # Sequence added on 5' end of oligos   
+pcr_3p_cut: "AGAGACG"   # BsmBI sites   # Sequence added on 3' end of oligos
+
+
+########################### HINGING PARAMETERS #################################
+
+oligo_length: 250                        # Max oligo length 
+primer_length: 18                        # Barcode primer length 
+
+max_fragments: 18                        # Max fragments per PCR reaction.
+
+radius: 8                                # radius value used by goldenhinges
+n_tries: 10                              # Number of overhang sets to test.
+
+primer_index: 1                          # row of barcodes file to start from
+
+# data files
+fidelity_data: 'data/FileS03_T4_18h_25C.xlsx'
+ohsets: 'data/hingesets.xlsx'
+index_primers: "data/indexsets.csv"

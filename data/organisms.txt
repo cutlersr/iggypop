@@ -1,0 +1,42 @@
+
+
+| Organism                                      | TaxID  |
+|-----------------------------------------------|--------|
+| Arabidopsis thaliana (thale cress)            | 3702   |
+| Oryza sativa (rice)                           | 4530   |
+| Zea mays (maize)                              | 4577   |
+| Citrus sinensis (sweet orange)                | 2711   |
+| Solanum lycopersicum (tomato)                 | 4081   |
+| Solanum tuberosum (potato)                    | 4113   |
+| Brassica napus (rapeseed)                     | 3708   |
+| Triticum aestivum (wheat)                     | 4565   |
+| Sorghum bicolor (sorghum)                     | 4558   |
+| Phaseolus vulgaris (common bean)              | 3885   |
+| Vitis vinifera (grapevine)                    | 29760  |
+| Medicago truncatula (barrel medic)            | 3880   |
+| Populus trichocarpa (black cottonwood)        | 3694   |
+| Manihot esculenta (cassava)                   | 3983   |
+| Setaria italica (foxtail millet)              | 4555   |
+| Lotus japonicus (bird's-foot trefoil)         | 34305  |
+| Marchantia polymorpha                         | 3193   |
+| Physcomitrella patens                         | 3218   |
+| Selaginella moellendorffii                    | 88036  |
+| Escherichia coli                              | 562    |
+| Saccharomyces cerevisiae (baker's yeast)      | 4932   |
+| Drosophila melanogaster (fruit fly)           | 7227   |
+| Caenorhabditis elegans (nematode)             | 6239   |
+| Homo sapiens (human)                          | 9606   |
+| Mus musculus (house mouse)                    | 10090  |
+| Rattus norvegicus (Norway rat)                | 10116  |
+| Bos taurus (cattle)                           | 9913   |
+| Gallus gallus (chicken)                       | 9031   |
+| Xenopus laevis (African clawed frog)          | 8355   |
+| Canis lupus familiaris (dog)                  | 9615   |
+|-----------------------------------------------|--------|
+
+The following short names also work:
+e_coli, s_cerevisiae, c_elegans, b_subtilis, d_melanogaster, 
+h_sapiens
+
+Any valid NCBI taxID can be used for codon optimization.
+https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi
