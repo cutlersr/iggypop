@@ -4,7 +4,7 @@
 
 ![Overview](png/overview.png)
 
-**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented  into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
+**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
 
 ## Installation
 
@@ -21,7 +21,7 @@ chmod +x setup.sh
 ### Docker
 ```bash
 # this is your best option on a mac
-git clone github.com/cutlersr/iggypop
+git clone https://github.com/cutlersr/iggypop
 cd iggypop
 docker build -t iggypop .
 chmod +x setup.sh
@@ -30,7 +30,7 @@ docker run -it -v $(pwd):/app iggypop
 ```
 
 ## Working with Coding Sequences
-Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters sequence can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [YAML folder](yaml/)
+Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [YAML folder](yaml/)
 
 To generate oligos using default settings:
 ```bash
@@ -40,13 +40,13 @@ To generate oligos using default settings:
 # OUTPUTS
 # designed sequences, oligo pools, required indexing primers, logs: out/10_TFs
 # changes made to input sequences: out/10_TFs/reports
-# input files, yaml paramater file, code used: out/10_TFs/assets 
+# input files, yaml parameter file, code used: out/10_TFs/assets 
 # amplicon sequencing template file: out/10_TFs/SampleInfo.tsv
 ```
 
 The default settings (`yaml/domesticate_cds.yml`):
 
-- Remove commonly used GG sites used for assembly and downstream MoClo (BsaI, BsmBI)
+- Remove GG sites used for assembly and downstream MoClo (BsaI, BsmBI)
 - Enforce synonymous changes
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Create GoldenBraid / MoClo compatible ORFs
@@ -92,18 +92,18 @@ If you want to make minimal changes to your input sequence, use the minimal yaml
 
 
 #### Working with non-coding sequences:
-`iggypop.py cds` checks to ensure that your sequence is an ORF (multiple of 3) that begins with an ATG; this is required so that only synonymous changes are made to your coding sequence when IIS sites are removed (required for proper assembly). If you want to generate oligos for non-coding sequences, such as promoters, you can use the `--require_orf off` flag. This example uses a yaml that will take an input fasta file with and generate oligos to create constructs in pPOP with Goldenbraid compatible promoter fragments (BasI--GGAG....AATG--BsaI);  BsmBI and BsaI are removed if present. 
+`iggypop.py cds` checks to ensure that your sequence is an ORF (multiple of 3) that begins with an ATG; this is required so that only synonymous changes are made to your coding sequence when IIS sites are removed (required for proper assembly). If you want to generate oligos for non-coding sequences, such as promoters, you can use the `--require_orf off` flag. This example uses a yaml that will take an input fasta file and generate oligos to create constructs in pPOP with Goldenbraid compatible promoter fragments (BsaI--GGAG....AATG--BsaI);  BsmBI and BsaI are removed if present. 
 ```bash
 ./iggypop.py cds                                                     \
     --i "test/10_At_promoters.fasta" --o "10_At_promoters"           \
     --yml yaml/promoters.yml
 ```
 
-For complex constructs containing coding and non-coding sequences, use `iggypop.py gb` and an annotated genbank files (see below).
+For complex constructs containing coding and non-coding sequences, use `iggypop.py gb` and an annotated GenBank file (see below).
 
 
 #### Two-step assemblies
-Although assembly of long (>2.5 kb) sequences is possible, the efficiency assembly efficiency can be low and identifying error-free clones often requires more amplicon sequencing. For longer sequences, we recommend that you use the two-step assembly mode; this breaks sequences into  "step one" blocks which are assembled from oligo pools using BbsI into the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
+Although assembly of long (>2.5 kb) sequences is possible, the assembly efficiency can be low and identifying error-free clones often requires more amplicon sequencing. For longer sequences, we recommend that you use the two-step assembly mode; this breaks sequences into "step one" blocks which are assembled from oligo pools using BbsI into the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
 
 ![Two-Step Assembly](png/two_step.png)
 To do this, use the provided `two_step` YAML files:
@@ -112,7 +112,7 @@ To do this, use the provided `two_step` YAML files:
                 --yml "yaml/domesticate_two_step_cds.yml"
 ```
 
-Note: The two-step assembly YAMLs add BbsI sites (instead of BsmBI) to the oligo ends for assembly of the PCR products amplified from pools. If you use this protocol to generate oligos for smaller sequences that can be assembled  in a single step, they require assembly by BbsI.
+Note: The two-step assembly YAMLs add BbsI sites (instead of BsmBI) to the oligo ends for assembly of the PCR products amplified from pools.
 
 
 #### Combining oligo pools from different runs
@@ -135,7 +135,7 @@ python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
 ```
 
 
-#### Generating oligos without  modifications to input sequences
+#### Generating oligos without modifications to input sequences
 `--mode no_mods` will run the hinging process (i.e. identify high-fidelity overhang sets) and output indexed oligo for input sequences without making any changes to your input sequences.
 
 
@@ -177,15 +177,15 @@ Set `--seed 123` to force a specific seed. The log files list the seeds used for
 
 
 ## Working with GenBank Formatted Sequences
-The parameters for optimizing GenBank files differ and use annotations added to your GenBank file using dnachisel's [`genbank API`](https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html). `iggypop.py format` allows easy parameter setting in a YAML file:
+The parameters for optimizing GenBank files differ and use annotations added to your GenBank file using dnachisel's [`GenBank API`](https://edinburgh-genome-foundry.github.io/DnaChisel/genbank/genbank_api.html). `iggypop.py format` allows easy parameter setting in a YAML file:
 ```bash
-# Format a genbank file using the default domesticate_gb.yml file
+# Format a GenBank file using the default domesticate_gb.yml file
 ./iggypop.py format --i "test/sfGFP_unformatted.gb" --o "test/sfGFP_formatted.gb"
 ```
 
 Default settings:
 
-- Remove cloning GG Sites (BsaI, BsmBI. using `@AvoidPattern` tags)
+- Remove cloning GG Sites (BsaI and BsmBI, using `@AvoidPattern` tags)
 - Protect annotated regulatory sites with `@AvoidChanges` tags
 - Enforce synonymous changes to annotated CDSs using `@EnforceTranslation` tags
 - Assemble oligos ≤ 250 bp for BsmBI assembly using AATG/GCTT overhangs
@@ -242,4 +242,4 @@ Our primers used for amplifying fragments from pools (data/indexsets.csv) are 18
 The pipeline begins by generating random DNA sequences (excluding specified restriction sites) with defined length and GC content. Primer3 is then used to design PCR primer pairs for these sequences at preset sizes and melting temperatures. Next, MFEprimer is employed to screen the candidates—first filtering out primer pairs with high off‑target (cross‑binding) scores using a cutoff (by default, retaining the best 30% of candidates) and then removing those predicted to generate off‑target amplicons or to cross‑hybridize with contaminants (using a secondary cutoff that retains roughly the best 50% of the first filter).  The final primer pairs—characterized by minimal cross binding (non‑specific interactions) and no predicted off‑target amplicon formation—are then output for downstream applications.
 
 ## IGGYPOPseq
-Our pipeline identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The amplicon barcoding primers for the pPOP and pPlant-POP vectors are in the data folder [here](data/amplcon_barcoding_primers.xlsx).  Six amplicons per target are typically generated by colony PCR; all amplicons for a given experiment are bead purified, library-prep'd and then sequenced on a ONT Minion flow cell. The fastq data from a run is then processed using our sequence analysis pipeline: https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq. 
+Our pipeline identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The amplicon barcoding primers for the pPOP and pPlant-POP vectors are in the data folder [here](data/amplicon_barcoding_primers.xlsx).  Six amplicons per target are typically generated by colony PCR; all amplicons for a given experiment are bead purified, library-prep'd and then sequenced on an ONT Minion flow cell. The fastq data from a run is then processed using our sequence analysis pipeline: [Construct-Validation-for-IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq)
