@@ -142,9 +142,11 @@ def calculate_redundancy(sequences: list) -> tuple:
   
 def calculate_fidelity_score(sequences: list, potapov_data: pd.DataFrame) -> float:
     results = {"Sequence": [], "OnTarget": [], "OffTarget": [], "IndividualFidelity": []}
-    #make sure that the fixed_overhangs are scored (not sure why but sometimes they are being left out)
+    # make sure that the fixed_overhangs are scored
     sequences = list(sequences) + FIXED_OVERHANGS
-    sequences = np.unique(filter_reverse_complements(sequences)[0]).tolist()
+    # strip out reverse-complement duplicates AND palindromes
+    #    [2] is the “set1_no_palindromes” list
+    sequences = np.unique(filter_reverse_complements(sequences)[2]).tolist()
     rc_sequences = [reverse_complement(seq) for seq in sequences]
     combined_sequences = list(set(sequences + rc_sequences))
     for seq in sequences:
@@ -231,30 +233,42 @@ def evaluate(individual: list) -> tuple:
     return calculate_penalized_fidelity_score(sequences, df, ALPHA, BETA),
 
 
-def adjust_elite_set(elite_set: List[str], fixed_overhangs: List[str], forbidden_sequences: List[str], target_size: int) -> List[str]:
-    # Remove fixed_overhangs and forbidden_sequences from elite_set
-    rc_fixed = [reverse_complement(seq) for seq in FIXED_OVERHANGS]
-    combined_fixed_rc = FIXED_OVERHANGS + rc_fixed
-    adjusted_elite_set = [seq for seq in elite_set if seq not in combined_fixed_rc + FORBIDDEN_SEQUENCES]
-    
-    # Generate a list of allowable sequences
-    all_sequences = ["".join(seq) for seq in itertools.product("ACGT", repeat=4)]
-    allowable_sequences = [seq for seq in all_sequences if seq not in combined_fixed_rc + FORBIDDEN_SEQUENCES + adjusted_elite_set]
-    
-    # Adjust the size of the adjusted_elite_set
-    while len(adjusted_elite_set) + len(fixed_overhangs) < target_size:
-        # If adjusted_elite_set is smaller than target_size, add random sequences from allowable_sequences
-        adjusted_elite_set.append(random.choice(allowable_sequences))
-        allowable_sequences.remove(adjusted_elite_set[-1])
-    while len(adjusted_elite_set) + len(fixed_overhangs) > target_size:
-        # If adjusted_elite_set is larger than target_size, randomly remove sequences
-        removed_seq = random.choice(adjusted_elite_set)
-        adjusted_elite_set.remove(removed_seq)
-    
-    # Add fixed_overhangs to the beginning of adjusted_elite_set
-    adjusted_elite_set = fixed_overhangs + adjusted_elite_set
-    
-    return adjusted_elite_set
+def adjust_elite_set(elite_candidates: List[str],
+                     fixed_overhangs: List[str],
+                     forbidden_sequences: List[str],
+                     target_size: int) -> List[str]:
+    """
+    Take a user/hinge elite set, remove any fixed or forbidden seqs (and their RCs),
+    then top up (or trim) to exactly (target_size - len(fixed_overhangs)) extras
+    chosen from possible_overhangs.  Finally, prepend fixed_overhangs.
+    """
+    # 1) build banned set: fixed + their RCs + forbidden
+    rc_fixed = [reverse_complement(s) for s in fixed_overhangs]
+    banned = set(fixed_overhangs + rc_fixed + forbidden_sequences)
+
+    # 2) strip out any banned seqs from the user’s elite candidates
+    adjusted = [s for s in elite_candidates if s not in banned]
+
+    # 3) how many extras we need beyond the fixed_overhangs
+    slots = target_size - len(fixed_overhangs)
+
+    # 4) build a fresh candidate pool from your pre-filtered universe
+    #    (assumes possible_overhangs was already defined to exclude palindromes & RC pairs)
+    pool = [s for s in possible_overhangs if s not in fixed_overhangs]
+
+    # 5) fill up, but never error if pool runs dry
+    while len(adjusted) < slots and pool:
+        choice = random.choice(pool)
+        adjusted.append(choice)
+        pool.remove(choice)
+
+    # 6) if we have too many, randomly trim the extras
+    while len(adjusted) > slots:
+        idx = random.randrange(len(adjusted))
+        adjusted.pop(idx)
+
+    # 7) put your fixed_overhangs back up front
+    return fixed_overhangs + adjusted
 
 
 def process_and_save_top_solutions_to_excel(top_solutions: list, potapov_data: pd.DataFrame, output_file: str) -> None:
@@ -494,7 +508,11 @@ def eaSimpleWithElitism(population, toolbox, cxpb, mutpb, indpb, ngen, stats=Non
 df = pd.read_excel(POTAPOV_DATA)
 
 forbidden_sequences = FORBIDDEN_SEQUENCES
-possible_overhangs = [seq for seq in df.columns[1:] if seq not in forbidden_sequences]
+# build the universe of overhangs, drop any forbidden ones
+all_overhangs = [seq for seq in df.columns[1:] if seq not in forbidden_sequences]
+# remove both reverse-complement pairs AND palindromes up front
+#    filter_reverse_complements(...)[2] is the no-palindromes set
+possible_overhangs = filter_reverse_complements(all_overhangs)[2]
 
 creator.create("FitnessMulti", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMulti)
