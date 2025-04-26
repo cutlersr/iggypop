@@ -4,7 +4,7 @@
 
 ![Overview](png/overview.png)
 
-**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons.
+**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons using [IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq).
 
 ## Installation
 
@@ -34,10 +34,9 @@ Coding sequences are domesticated, fragmented, indexed, and appended with cut si
 
 To generate oligos using default settings:
 ```bash
-
 ./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs"
 
-# OUTPUTS
+# OUTPUTS:
 # designed sequences, oligo pools, required indexing primers, logs: out/10_TFs
 # changes made to input sequences: out/10_TFs/reports
 # input files, yaml parameter file, code used: out/10_TFs/assets 
@@ -50,6 +49,17 @@ The default settings (`yaml/domesticate_cds.yml`):
 - Enforce synonymous changes
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Create GoldenBraid / MoClo compatible ORFs
+
+#### Sequence optimization using `dnachisel` functions:
+```bash
+# This yaml removes common IIS sites, codon optimizes using `match_codon_usage`
+# and an rice codon table, remove hairpins, and reduces repeated sequences 
+# ≥12 bp using `UniquifyAllKmers` optimization:
+./iggypop.py cds                          \
+--i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
+--yml "yaml/domesticate_cds_mcu.yml"      \
+--species o_sativa
+```
 
 #### Overriding defaults:
 The default parameters can be modified by creating new YAML files or using arguments on the command line.  For example, to modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3', which are required as terminal overhangs with the pPOP vectors:
