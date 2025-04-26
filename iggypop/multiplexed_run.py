@@ -2,22 +2,23 @@
 
 """
 This script implements a protocol for gene library synthesis using golden gate assembly, 
-similar in principle to the OMEGA approach descrbed the Romero lab 
+similar in principle to the OMEGA approach described by the Romero lab 
 (https://doi.org/10.1101/2025.03.22.644747 & https://github.com/RomeroLab/omega).
 
 A fasta file with target coding sequences is  split into batches of roughly equal 
-total length; the sequences are purged of default IIS sites and optionally codon-optimized.
-Each batch is broken into indexed oligos that can be reassembled after PCR using the 
-index primer pair for that batch. A Monte Carlo optimization approach is employed to
-help identfiy high-fidelity overhang sets for each batch.
+gene number / length; the sequences are purged of default IIS sites and optionally 
+codon-optimized. Each batch is broken into indexed oligos that can be reassembled 
+after PCR using the  index primer pair for that batch. A Monte Carlo optimization 
+approach is employed to help identfiy high-fidelity overhang sets for each batch.
 
 Usage:
-    python iggypop/multiplexed_run.py --i test/35_.fasta --o output_prefix --yml config.yml [options]
+    python iggypop/multiplexed_run.py --i test/35_.fasta --o output_prefix --yml config.yml 
 """
 
 import os
 import io
 import sys
+import math
 import argparse
 import yaml
 import random
@@ -28,6 +29,8 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import contextlib
+import glob
+from Bio import SeqIO
 
 # Core hinging logic: generate and evaluate overhang sets
 from chisel_hinge import get_overhang_sets, find_cut_solution, chisel
@@ -60,9 +63,6 @@ def parse_fasta_lengths(fasta_path):
         lengths.append((rec.id, len(rec.seq)))
         sequences[rec.id] = str(rec.seq)
     return lengths, sequences
-
-
-import math
 
 def assign_to_batches(lengths, max_batch_size):
     """
@@ -103,40 +103,71 @@ def assign_to_batches(lengths, max_batch_size):
     return batches, sums
 
 
-def load_yaml(yaml_path, log_file, cli_args):
+def load_yaml(yaml_path, log_file, cli_args, verbose=True):
     """
-    Load default parameters from YAML, override with any CLI args provided,
-    and log the final configuration.
+    Load all parameters from YAML (flattening a top-level 'defaults:' if present),
+    override with any CLI args provided (any that are not None), and log the final configuration.
 
     Returns:
       - data: dict of final parameters
     """
+    # 1) Read the file
     with open(yaml_path) as f:
-        data = yaml.safe_load(f)
+        raw = yaml.safe_load(f) or {}
 
-    # Map CLI arguments to YAML keys
-    overrides = {
-        'primer_index': cli_args.primer_index,
-        'n_gene_orders': cli_args.n_gene_orders,
-        'swap_cycles': cli_args.swap_cycles,
-        'n_tries': cli_args.n_tries,
-        'codon_tbl': cli_args.codon_tbl,
-        'codon_opt': cli_args.codon_opt,
-        'original_species': cli_args.original_species,
-        'max_batch_size': cli_args.max_batch_size
-    }
+    # 2) Flatten if someone wrapped all params under a 'defaults:' key
+    if isinstance(raw, dict) and 'defaults' in raw and isinstance(raw['defaults'], dict):
+        data = raw['defaults'].copy()
+    else:
+        data = raw.copy()
 
-    # Apply overrides when CLI args are explicitly set
-    for key, val in overrides.items():
+    # 3) Overlay any CLI flags that were explicitly passed (not None)
+    for key, val in vars(cli_args).items():
+        # skip args that are logistical, not parameters
+        if key in ('i', 'o', 'yml', 'quiet'):
+            continue
         if val is not None:
             data[key] = val
 
-    # Log the command and all parameters
-    log_and_print(f"Command: {' '.join(sys.argv)}", log_file)
-    for k, v in data.items():
-        log_and_print(f"{k}: {v}", log_file, quiet="on")
+    # 4) Log the command line and all final parameters
+    log_and_print(f"Command: {' '.join(sys.argv)}", log_file,
+                  quiet=not verbose)
+    for k in sorted(data):
+        log_and_print(f"{k}: {data[k]!r}", log_file,
+                      quiet=not verbose)
 
     return data
+
+
+def collate_genbank_reports(reports_dir, out_path):
+    """
+    Recursively find only the `final_sequence_with_edits.gb` files under reports_dir,
+    rename each record’s locus/accession to the report folder’s basename,
+    and concatenate them into out_path.
+    """
+    target = "final_sequence_with_edits.gb"
+    gb_paths = []
+    for root, dirs, files in os.walk(reports_dir):
+        if target in files:
+            gb_paths.append(os.path.join(root, target))
+
+    if not gb_paths:
+        raise RuntimeError(f"No '{target}' files found under {reports_dir!r}")
+
+    with open(out_path, 'w') as out_handle:
+        for path in sorted(gb_paths):
+            # parent folder is exactly your desired accession/locus
+            acc = os.path.basename(os.path.dirname(path))
+            for rec in SeqIO.parse(path, "genbank"):
+                # overwrite locus name:
+                rec.name = acc
+                # overwrite accession:
+                rec.id = acc
+                # also update the ACCESSION annotation list:
+                rec.annotations["accessions"] = [acc]
+                # clear description
+                rec.description = ""
+                SeqIO.write(rec, out_handle, "genbank")
 
 
 # -----------------------------------------------------------------------------
@@ -148,7 +179,6 @@ def process_order(records, full_oh_sets, external_overhangs,
     """
     For a given ordering of gene records:
       - Prepend/appand base ends to each sequence
-      - Run Monte Carlo search (find_cut_solution) to assign internal overhangs
       - Calculate per-gene and batch-level fidelity scores
       - Generate fragment entries (with left/right overhangs)
 
@@ -168,6 +198,7 @@ def process_order(records, full_oh_sets, external_overhangs,
     p5cut = yaml_defaults['pcr_5p_cut']
     p3cut = yaml_defaults['pcr_3p_cut']
     base_tries = yaml_defaults['n_tries']
+    primer_length = yaml_defaults['primer_length']
 
     for idx, rec in enumerate(records):
         # Add base adapters
@@ -215,7 +246,7 @@ def process_order(records, full_oh_sets, external_overhangs,
                 'sequence': frag_seq,
                 'left_oh': new_ohs[i-1] if i > 0 else external_overhangs[0],
                 'right_oh': new_ohs[i],
-                'frag_length': len(frag_seq)
+                'frag_length': len(frag_seq) + 2*primer_length
             })
             prev = cut
 
@@ -228,7 +259,7 @@ def process_order(records, full_oh_sets, external_overhangs,
             'sequence': frag_seq,
             'left_oh': new_ohs[-1],
             'right_oh': external_overhangs[-1],
-            'frag_length': len(frag_seq)
+            'frag_length': len(frag_seq) + 2*primer_length
         })
 
         # Update start index to avoid reusing the same OH sets immediately
@@ -363,19 +394,19 @@ def run_pipeline(records, out_dir, yaml_defaults, potapov_data,
 # Worker for a single batch
 # ----------------------------------
 def batch_worker(params):
-    import os
 
     (bidx, ids, chiselled_records, base_out, yaml_defaults,
      potapov_data, segment_length, full_oh_sets,
-     external_overhangs, index_df, base_index, args, log_path) = params
+     external_overhangs, index_df, base_index, args) = params
 
-    # ensure log directory exists
-    os.makedirs(os.path.dirname(log_path), exist_ok=True)
-    # make batch directory
+    # create batch directory
     bdir = os.path.join(base_out, f"batch_{bidx}")
     os.makedirs(bdir, exist_ok=True)
 
-    # open and run
+    # define log path inside it
+    log_path = os.path.join(bdir, "batch.log")
+
+    # run the pipeline and capture its own log
     with open(log_path, 'w') as log_f:
         gr, fr, ohs, bfid, primers = run_pipeline(
             [r for r in chiselled_records if r.id in ids],
@@ -399,29 +430,47 @@ def batch_worker(params):
 # Main orchestration
 # ----------------------------------
 def main():
+
+    DEFAULTS = {
+        'primer_index':    1,
+        'max_batch_size': 10000,
+        'n_gene_orders':   15,
+        'swap_cycles':     10,
+        'n_tries':         10,
+        'codon_opt':     'none',
+        'codon_tbl':    'cocoputs',
+        'original_species': None,
+    }
+
     # 1) Parse CLI arguments
-    parser = argparse.ArgumentParser(
-        description="Multiplexed hinging pipeline -- parallel batch execution"
+    p = argparse.ArgumentParser(
+        description="Multiplexed hinging pipeline"
     )
-    parser.add_argument('--i', required=True, help="Input FASTA of CDS sequences")
-    parser.add_argument('--o', required=True, help="Output prefix")
-    parser.add_argument('--yml', default="yaml/domesticate_cds_minimal.yml", help="YAML config file")
-    parser.add_argument('--primer_index', type=int, default=1,
-                        help="1-based row in index CSV to start from")
-    parser.add_argument('--max_batch_size', type=int, default=9000,
-                        help="Max total bp per batch")
-    parser.add_argument('--n_gene_orders', type=int, default=15,
-                        help="Number of gene-order trials per batch")
-    parser.add_argument('--swap_cycles', type=int, default=10,
-                        help="Number of random swaps per batch")
-    parser.add_argument('--n_tries', type=int, default=10,
-                        help="Base number of hinging attempts per gene")
-    parser.add_argument('--codon_opt', default="none",
-                        help="Codon optimization method")
-    parser.add_argument('--codon_tbl', default="cocoputs",
-                        help="Codon table source")
-    parser.add_argument('--original_species', help="Species for codon table")
-    args = parser.parse_args()
+    # required
+    p.add_argument('--i',   required=True, help="Input FASTA of CDS sequences")
+    p.add_argument('--o',   required=True, help="Output prefix")
+    p.add_argument('--yml', default='yaml/domesticate_cds_minimal.yml',
+                   help="YAML config file")
+    # everything else default=None so we can detect “was it passed?”
+    p.add_argument('--primer_index',    type=int,   default=None,
+                   help="1-based primer index (overrides yaml)")
+    p.add_argument('--max_batch_size',  type=int,   default=None,
+                   help="Max total bp per batch")
+    p.add_argument('--n_gene_orders',   type=int,   default=None,
+                   help="Trials per batch")
+    p.add_argument('--swap_cycles',     type=int,   default=None,
+                   help="Random swaps per batch")
+    p.add_argument('--n_tries',         type=int,   default=None,
+                   help="Hinging attempts per gene")
+    p.add_argument('--codon_opt',       default=None,
+                   help="Codon optimization method")
+    p.add_argument('--codon_tbl',       default=None,
+                   help="Codon table source")
+    p.add_argument('--original_species',default=None,
+                   help="Species for codon table")
+    p.add_argument('--quiet', action='store_true',
+                   help="Suppress startup logging")
+    args = p.parse_args()
 
     # 2) Setup output directories & log
     run_name = os.path.splitext(os.path.basename(args.o))[0]
@@ -440,22 +489,28 @@ def main():
             shutil.copy(src, assets_dir)
 
     # 3) Load & finalize config
-    yaml_defaults = load_yaml(os.path.expanduser(args.yml), log_file, args)
+    yaml_defaults = load_yaml(
+        yaml_path=os.path.expanduser(args.yml),
+        log_file=log_file,
+        cli_args=args,
+        verbose=not getattr(args, 'quiet', False)
+    )
+    # any remaining overrides / computed fields
     yaml_defaults.update({
-        'n_tries': args.n_tries or yaml_defaults['n_tries'],
-        'codon_tbl': args.codon_tbl or yaml_defaults.get('codon_tbl', 'cocoputs'),
-        'codon_opt': args.codon_opt or yaml_defaults.get('codon_opt', 'none'),
-        'original_species': args.original_species
-                             or yaml_defaults.get('original_species')
-                             or yaml_defaults.get('species', 'none'),
-        'reports_dir': os.path.join(base_out, 'reports'),
-        'run_name': run_name
+        'n_tries':           args.n_tries           or yaml_defaults['n_tries'],
+        'codon_tbl':         args.codon_tbl         or yaml_defaults.get('codon_tbl', 'cocoputs'),
+        'codon_opt':         args.codon_opt         or yaml_defaults.get('codon_opt', 'none'),
+        'original_species':  args.original_species  or yaml_defaults.get('original_species')
+                                                    or yaml_defaults.get('species', 'none'),
+        'reports_dir':       os.path.join(base_out, 'reports'),
+        'run_name':          run_name
     })
     os.makedirs(yaml_defaults['reports_dir'], exist_ok=True)
 
+
     # 4) Prepare codon table
     if yaml_defaults['codon_tbl'] == 'cocoputs':
-        codon_tbl_obj, _ = calculate_codon_frequencies(
+        codon_tbl_obj, _, _ = calculate_codon_frequencies(
             'data/cleaned_coco.tsv',
             yaml_defaults['original_species']
         )
@@ -463,7 +518,9 @@ def main():
         codon_tbl_obj = get_codons_table(yaml_defaults['original_species'])
     yaml_defaults['codon_tbl_obj'] = codon_tbl_obj
 
+    # ----------------------------
     # 5) Load support data
+    # ----------------------------
     potapov_data   = pd.read_excel(yaml_defaults['fidelity_data'])
     segment_length = calculate_segment_length(
         yaml_defaults['pcr_5p_cut'],
@@ -473,14 +530,23 @@ def main():
     external_overhangs = yaml_defaults['ext_overhangs']
     full_oh_sets      = get_overhang_sets(yaml_defaults['ohsets'], external_overhangs)
     index_df          = pd.read_csv(yaml_defaults['index_primers'])
-    base_index        = args.primer_index - 1
+    # pull primer_index from yaml_defaults, not args
+    base_index        = yaml_defaults['primer_index'] - 1
 
+    # ----------------------------
     # 6) Chisel (codon-optimize)
+    # ----------------------------
     raw_records = list(SeqIO.parse(args.i, 'fasta'))
     chiselled_records = []
     for record in raw_records:
         print(f"Domesticating/optimizing {record.id} per {os.path.basename(args.yml)} specs")
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+
+        report_fn    = f"{record.id}.chisel"
+        results_path = os.path.join(yaml_defaults['reports_dir'], report_fn)
+
+        # now call chisel() with suppressed output
+        with contextlib.redirect_stdout(io.StringIO()), \
+             contextlib.redirect_stderr(io.StringIO()):
             optimized = chisel(
                 str(record.seq),
                 yaml_defaults['codon_opt'],
@@ -498,10 +564,7 @@ def main():
                 0,
                 quiet='on',
                 file=os.path.expanduser(args.yml),
-                results_path=os.path.join(
-                    yaml_defaults['reports_dir'],
-                    f"{record.id}.html"
-                )
+                results_path=results_path
             )
         if optimized:
             record.seq = Seq(optimized)
@@ -509,10 +572,10 @@ def main():
         else:
             log_and_print(f"Chiseling failed for {record.id}, skipping.", log_file)
 
-    # Map of final sequences
+    # map for later
     chiseled_map = {rec.id: str(rec.seq) for rec in chiselled_records}
 
-    # Write designed full-length FASTA
+    # 6b) Write designed full-length FASTA
     designed_fa = os.path.join(base_out, f"{run_name}_designed_seqs.fasta")
     with open(designed_fa, 'w') as df:
         for rec in chiselled_records:
@@ -522,16 +585,19 @@ def main():
             )
     log_and_print(f"Wrote chiseled seqs to {designed_fa}", log_file)
 
+    # ----------------------------
     # 7) Split into batches (manual greedy)
-    # get original lengths and sequences
+    # ----------------------------
+    # get the original lengths & seqs, then filter to chiselled records
     orig_lengths_list, orig_seqs = parse_fasta_lengths(args.i)
     orig_lens = dict(orig_lengths_list)
-    # filter to chiselled
     id_lens = [(rec.id, orig_lens[rec.id]) for rec in chiselled_records]
+
+    # greedy fill
     batches = []
     cur_batch, cur_len = [], 0
     for gid, glen in id_lens:
-        if cur_batch and (cur_len + glen > args.max_batch_size):
+        if cur_batch and (cur_len + glen > yaml_defaults['max_batch_size']):
             batches.append(cur_batch)
             cur_batch, cur_len = [], 0
         cur_batch.append(gid)
@@ -539,21 +605,34 @@ def main():
     if cur_batch:
         batches.append(cur_batch)
 
+    # report to screen
     print("Partitioning into batches:")
     print("Batch\tGenes\tSize(bp)")
     for idx, batch in enumerate(batches, start=1):
         total_bp = sum(orig_lens[g] for g in batch)
         print(f"{idx}\t{len(batch)}\t{total_bp}")
 
-    # 8) Parallel execution
+    # build batch parameters
     batch_params = []
     for bidx, batch in enumerate(batches, start=1):
-        log_path = os.path.join(base_out, f"batch_{bidx}", "batch.log")
         batch_params.append((
-            bidx, batch, chiselled_records, base_out, yaml_defaults,
-            potapov_data, segment_length, full_oh_sets,
-            external_overhangs, index_df, base_index, args, log_path
+            bidx,
+            batch,
+            chiselled_records,
+            base_out,
+            yaml_defaults,
+            potapov_data,
+            segment_length,
+            full_oh_sets,
+            external_overhangs,
+            index_df,
+            base_index,
+            args
         ))
+
+    # ----------------------------
+    # 8) Parallel execution
+    # ----------------------------
 
     all_primers, all_gene_data, all_frag_data, failed_batches = [], [], [], []
     with ProcessPoolExecutor() as executor:
@@ -563,38 +642,46 @@ def main():
                 failed_batches.append(bidx)
                 continue
 
-            num_overhangs      = len(ohs)
-            batch_total_length = sum(orig_lens[g['accession']] for g in gr)
+            # new metrics
+            num_overhangs = len(ohs)
+            batch_total_length = sum(len(orig_seqs[g['accession']]) for g in gr)
 
+            # gene-level
             for g in gr:
                 all_gene_data.append({
-                    'accession':           g['accession'],
-                    'pop_id':              f"{g['accession']}.chisel",
-                    'i_seq':               orig_seqs[g['accession']],
-                    'chiseled_seq':        f"{yaml_defaults['base_5p_end']}{chiseled_map[g['accession']]}{yaml_defaults['base_3p_end']}",
-                    'index_primer':        g['index_primer'],
-                    'genes_per_batch':     len(batch),
-                    'batch_number':        bidx,
+                    'accession': g['accession'],
+                    'pop_id': f"{g['accession']}.chisel",
+                    'i_seq': orig_seqs[g['accession']],
+                    'chiseled_seq': (
+                        f"{yaml_defaults['base_5p_end']}"
+                        f"{chiseled_map[g['accession']]}"
+                        f"{yaml_defaults['base_3p_end']}"
+                    ),
+                    'index_primer': g['index_primer'],
+                    'genes_per_batch': len(batches[bidx-1]),
+                    'batch_number': bidx,
                     'individual_fidelity': g['individual_fidelity'],
-                    'batch_fidelity':      bfid,
-                    'num_overhangs':       num_overhangs,
-                    'batch_total_length':  batch_total_length
+                    'batch_fidelity': bfid,
+                    'num_overhangs': num_overhangs,
+                    'batch_total_length': batch_total_length
                 })
 
+            # fragment-level
             for frag in fr:
-                popid    = f"{frag['accession']}.1"
-                suffix   = frag['frag_id'].split(frag['accession'])[1]
-                left_oh  = frag.get('left_oh')  or external_overhangs[0]
+                popid = f"{frag['accession']}.1"
+                suffix = frag['frag_id'].split(frag['accession'])[1]
+                left_oh = frag.get('left_oh') or external_overhangs[0]
                 right_oh = frag.get('right_oh') or external_overhangs[-1]
                 all_frag_data.append({
-                    'accession':    frag['accession'],
-                    'frag_id':      f"{popid}{suffix}",
+                    'accession': frag['accession'],
+                    'frag_id': f"{popid}{suffix}",
                     'primer_index': frag['primer_name'],
-                    'oligo':        frag['sequence'],
-                    'left_oh':      left_oh,
-                    'right_oh':     right_oh,
-                    'frag_length':  frag['frag_length']
+                    'oligo': frag['sequence'],
+                    'left_oh': left_oh,
+                    'right_oh': right_oh,
+                    'frag_length': frag['frag_length']
                 })
+
 
     # 9) Final aggregation & outputs
     pool_fa = os.path.join(base_out, f"{run_name}_oligo_pool.fasta")
@@ -627,6 +714,14 @@ def main():
         if not gene_df.empty:
             gene_df.to_excel(writer,'seq_data',index=False)
     log_and_print(f"Wrote all data to {excel_path}", log_file)
+
+    # → Collate all of the per-sequence .gb reports into one file
+    collated = os.path.join(base_out, f"{run_name}_all_reports.gb")
+    try:
+        collate_genbank_reports(yaml_defaults['reports_dir'], collated)
+        log_and_print(f"Wrote collated GenBank reports to {collated}", log_file)
+    except Exception as e:
+        log_and_print(f"Failed to collate GenBank reports: {e}", log_file)
 
     if failed_batches:
         log_and_print(

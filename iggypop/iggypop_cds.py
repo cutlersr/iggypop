@@ -240,18 +240,15 @@ if __name__ == "__main__":
             else:
                 codon_table = get_codons_table(species)
 
-            if codon_opt == "none":
+            if codon_opt != "none":
                 # replay the informational messages
                 for msg in messages:
                     log_and_print(msg, log_file)
-            else:
                 log_and_print(f"using {codon_tbl} for your codon table", log_file)
                 log_and_print(f"using {codon_opt} for your codon optimization", log_file)
 
         except Exception as e:
             log_and_print(f"Error loading codon table: {e}", log_file)
-
-
 
 
         except Exception as e:
