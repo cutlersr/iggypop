@@ -41,7 +41,8 @@ from pop_helpers import (
     calculate_fidelity_score,
     calculate_segment_length,
     calculate_codon_frequencies,
-    reverse_complement
+    reverse_complement,
+    collate_genbank_reports
 )
 
 # Fallback codon table loader
@@ -137,38 +138,6 @@ def load_yaml(yaml_path, log_file, cli_args, verbose=True):
                       quiet=not verbose)
 
     return data
-
-
-def collate_genbank_reports(reports_dir, out_path):
-    """
-    Recursively find only the `final_sequence_with_edits.gb` files under reports_dir,
-    rename each record’s locus/accession to the report folder’s basename,
-    and concatenate them into out_path.
-    """
-    target = "final_sequence_with_edits.gb"
-    gb_paths = []
-    for root, dirs, files in os.walk(reports_dir):
-        if target in files:
-            gb_paths.append(os.path.join(root, target))
-
-    if not gb_paths:
-        raise RuntimeError(f"No '{target}' files found under {reports_dir!r}")
-
-    with open(out_path, 'w') as out_handle:
-        for path in sorted(gb_paths):
-            # parent folder is exactly your desired accession/locus
-            acc = os.path.basename(os.path.dirname(path))
-            for rec in SeqIO.parse(path, "genbank"):
-                # overwrite locus name:
-                rec.name = acc
-                # overwrite accession:
-                rec.id = acc
-                # also update the ACCESSION annotation list:
-                rec.annotations["accessions"] = [acc]
-                # clear description
-                rec.description = ""
-                SeqIO.write(rec, out_handle, "genbank")
-
 
 # -----------------------------------------------------------------------------
 # Core Hinging and Fragment Generation
