@@ -39,6 +39,7 @@ To generate oligos using default settings:
 # OUTPUTS:
 # designed sequences, oligo pools, required indexing primers, logs: out/10_TFs
 # changes made to input sequences: out/10_TFs/reports
+# .gb file with sequences and annotated changes: out/10_TFs/10_TFs_all_reports.gb
 # input files, yaml parameter file, code used: out/10_TFs/assets 
 # amplicon sequencing template file: out/10_TFs/SampleInfo.tsv
 ```
