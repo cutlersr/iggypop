@@ -48,14 +48,11 @@ scripts/*
 !scripts/process_gagga.py
 !scripts/barcode_selection.py
 
-
 # Ignore all files in the out folder
 out/*
 
 # Ignore all files in the out folder
 in/
-
-test/blah.fasta
 
 yaml/*
 !yaml/domesticate_cds_minimal.yml
@@ -80,6 +77,19 @@ yaml/*
 !yaml/chisel_only.yml
 !yaml/chisel_only_gc_boost.yml
 !yaml/promoters.yml
-iggypop/multiplexed_run.py
-iggypop/multiplexed_run.py
+
 data/hingesets_04_27_25.xlsx
+
+iggypop/*
+!iggypop/chisel_hinge.py
+!iggypop/gagga_MC.py
+!iggypop/headers.py
+!iggypop/iggypop_cds.py
+!iggypop/iggypop_format.py
+!iggypop/iggypop_gagga.py
+!iggypop/iggypop_gb.py
+!iggypop/indexing_primers.py
+!iggypop/initialization.py
+!iggypop/intron_stuff.py
+!iggypop/pop_helpers.py
+!iggypop/process_gagga.py
