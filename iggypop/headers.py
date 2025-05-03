@@ -35,7 +35,6 @@ def print_header_cds(tag):
     print(f"{'University of California, Riverside'.center(80)}")
     print('-' * 80)
     print()
-    print()
     time.sleep(1)
 
 
@@ -66,7 +65,6 @@ def print_header_gb(tag):
     print()
     print(f"{'University of California, Riverside'.center(80)}")
     print('-' * 80)
-    print()
     print()
     time.sleep(1)
     return

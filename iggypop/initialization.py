@@ -555,11 +555,12 @@ def read_log_and_identify_failures(tag):
                     failed_sequences.append(seq_id)
 
         # Printing the total number of failed sequences and their identifiers
+        print()
         print('*' * 80,)
         if failed_sequences:
-            print("\nFailed sequences:", ", ".join(failed_sequences), "\n")
+            print("Failed sequences:", ", ".join(failed_sequences), "\n")
         else:
-            print("\nNo failed sequences")
+            print("No failed sequences\n")
 
     except FileNotFoundError:
         print(f"Log file not found: {log_file_path}")

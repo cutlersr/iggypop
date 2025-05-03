@@ -80,3 +80,6 @@ yaml/*
 !yaml/chisel_only.yml
 !yaml/chisel_only_gc_boost.yml
 !yaml/promoters.yml
+iggypop/multiplexed_run.py
+iggypop/multiplexed_run.py
+data/hingesets_04_27_25.xlsx

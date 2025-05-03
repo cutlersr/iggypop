@@ -496,13 +496,32 @@ writeData(wb, sheet = "seq_data", seqs_out)
 
 saveWorkbook(wb, excel_file_path, overwrite = TRUE)
 
+
+# Generate ReferenceInfo.xlsx with selected columns using seqs_out
+reference_info <- seqs_out %>%
+  ungroup()%>%
+  mutate(
+    Reference = accession,
+    n_frags = total_fragments,
+    CDS_length = nchar(chiseled_seq),
+    ReferenceSequence = chiseled_seq
+  ) %>%
+  select(primer_index, Reference, n_frags, CDS_length, ReferenceSequence)
+
+# Write to Excel file named [NAME]_ReferenceInfo.xlsx
+reference_info_path <- paste0(opt$output_file, "_ReferenceInfo.xlsx")
+write.xlsx(reference_info, reference_info_path)
+
+
+
 cat(str_c("The barcodes used start at index ", opt$primer_index, 
           " and continue through to ", primer_selector, 
           "\nUse: --primer_index ", primer_selector + 1, 
           " to add new barcodes in your next run.\n\n"))
 
 cat(str_c(n_distinct(modified_fragments_df$base_id), 
-          " sequence(s) poppified.\n\nResults saved to:\n\n ", 
+          " sequence(s) poppified.\n\nResults saved to:\n ", 
           paste0(opt$output_file, "_all_data.xlsx\n "), 
           paste0(opt$output_file, "_oligo_pool.fasta\n "), 
-          paste0(opt$output_file, "_index_primers_required.fasta\n "))) 
+          paste0(opt$output_file, "_index_primers_required.fasta\n "),
+          paste0(opt$output_file, "_ReferenceInfo.xlsx\n "))) 

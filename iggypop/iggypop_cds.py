@@ -308,10 +308,8 @@ if __name__ == "__main__":
                 reports = reports
 
                 log_and_print(f'seed: {seed}', log_file, quiet)
-
-                log_and_print(f'\nProcessing {accession}', log_file)
+                log_and_print(f'Processing {accession}', log_file)
                 log_and_print(f"Seed value for this run: {seed}", log_file, quiet)
-                log_and_print('*' * 80, log_file)
 
                 if mode != 'no_mods':
                     if not check_orf(
@@ -697,20 +695,18 @@ if __name__ == "__main__":
                     f"Average Pairwise Distance (%): {average_distance:.1f}\n"
                 )
 
-        log_and_print('\n', log_file)
-        log_and_print('*' * 80, log_file)
-        log_and_print('\n', log_file)
-        log_and_print("Done", log_file)
-
         # ─── Collate all GenBank reports into one file ──────────────────────────
         try:
             reports_dir  = os.path.join("out", tag, "reports")
             collated_path = f"{ofile}_all_reports.gb"
             collate_genbank_reports(reports_dir, collated_path)
-            log_and_print(f"Wrote collated GenBank reports to {collated_path}", log_file)
+            log_and_print(f"{collated_path}       #GenBank w/ annotated seq changes", log_file)
         except Exception as e:
             log_and_print(f"Failed to collate GenBank reports: {e}", log_file)
         # ───────────────────────────────────────────────────────────────────────
+
+        log_and_print("\nDone", log_file)
+
 
         if quiet=="off":
             nerd_alert()
