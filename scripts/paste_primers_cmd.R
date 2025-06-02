@@ -296,7 +296,7 @@ if (opt$run_type == "gb") {
       Sample_ID,
       n_frags = total_fragments,
       CDS_length,
-      Reference = accession,
+      ReferenceName = accession,
       Fwindex,
       FwPrimer,
       Rvindex,
@@ -357,12 +357,12 @@ if (opt$run_type == "gb") {
   }
     
   # Construct file paths for the sample info files without the output prefix
-  nano_file_path_6 <- file.path(output_dir, "SampleInfo.tsv")
-  nano_file_path_8 <- file.path(output_dir, "SampleInfo[8_amplicons].tsv")
+#  nano_file_path_6 <- file.path(output_dir, "SampleInfo.tsv")
+#  nano_file_path_8 <- file.path(output_dir, "SampleInfo[8_amplicons].tsv")
     
   # Write out the two SampleInfo TSV files for the gb run
-  write_tsv(nano_out_6, nano_file_path_6, col_names = TRUE)
-  write_tsv(nano_out_8, nano_file_path_8, col_names = TRUE)
+#  write_tsv(nano_out_6, nano_file_path_6, col_names = TRUE)
+#  write_tsv(nano_out_8, nano_file_path_8, col_names = TRUE)
   
   # Optionally, assign one version as default if later code expects nano_out
   nano_out <- nano_out_6
@@ -394,7 +394,7 @@ if (opt$run_type == "cds") {
       Sample_ID,
       n_frags = total_fragments,
       CDS_length,
-      Reference = accession,
+      ReferenceName = accession,
       Fwindex,
       FwPrimer,
       Rvindex,
@@ -455,12 +455,12 @@ if (opt$run_type == "cds") {
   }
     
   # Construct file paths for the sample info files without the output prefix
-  nano_file_path_6 <- file.path(output_dir, "SampleInfo.tsv")
-  nano_file_path_8 <- file.path(output_dir, "SampleInfo[8_amplicons].tsv")
+#  nano_file_path_6 <- file.path(output_dir, "SampleInfo.tsv")
+#  nano_file_path_8 <- file.path(output_dir, "SampleInfo[8_amplicons].tsv")
     
   # Write out the two SampleInfo TSV files for the gb run
-  write_tsv(nano_out_6, nano_file_path_6, col_names = TRUE)
-  write_tsv(nano_out_8, nano_file_path_8, col_names = TRUE)
+#  write_tsv(nano_out_6, nano_file_path_6, col_names = TRUE)
+#  write_tsv(nano_out_8, nano_file_path_8, col_names = TRUE)
   
   # Optionally, assign one version as default if later code expects nano_out
   nano_out <- nano_out_6
@@ -471,7 +471,7 @@ if (opt$run_type == "cds") {
 oligos_file_path  <- file.path(paste0(opt$output_file, "_oligo_pool.fasta"))
 primers_file_path <- file.path(paste0(opt$output_file, "_index_primers_required.fasta"))
 seqs_file_path    <- file.path(paste0(opt$output_file, "_designed_seqs.fasta"))
-nano_file_path    <- file.path(paste0(opt$output_file, "_SampleInfo.tsv"))
+#nano_file_path    <- file.path(paste0(opt$output_file, "_SampleInfo.tsv"))
 
 # Write the FASTA outputs using write_csv2() (or adjust as needed)
 write_csv2(oligos_out, oligos_file_path, col_names = FALSE, quote = "none")
@@ -501,12 +501,12 @@ saveWorkbook(wb, excel_file_path, overwrite = TRUE)
 reference_info <- seqs_out %>%
   ungroup()%>%
   mutate(
-    Reference = accession,
+    ReferenceName = accession,
     n_frags = total_fragments,
     CDS_length = nchar(chiseled_seq),
     ReferenceSequence = chiseled_seq
   ) %>%
-  select(primer_index, Reference, n_frags, CDS_length, ReferenceSequence)
+  select(primer_index, ReferenceName, n_frags, CDS_length, ReferenceSequence)
 
 # Write to Excel file named [NAME]_ReferenceInfo.xlsx
 reference_info_path <- paste0(opt$output_file, "_ReferenceInfo.xlsx")
