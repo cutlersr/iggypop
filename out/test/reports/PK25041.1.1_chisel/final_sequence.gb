@@ -1,0 +1,32 @@
+LOCUS       .                       1215 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+ORIGIN
+        1 atggatacta gtgggtttgt agaattggta tgggaaaatg atgagatcgt gaaacgacgt
+       61 ccgtgtccat caaacttcat atcaagtcaa aggtatagtg ataataacac tactgaagtt
+      121 cctcatgttg ttgttggtgg tggtaataag aggccaggca atactactgc tgttcccgca
+      181 aggaacgtgt ttgagctatt ctcatcgcca aagcagttac ctaataaatc taatggcgcc
+      241 tgtggccgtg gtgactatga tgatgatgat gatagtgata atcatcatcg atctaagcct
+      301 aggccagtac ttttacttaa taaggactac ttgaacaaca aatctagcga gcgggatcta
+      361 caaccaccgc cggaacgtgt actgataatg aagaataata ataataagcg ggtagctgtt
+      421 gatgatgata attctatgtg cttggtccct gataatcatc aacctcatga tcaatacgac
+      481 tatcatgatt atgaggacta ccccaaaaac caagaagaag ctgcacttgt tccctcttta
+      541 cattccatgg gagcttcaaa tgattatcat aataatggat taccactact tcacactact
+      601 actacagcta ctactactac tactactact actactacaa ctgctactac ttctaatact
+      661 tctactactt ctacttctct tgaacaagac caagaccaag aactacaacc tctcccaaga
+      721 aaaagatctg caaaacttca tagtttgtcc gaaagaaggc gaagagataa gatcaacaag
+      781 aggatacgca ccctaaaagc cttaataccc aattgcaaca aggttgacaa agcctccata
+      841 ctcgaggatg ccatagatca tctgaagtca cttcagtttc aattacagat gatgatgtcg
+      901 atgggaacgg gacttaataa tgtcatgaat ccaatgatgg cacaatattt gatgagttat
+      961 ttctctccaa taatggcaat ggcaatggca tcatcatcat catcaccgct tgttggttct
+     1021 cgattaggag gagtgcatca gatgtatggg ttccccttcc cccaaggtgt ttcatcttca
+     1081 gcttctcaga catcacagtc ttcacctcca atattcacga ggccttggca tgtatcaccc
+     1141 tcttcttctt cttcttctcc tcaaattcca ccatcatttc cattgtccta ctactacgca
+     1201 ccacaaaaca actaa
+//

@@ -1,0 +1,58 @@
+LOCUS       .                        468 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..468
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..468
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..468
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    58
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    60
+                     /label="T=>A"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    53..58
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..468
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atgacagaac acaaacggag cccctgctat gttgaccaaa gcagcttctc ctcgtcttta
+       61 gtatcgtcga aaagacaaaa gcccgattta tctatttcta ctaaggaaag aaaagagaac
+      121 ctcggggcga aaattgtagc tctacaacaa ctagtttcac catatggaaa gacggacaca
+      181 gcttccgttc tcttggaggc aatggaatac atacaatttc ttcacgaaca agttaaggtg
+      241 ttaagtgctc catacctcga aagtacacca cccactaaga tacaggaaat ggaagcattc
+      301 aagttgagaa gcaggggttt gtgtttggtt cctgtgtcat gtacacttgg ggttgctaga
+      361 agtaatggtg cagatatctg ggcaccaatt aagacaactt ctccaaagtt tgacacctct
+      421 tcttcttctc cttcttcttc ttctatctca cactcacaat ttcattga
+//

@@ -1,0 +1,4 @@
+constraint,start,end,before,after,edits,% edited
+No BsaI,0,1983,FAIL,PASS,4,0.2
+No BsmBI,0,1983,PASS,PASS,4,0.2
+cds,0,1983,PASS,PASS,4,0.2

@@ -1,0 +1,19 @@
+LOCUS       .                        468 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+ORIGIN
+        1 atgacagaac acaaacggag cccctgctat gttgaccaaa gcagcttctc ctcgtcttta
+       61 gtatcgtcga aaagacaaaa gcccgattta tctatttcta ctaaggaaag aaaagagaac
+      121 ctcggggcga aaattgtagc tctacaacaa ctagtttcac catatggaaa gacggacaca
+      181 gcttccgttc tcttggaggc aatggaatac atacaatttc ttcacgaaca agttaaggtg
+      241 ttaagtgctc catacctcga aagtacacca cccactaaga tacaggaaat ggaagcattc
+      301 aagttgagaa gcaggggttt gtgtttggtt cctgtgtcat gtacacttgg ggttgctaga
+      361 agtaatggtg cagatatctg ggcaccaatt aagacaactt ctccaaagtt tgacacctct
+      421 tcttcttctc cttcttcttc ttctatctca cactcacaat ttcattga
+//

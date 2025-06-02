@@ -1,0 +1,35 @@
+LOCUS       .                       1383 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+ORIGIN
+        1 atgctagaaa acaacaacaa tactgcttct tcttctgctg ctgttgctgc tgatccatct
+       61 tcttcttctg atcatattca tcatcatcat catcatcatc aaactcacta tggttttcct
+      121 cataataatt cttctgaaaa tggggttgtc atcatcaata ataccaatac caaaagaaaa
+      181 agaagaccag caggcacacc agatccagat gcggaagtgg tatccttatc gccgaagacg
+      241 ctattggaat cggaccgtta cgtttgtgag atctgtaacc aagggtttca aagagatcaa
+      301 aatcttcaga tgcatagaag gagacacaaa gtgccatgga agcttctgaa gagagaaact
+      361 caagaagtta aaaagagagt tttcgtttgt cctgaaccga gttgtctaca ccatgatcct
+      421 tgccatgctt tgggtgattt agttggtatc aagaaacact ttcgccgaaa gcatagtaac
+      481 cataaacagt gggtctgtga taagtgttcc aaaggttacg cagtacaatc cgattacaaa
+      541 gcacatctca aaacttgcgg tactcgaggc cattcctgcg actgtggtcg agttttttca
+      601 agagttgaga gcttcatcga acaccaagat agttgcacag taaggcaagt ccgacctgag
+      661 ctacaagctc ttcaaccagc ctccgccacc gccgctacca ccgctgcagg ttgttcgtct
+      721 aggacggctt cgagtactag cccttcgagc gatgctaatt tcagcaatag taagggaaat
+      781 catcgattac tcatgatcaa tttgcctaaa cccaacgaat tattaccaaa catgttctta
+      841 aataataaca acattaagaa ccagcaaagt cttcttgagc ttcagcttct tccttctact
+      901 aattcatcag aagcggttgg cggcgtttcg aatcaaaatt cttctgaaga gaattacgct
+      961 agtactcatt tgaagctttc gatcggatct aataataata atttggaggc cggtggtggt
+     1021 gaaaataatc aaggggcgga agtttgtaga atgagaaatt tggctaacga tgagatgaaa
+     1081 ttggctatgg ctgagaagac atacgcggag gaagctcggc gtgaagctaa acggcttatt
+     1141 gaaatggctg agatggaatt cactaacgcc aagaggataa ggcaacaagc tcaagctgag
+     1201 ttagaaaagg ctcagttgct tagagaacaa gccactaaga aaatcagctc aacaatttta
+     1261 caaatcactt gtcaagcttg taaacaacat ttccaaacga cgccgttggg accttctgat
+     1321 gaaacgacgt cgcttgctat gagttatatg tcgtccgcta ctactgaagg cgaaggagag
+     1381 tag
+//

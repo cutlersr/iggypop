@@ -1,0 +1,41 @@
+LOCUS       .                        693 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..693
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..693
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..693
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+ORIGIN
+        1 atggattcat tggacaacgg gaattgggat tttctcgact gttcatttat cggagaaaca
+       61 caatcctccg attttctatg gtccaataac agtattatgg aggttgattt ctcaggtggt
+      121 ggtggtggtg gtgctggcaa taatggcgag ggtgaaggtg atagtaattt gcaagaaagg
+      181 gatgagaaag aatgctctcg taagagggta cgcactgact cttgtagaaa gcaaggaaca
+      241 aaggcttgtc gtgagaagat gaggagagaa agattgaatg acaggttttt ggatttgagt
+      301 gctgttttag aacctgatag gcctgcaaaa actgacaaaa ctgctattct tgatgatgct
+      361 gtaagagttc ttaaccaact gaaaagtgaa aatcaagagc ttaaagaaac aaacgaaaaa
+      421 ctactcgaag aaataaaaag cttaaaggcg gagaaaaacg agcttcgcga agaaaaactc
+      481 gtactaaaat cagataaaga aaagatggag ctgcaattga aatccatggc aatgccacat
+      541 tctggatata tgcaggctca tccagctgct gctgcatatc aaaataagat ggcggttttt
+      601 ccaggctata gtctagttcc aatgtggaac tatttaccac cggctactcg tgatacatct
+      661 cgtgatcacg agctgaggcc cccggccgct tag
+//

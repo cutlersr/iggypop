@@ -1,0 +1,64 @@
+LOCUS       .                        822 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..822
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..822
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..822
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    346
+                     /label="C=>A"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    348
+                     /label="T=>G"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    complement(342..347)
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..822
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atggtgatag tgaaattgga tgaggaaact ggaacaaccg aaccacaagc cgaaagggtt
+       61 ttgaatttcc atgaagaacg ttcagcttta gaaccatgta ttgtgaattt ggatcaggaa
+      121 actggaacaa ctgagcctca aactggaagg gttttggatg cccatgaaga aggttcagct
+      181 ttaggaccat gtattgtgaa ttttgatgag gaaactgtaa caattgaacc tcaagctgaa
+      241 aggattttga atgcccacga agaaggttca gctttagaac cttgtattgg tatggagttt
+      301 gaatctgaag aggctgccaa aaagttttat gatgaatatt cgagaagggt aggatttatt
+      361 gtgcgtattg gcacgtgccg tcgatcagtg gttgataaga gcattatttc tcgccaacta
+      421 tcgtgcaata agcaaggttt ttctgccaaa actgcagata aagttggcca tgttcgaaaa
+      481 catcgaccga gggcgaagtc aagagaaggt tgcaaagcaa tgatacgggt gaaagctact
+      541 aagtctggaa aatgggttgt cacaagcttt gagaaggacc atactcatcc gcttattgtt
+      601 cctgatagac gacctattga ttcagtagat agaaggattg aggatctcac aatggaactt
+      661 aagcatcaag atcatctatg tgaattatat cgcgggctac tgcttacatt tttgaaggat
+      721 atcgatgagc agacagaaac actatcaact aaaataggac ttgttgttaa caacattaga
+      781 gaggttgaat ctggacttaa gaagcctcca caaaaaagat aa
+//

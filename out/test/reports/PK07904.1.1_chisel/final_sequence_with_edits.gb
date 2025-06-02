@@ -1,0 +1,69 @@
+LOCUS       .                       2400 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..2400
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..2400
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..2400
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+ORIGIN
+        1 atggaaattg atctgaacca tgtagtggct gaggtggaga aaaatacatt atgtaatgga
+       61 gattgtgaaa agggtagtag cagttgtgtt tgttgtttgt catcttcaac ttcttcatgt
+      121 tcttccaatt catcttcagc tcctgtaact tcttcaatct atttggagct atggcatgcc
+      181 tgtgctggtc ctctcacttc actacctaag aaagggaatg tagttgtgta tttcccacaa
+      241 ggccacttag aacaggttgc tcctttttca tctttggatt tgcccacttt tgacctcaaa
+      301 ccacagatct tctgcaaagt tatcaatgtt caactacttg ctaataagga gaatgatgag
+      361 gtgtatactc atgtcacttt gcttcctcaa cctgagttgg taggagtgaa acaagaaggg
+      421 aaagaggttg aagagttggg aggagatgag ggcattgcag ggtcacctac taaatcaacc
+      481 cctcatatgt tttgcaagac tctaacagct tctgatacca gtacacatgg cgggttctcg
+      541 gttcctcgaa gagctgcaga ggactgtttt cctccactgg attataagca gagaaggccc
+      601 tcccaagaac ttgtcgcgaa agatctgcac ggggtagagt ggagatttcg acatatttat
+      661 agaggtcagc ctaggagaca tctactgact accggatgga gtattttcgt gaatcaaaag
+      721 aatctagttt caggggatgc agtgctcttt ctgaggggtg aaaatggaga gctaagattg
+      781 ggaattagga gatctgttcg gccgaggaat ggtcttcctg attcaattgt tcgcaaccag
+      841 aattcttatc ctaatgttct ttcactagtg gctaatgcag tctccaccaa gagcatgttt
+      901 catgttttct acagtccaag ggcaactcat gcagaatttg tcattcctta ccaaaagttt
+      961 gtgaagagcg tcacaaatcc agtggcgatc gggactagat tcaaaacaag atttgacatg
+     1021 gaagattcac cagaaagaag atgtagcggt gtagtgactg gaatttgtga cttggatccc
+     1081 tatagatggg caaattcaaa atggagatgc ttgatggtta ggtgggatga agacattggg
+     1141 aatagtcatc aagagcgaat ttctccatgg gagatcgatc cttctgtttc tctcccgcct
+     1201 ttgagcattc agtcttcccc gagattgaag aaaatgcgga caagtctgca gtcaaacccg
+     1261 cccagcaatc ccttaatcgt aggagggggt gggtttttgg actttgagga gtcagttaga
+     1321 tcctctaagg tcttgcaagg tcaagaaaat atcggtttcg tatcaccctt ttacggtcgt
+     1381 gatactgtaa accacccgct agattttgag atgcattctt cagctcatca gagtctagca
+     1441 gcattgaaca caacaaaaaa atcaactatg aatgagttca tgagaactca acccaccact
+     1501 tacacaggct ttgcggaatc tagtagattt ccgaaggtct tgcaaggtca agaaatttgc
+     1561 caattaaggt ccctaacagg aaaatccaac ttcaatcttg gagcttgggg aaattcctct
+     1621 ctcggcagct gcacatcttt caactcatat caagcagcca agcccaattt ttactcgatg
+     1681 gcatcggaac ctttacaaac cacatatttt cctttcggtg acattcgcag agccgggtct
+     1741 aaccctagca ttcgttcgaa tgttaccact tttcctcgcg agaatgtcaa cattagtccg
+     1801 tacactattc agactgggat tgtaaggaat gaagttggga taccaaatac accgaacgag
+     1861 cttaagccac aagaaagcaa ttctgcgctt cctcttccca ctttagaaac taatctaaga
+     1921 aacccgaaag atgacagttt tggtgggagc gttactagct gcaagctttt cggtttttcc
+     1981 ttgacaggag aaactaccac accgaactct cagagttcca ataagagaag ttgcaccaag
+     2041 gttcacaagc aaggcagttt agttgggaga gccattgacc tctcgaaact caatggctac
+     2101 ggtgaattgc tgagtgaact agagtggtta tttaacatgg aaggcctact aaaagaccct
+     2161 gataaaggtt ggaggatctt gtataccgac agtgagaatg atgtgatggt tgttggagat
+     2221 gatccatggc acgagttctg caatgtcgtt tcgaagatcc acatacatac ccgagaagaa
+     2281 gtggagaaga tgtcgtttgg ggtgactagt gatgatcaaa gctgtttgga gcaagctcca
+     2341 gtttcgaaat cttcatcggt cggccagccg gactcttctc caactgttat cagggtttaa
+//

@@ -50,6 +50,7 @@ scripts/*
 
 # Ignore all files in the out folder
 out/*
+!out/test/
 
 # Ignore all files in the out folder
 in/

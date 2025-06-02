@@ -1,0 +1,57 @@
+LOCUS       .                        696 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..696
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..696
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..696
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    553..554
+                     /label="TC=>AG"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    549..554
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..696
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atggatgatg atgtagtagt aaaccctagt tcatcatcaa gaacaaatat taataataat
+       61 ggtcatgaca ggaaaatcac tgagagaaac agaagaaatc aaatgaagat tctctactcc
+      121 aacctcaact ctcttcttcc tcctcataat aataattctc aacaacaaca acaacaacaa
+      181 caacaacaac aaaccaaaag ggatagtagt gtgagtagta catctttgcc agatcagcta
+      241 gatgaagctg caaagtacat aaagaagttg caaataagca tagagagaat gaaagagaag
+      301 aggaatagtc tattaattga tcataatcat aatcataatc ataattatga ttatgatcat
+      361 agtaatggta atggtaatgg taataatggt gatggtgatg atatgaaatt acctcatatt
+      421 gagattcatg agatgggttt ggctgttgag attgttctga taactgggtt ggatttcaaa
+      481 tctctcttct accaaacaat tcgtattctt cacgaggaag gatttgacat tctcaatgcc
+      541 agtttctacg tcagtcaaaa cactgttttc cacacaatac attctcagaa gggagagttt
+      601 gcttctgcta ctgttggtgc ttcttcaagg atatctgaga ggctaaacaa cttcattaat
+      661 gaagccatta ctaataataa taattataat cattaa
+//

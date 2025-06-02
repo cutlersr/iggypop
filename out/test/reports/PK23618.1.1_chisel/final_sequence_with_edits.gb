@@ -1,0 +1,105 @@
+LOCUS       .                       1467 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..1467
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..1467
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..1467
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    40
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    192
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    982
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    984
+                     /label="G=>A"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    1360..1362
+                     /label="TCA=>AGT"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    35..40
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    complement(188..193)
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    977..982
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1356..1361
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..1467
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atggaagacc taatgatttc accgtcctca tcatcgtctt tagtctcatt atcccaagaa
+       61 caaccaacag tagtagtcct tcaacagagg cttcaactct tactccaaac ccagcctgat
+      121 tgctggaact atgctatttt ctggcagacc tcaaacgacg acgcaggacg aatcttccta
+      181 acctggggag atggccactt ccaagcctcc aaacactact ccactactag gaccactcat
+      241 catcctcaaa ccctacacct cgacagaaag attatcgatg atgacgatga tgatgatgtc
+      301 atcaacacga acggagctac ggacgccaac gccgacgccg agtggttcta cgtcatgtcg
+      361 ttgagtcgat ctttcttcgc cggagaaggt gttcccggga aggccttgag ttctggttcg
+      421 ttggtttggt tgaccggcgg ccatgagctt cggtactata actgcgaccg agcaaacgaa
+      481 gctcaacttc acgggatcga gactctggtc tgtatcccaa ccagttgtgg ggttcttgaa
+      541 ctgggttctt ccaaaatcat tatggagaat tggggtttag tccaaaaagc aaagtcctta
+      601 ttcgggtcaa ccgatccgaa cccgattcag ttcctacacc gccagaatat ttccttcgcc
+      661 gacattggaa tcacagccgg agcacggaaa gaaacggaca tcaacacaaa tgaaacgaag
+      721 actttactac cgttgataaa gacgaatatt aacagcatat attctgagtc tgataattcg
+      781 ggttcgattt cggactatcc agtaccggtt gataacgtca gcaaacgggt accgaaaaag
+      841 cgtggacgaa aaccgggtct gggtcgggat acacctttga accacgtgga agctgaaagg
+      901 cagcggcgtg agaagctgaa caaccgtttc tacgcgctac gcgccgttgt ccctaacgtt
+      961 tcgaggatgg acaaagcgtc tttattatcc gacgccgttt cgtacataaa cgagctcaaa
+     1021 acgaagatag aggaattgga gtcccaatta gttatttccc aaagggatta tcacaacaat
+     1081 aagagagtaa aggttgaaat ggggtgtgat aatagcagct tagacaacca gagcacgtgt
+     1141 accacttccg ttaataattc aaacaactcc tcctccgatc attatcagtc cccctcggcc
+     1201 gccgttggag aagtcgatcg cgacggaatc gagctagatg ttaagatagt tggtacggat
+     1261 gcgatgatta gggttcagtc ggagaatgag aattacccat cggccaggct aatggatgcg
+     1321 ttgcgtgagc ttcagtttca ggtcaaccat gccagcgtca gtaccatcaa tgaccttatg
+     1381 cttcaagacg ttgtcgtcaa ggttcccgat caaagaatga gatctgatca ccaagctctc
+     1441 aaagctgcca ttctcgctag attttaa
+//

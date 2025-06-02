@@ -1,0 +1,70 @@
+LOCUS       .                        900 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..900
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..900
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..900
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    447
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    807
+                     /label="C=>T"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    complement(443..448)
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    complement(803..808)
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..900
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atggcgatcg atcttatggg tttcacaaaa agagaggatc acatggccgt tcaagaagct
+       61 gcctcagctg gattaaaaag catggagaat ctgatcagag ttctctccaa tagtaattca
+      121 tcctccgcca tcaaaaacca aacactgggc catctcgatt tcagagaagc caccgatttc
+      181 accgtcgctc gattcaagca ggtaatctct atcctaaacc gtaccggtca tgctcggttc
+      241 cgccgcggcc cagcgccatc aaatccccaa cctgagaatc ctaaattaaa tcagaccgaa
+      301 atcgttccgg tcaagccctc tttttcaact gagacttcac gatctgagtt ctcaatgagt
+      361 cagaaatcga aagactgttt aactctttcc cctcctctgt cttctaatac ttcgacctcg
+      421 tttttgtcct cgataaccac tggagatgac agtgtctcga atggaaaatt ggggactctt
+      481 ctctttcctc cgcctgttcc agttatttct gccggaaaac ctcctttggc tagccggaag
+      541 agatgtcacg atagtgtttt ctctggcgac gctgccggca aatcctctgt ttcttgtcat
+      601 tgccacaaaa gaagaaaaaa taggtttaga aagtccatca gagtaccggc gattagctcg
+      661 aaaatcgccg atattccaca ggacgagtat tcgtggagaa aatacggcca aaaacctatc
+      721 aaaggttcac cttatccgcg tggatattac aagtgtagca gcgtgaaagg ttgtcctgcg
+      781 aggaaacacg tggagcgtgc aagagatgat tcaaacatgt taatcgtcac ctacgagtgg
+      841 gagcaccgtc actctaacac cacgcccgtc acgggccttg ccttacagtc aactcggtga
+//

@@ -1,0 +1,24 @@
+LOCUS       .                        750 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+ORIGIN
+        1 atggattgga atagcaactt aagacttgtt tcaagacctg aatgttctta tggcttcctt
+       61 tacaactaca actatgatca gtaccagggt atggatatga aacatcatca agcagcttta
+      121 atggcggaga caacacaagg gttagggcta cttggagttc catcaatgga gaagatgaat
+      181 ggtgggggta gtagtggtaa cactggtaac agtagttatg ggatgatgat gagtaatcag
+      241 gacaagaaga agagactaac gacagatcag ttggagtctt tggagagaag cttccaagag
+      301 gagattaagc ttgaccctga taggaagatg aagctgtcta gagatttagg ccttcagcct
+      361 cgccaaatag ctgtttggtt tcagaatagg cgtgctcgtt ggaaagctaa gcagctcgaa
+      421 cgcttgtatg atgctcttaa acaagaactt gatgtcatgt ctaaagagaa acagaagctc
+      481 caagaagagg taacgaaact gaaggggatg ctaagagagc aaggaggtgg gtggaagcaa
+      541 gtgtccacca caggtggtta cactgaaatt tccggtgaag agactgtgga aagcacgtcg
+      601 gcgggaggta ttcgaagcag tagcaagtca ctaggaacga accccttggg tggtggtggc
+      661 agcggcggtg gtgagtgcag tcatcacatt ctcaatgtgg aggaatacaa ccctgtatca
+      721 ccaccttact ggctcccttc ttatccttaa
+//

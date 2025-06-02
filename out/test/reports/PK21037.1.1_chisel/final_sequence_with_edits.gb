@@ -1,0 +1,59 @@
+LOCUS       .                        522 bp    DNA              UNK 01-JAN-1980
+DEFINITION  .
+ACCESSION   <unknown id>
+VERSION     <unknown id>
+KEYWORDS    .
+SOURCE      .
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     misc_feature    1..522
+                     /role="constraint"
+                     /label="@No BsaI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..522
+                     /role="constraint"
+                     /label="@No BsmBI"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    1..522
+                     /role="constraint"
+                     /label="@cds"
+                     /color="#355c87"
+                     /ApEinfo_fwdcolor="#355c87"
+                     /ApEinfo_revcolor="#355c87"
+     misc_feature    349
+                     /label="C=>A"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    351
+                     /label="T=>G"
+                     /is_edit="true"
+                     /ApEinfo_fwdcolor="#ff0000"
+                     /color="#ff0000"
+     misc_feature    complement(345..350)
+                     /label="Breach from No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+     misc_feature    1..522
+                     /label="No BsmBI"
+                     /color="#b2df8a"
+                     /ApEinfo_fwdcolor="#b2df8a"
+                     /ApEinfo_revcolor="#b2df8a"
+                     /role="constraint"
+ORIGIN
+        1 atggatgacc ataataaaac tatggaaata gaatttcaat ctcgtcgtaa attagagttt
+       61 gaaaggggag aagaagaaat caatgaagat aagttggtgg ataataatat aaagagtata
+      121 gaagtgattc attttgaaat atctgagaaa ttaattccaa atattggcat ggagtttgaa
+      181 actgaagatg aagcttataa tttttacaat gcttatgctt ataaagttgg ttttggcatt
+      241 agaaaaagta aaagatataa agataagcat ggtgtgatga taaatagaac tttatattgc
+      301 tcttgtgaag ggtattgtca aaatgataag cgggatgcta ttgtgagaag gcatcatgct
+      361 gagacaaggt ttggatgttt agcaagaatg aaagtcgatt gtcgccaaac tggtaaatat
+      421 catgttgttg agattattcc tgaacacact catgtgacat caactgttgg gttttgtgcc
+      481 ctaaataaaa ctcattccaa tataatcaga tttactaatt aa
+//
