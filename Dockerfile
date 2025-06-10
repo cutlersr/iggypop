@@ -1,74 +1,42 @@
-# Use an official Python runtime as a parent image with amd64 architecture
 FROM python:3.9-slim
-
-# Set a maintainer label
 LABEL maintainer="cutler@ucr.edu"
 
-# Install necessary system packages for your application
+# ---------- system deps ----------
 RUN apt-get update && apt-get install -y \
-    bowtie \
-    git \
-    libbz2-1.0 \
-    libc6 \
-    libcom-err2 \
-    libcrypt1 \
-    libdb5.3 \
-    libexpat1 \
-    libffi-dev \
-    libffi8 \
-    libgdbm6 \
-    libgssapi-krb5-2 \
-    libhdf5-dev \
-    libk5crypto3 \
-    libkeyutils1 \
-    libkrb5-3 \
-    libkrb5support0 \
-    liblzma5 \
-    libncursesw6 \
-    libnsl2 \
-    libreadline8 \
-    libsqlite3-0 \
-    libssl-dev \
-    libssl3 \
-    libtinfo6 \
-    libtirpc3 \
-    libuuid1 \
-    libxml2-dev \
-    libxslt1-dev \
-    ncbi-blast+ \
-    netbase \
-    r-base \
-    swig \
-    tzdata \
-    wget \
-    zlib1g \
-    zlib1g-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+      build-essential git wget swig tzdata r-base \
+      libbz2-1.0 libexpat1 libffi-dev libgdbm6 \
+      libxml2-dev libxslt1-dev libssl-dev zlib1g-dev libtirpc-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Miniconda to provide the 'conda' command
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh && \
-    /bin/bash /tmp/miniconda.sh -b -p /opt/conda && \
-    rm /tmp/miniconda.sh
-
-# Add Conda to PATH so that all subsequent RUN commands have access to it
+# ---------- miniconda ----------
+RUN wget -O /tmp/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh \
+ && bash /tmp/miniconda.sh -b -p /opt/conda && rm /tmp/miniconda.sh
 ENV PATH=/opt/conda/bin:$PATH
 
-# Set the working directory in the container
-WORKDIR /app
+# ---------- create env ----------
+RUN conda create -y -n iggypop python=3.9 && conda clean -afy
+ENV PATH=/opt/conda/envs/iggypop/bin:$PATH
 
-# Copy the current directory contents into the container at /app
+# ---------- install packages in *that* env ----------
+RUN conda install -y -n iggypop -c conda-forge -c bioconda \
+      pandas numpy scipy cython bowtie \
+      git bzip2 expat libffi gdbm krb5 hdf5 h5py keyutils xz \
+      ncurses libnsl readline sqlite openssl libuuid \
+      libxml2 libxslt blast r-base swig tzdata wget zlib \
+ && conda clean -afy
+
+WORKDIR /app
 COPY . /app
 
-# Update pip, setuptools, and wheel to the latest versions and install Python dependencies
-RUN pip install --upgrade pip setuptools wheel && \
-    pip install -r requirements.txt
 
-# Run the setup script (which uses conda); note that it should now find conda in PATH
-RUN chmod +x setup.sh && ./setup.sh
 
-# Ensure the main application script has executable permissions
-RUN chmod +x /app/iggypop.py
+# Run project‑specific setup (it will now see the iggypop env)
+RUN touch /.dockerenv \
+ && chmod +x setup.sh \
+ && ./setup.sh \
+ && rm /.dockerenv
 
-# Set the container's entry point to bash
+# Make the entry‑point executable
+RUN chmod +x iggypop.py
+
 ENTRYPOINT ["/bin/bash"]

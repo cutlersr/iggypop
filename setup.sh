@@ -65,6 +65,7 @@ fi
 
 # Install Python packages
 echo "Installing Python packages..."
+pip install --no-cache-dir "Cython<3"
 pip install --no-cache-dir -r requirements.txt
 
 # Install R packages
