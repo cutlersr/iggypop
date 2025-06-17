@@ -34,12 +34,14 @@ To generate oligos using default settings:
 ```bash
 ./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs"
 
-# OUTPUTS:
-# designed sequences, oligo pools, required indexing primers, logs: out/10_TFs
-# changes made to input sequences: out/10_TFs/reports
-# .gb file with sequences and annotated changes: out/10_TFs/10_TFs_all_reports.gb
-# input files, yaml parameter file, code used: out/10_TFs/assets 
-# amplicon sequencing template file: out/10_TFs/SampleInfo.tsv
+# OUTPUTS to out/10_TFs folder:
+# oligos: 10_TFs_oligo_pool.fasta
+# sequences: designed_seqs.fasta
+# gb annotation of all changes: all_reports.gb
+# indexing primers: index_primers_required.fasta
+# IGGYPOPseq template file: ReferenceInfo.xlsx
+# summary file with run parameters, sequences, oligos: all_data.xlsx
+# input fasta, yaml parameters file, code used: assets/
 ```
 
 The default settings (`yaml/domesticate_cds.yml`):
@@ -49,9 +51,16 @@ The default settings (`yaml/domesticate_cds.yml`):
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Create GoldenBraid / MoClo compatible ORFs
 
+#### Simulating assembly-- sanity check before ordering
+You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene and output the assembled sequences to a fasta file:
+```bash
+python scripts/assemble_fragments.py                   \
+		--i "out/10_TFs/10_TFs_oligo_pool.fasta"       \
+        --o "out/10_TFs/10_TFs_assembled_oligos.fasta"
+```
+
 #### Sequence optimization using `dnachisel` functions:
 ```bash
-
 ./iggypop.py cds                          \
 --i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
 --species "o_sativa"                      \
@@ -60,11 +69,10 @@ The default settings (`yaml/domesticate_cds.yml`):
 # This yaml removes common IIS sites, codon optimizes using `match_codon_usage`
 # and an rice codon table, remove hairpins, and reduces repeated sequences 
 # ≥12 bp using `UniquifyAllKmers` optimization:
-
 ```
 
 #### GC-boosting
-The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used in Dvir *et al.* 2025. .
+The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used for STARBURST in Dvir *et al.* 2025.
 ```bash
 ./iggypop.py cds --i "test/edibles.fasta" --o "high_gc_edibles"  \
 				 --yml "yaml/domesticate_cds_mcu_gc_53.yml"                     
@@ -132,7 +140,7 @@ To do this, use the provided `two_step` YAML files:
                 --yml "yaml/domesticate_two_step_cds.yml"
 ```
 
-Note: The two-step assembly YAMLs add BbsI sites (instead of BsmBI) to the oligo ends for assembly of the PCR products amplified from pools.
+***Note: the two-step assembly YAMLs add BbsI sites (instead of BsmBI) to the oligo ends for assembly of the PCR products amplified from pools into pPOP-BbsI.***
 
 
 #### Combining oligo pools from different runs
@@ -148,14 +156,6 @@ cat out/juiceables/juiceables_oligo_pool.fasta \
     out/edibles/edibles_oligo_pool.fasta > out/oligo_order.fasta
 
 ```
-
-#### Simulating assembly-- sanity check before ordering
-You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene and output the assembled sequences to a fasta file:
-```bash
-python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
-                                     --o "out/assembled_ej_oligos.fasta"
-```
-
 
 #### Generating oligos without modifications to input sequences
 `--mode no_mods` will run the hinging process (i.e. identify high-fidelity overhang sets) and output indexed oligo for input sequences without making any changes to your input sequences.
@@ -194,9 +194,9 @@ This yaml uses the a 24 x 24 combinatorial set of Subramanian primers to allow f
 # for larger runs:
 # --yml "yaml/domesticate_cds_subramanian_primers_2304.yml" 
 # or make your own sets & yaml
-# ***Make sure you update `primer_length` to 20 if you make a new yaml***
+# *** Make sure you update `primer_length` to 20 if you make a new yaml ***
 
-# Alternately overide default settings instead of making a new yaml
+# Alternately, you can overide the default settings instead of making a new yaml
 ./iggypop.py cds                                                 \
     --i "test/35_At_cds.fasta" --o "35_At_cds_subra_alt"         \
     --index_primers "data/subramanian_primers_24_by_24.csv"      \
@@ -222,14 +222,14 @@ Default settings:
 - Enforce synonymous changes to annotated CDSs using `@EnforceTranslation` tags
 - Assemble oligos ≤ 250 bp for BsmBI assembly using AATG/GCTT overhangs
 
-Check the output in your favorite viewer, then generate your oligos:
+Check the output in your favorite viewer to make sure everything looks good, then generate your oligos:
 ```bash
 ./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP" 
 ```
 
 
 ## IGGYPOPseq
-Our pipeline identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The amplicon barcoding primers for the pPOP and pPlant-POP vectors are in the data folder [here](data/amplicon_barcoding_primers.xlsx).  Six amplicons per target are typically generated by colony PCR; all amplicons for a given experiment are bead purified, library-prep'd and then sequenced on an ONT Minion flow cell. The fastq data from a run is then processed using our sequence analysis pipeline: [Construct-Validation-for-IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq)
+Our pipeline identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The amplicon barcoding primers for the pPOP and pPlant-POP vectors are in the data folder [here](data/amplicon_barcoding_primers.xlsx).  Six amplicons per target are typically generated by colony PCR; all amplicons for a given experiment are bead purified, library-prep'd and then sequenced on an ONT Minion flow cell. The fastq data from a run is then processed using our sequence analysis pipeline: [Construct-Validation-for-IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq). The ReferenceInfo.xlsx file output by iggypop can be used with [Tidybuddy](https://zenanx.shinyapps.io/tidy-buddy/) to generate the files needed by the IGGYPOPseq pipeline. 
 
 
 ## Overhang selections using `hingesets`
