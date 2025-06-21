@@ -55,8 +55,6 @@ def print_header_gb(tag):
     print()
     print("    Parameters for hinging sequences can also be set as command line options.")
     print()
-    print('       "--codon_opt" to set codon opt methods if desired')
-    print('       "--species" to change codon table (default e_coli; Kazusa tables only)')
     print('       "--mode no_hinge" to only generate chiseled sequences')
     print('       "--verbose" for more detailed output')
     print('       "--no-reports" to skip dnaschisel report generation (speeds things up)')
