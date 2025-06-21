@@ -4,7 +4,7 @@
 
 ![Overview](png/overview.png)
 
-**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons using [IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq).
+**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons using [IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq). An iggypop protocol is available [here](https://www.protocols.io/view/iggypop-rapid-and-large-scale-dna-assembly-method-gzzpbx75p) and the results described in [Dvir et al. 2025]()
 
 ## Installation
 
@@ -51,28 +51,27 @@ The default settings (`yaml/domesticate_cds.yml`):
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Create GoldenBraid / MoClo compatible ORFs
 
+Oligos are PCR amplified and then cloned into [pPOP](https://benchling.com/s/seq-Z68afxbmNQRteeQWghUe/edit) or [pPlantPOP](https://benchling.com/s/seq-61tVIc0QQRncIWd86JP0/edit) vectors, which use AATG/GCT overhangs.
+
 #### Simulating assembly-- sanity check before ordering
 You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene and output the assembled sequences to a fasta file:
 ```bash
-python scripts/assemble_fragments.py                   \
-		--i "out/10_TFs/10_TFs_oligo_pool.fasta"       \
-        --o "out/10_TFs/10_TFs_assembled_oligos.fasta"
+python scripts/assemble_fragments.py                     \
+		--i "out/10_TFs/10_TFs_oligo_pool.fasta"         \
+		--o "out/10_TFs/10_TFs_assembled_oligos.fasta"
 ```
 
 #### Sequence optimization using `dnachisel` functions:
+*dnachisel* is a versatile sequence optimizer and its functions can be harnessed to both enforce constraints such as removing sequences like restriction cut sites or hairpins if present. It can also be used to optimize sequences, for example maximize a coding sequence's codon usage based on a target codon table (i.e. codon optimization), minimize the occurrences of repeated sequences, and many other parameters (as described [here](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html)). The example below uses this [yaml](https://github.com/cutlersr/iggypop/blob/main/yaml/domesticate_cds_mcu.yml) to remove common IIS sites, optimize using `match_codon_usage`, remove hairpins, and reduce ≥12 bp sequence repeats. The `--species` command line argument specifies a rice codon table instead of the default Arabidopsis codon table. 
 ```bash
-./iggypop.py cds                          \
---i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
---species "o_sativa"                      \
---yml "yaml/domesticate_cds_mcu.yml"
-
-# This yaml removes common IIS sites, codon optimizes using `match_codon_usage`
-# and an rice codon table, remove hairpins, and reduces repeated sequences 
-# ≥12 bp using `UniquifyAllKmers` optimization:
+./iggypop.py cds                                  \
+		--i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
+		--species "o_sativa"                      \
+		--yml "yaml/domesticate_cds_mcu.yml"
 ```
 
 #### GC-boosting
-The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used for STARBURST in Dvir *et al.* 2025.
+The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used for [STARBURST](https://benchling.com/s/seq-mxLtW8KNIoGQkPktQgCy?m=slm-yjcniAbhttliYx0ys2S1) in [Dvir *et al.* 2025]().
 ```bash
 ./iggypop.py cds --i "test/edibles.fasta" --o "high_gc_edibles"  \
 				 --yml "yaml/domesticate_cds_mcu_gc_53.yml"                     
@@ -83,7 +82,10 @@ To modify from the command line so that the only additions to the sequence are 5
 ```bash
 ./iggypop.py cds                                        \
     --i "test/10_TFs.fasta" --o "10_TFs_not_moclo"      \
-    --base_5p_end "AATG" --base_3p_end "GCTT" 
+    --base_5p_end "A" --base_3p_end "GCTT" 
+
+# `--base_5p_end A` together w/ the CDS's ATG creates the AATG needed for cloning into pPOP vectors
+
 ```
 
 #### Changing cloning overhangs
@@ -131,7 +133,7 @@ For complex constructs containing coding and non-coding sequences, use `iggypop.
 
 
 #### Two-step assemblies
-Although assembly of long (>2.5 kb) sequences is possible, the assembly efficiency can be low and identifying error-free clones often requires more amplicon sequencing. For longer sequences, we recommend that you use the two-step assembly mode; this breaks sequences into "step one" blocks which are assembled from oligo pools using BbsI into the pPOP-BbsI vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using pPOP-BsmBI.
+Although assembly of long (>2.5 kb) sequences is possible, the assembly efficiency can be low and identifying error-free clones often requires more amplicon sequencing. For longer sequences, we recommend that you use the two-step assembly mode; this breaks sequences into "step one" blocks which are assembled from oligo pools using BbsI into the [pPOP-BbsI](https://benchling.com/s/seq-u0uslvpxs7Tn7LN5iRuM/edit) vector. Sequence validated step one clones are identified and the final genes are assembled in a second step using [pPOP-BsmBI](https://benchling.com/s/seq-Z68afxbmNQRteeQWghUe/edit).
 
 ![Two-Step Assembly](png/two_step.png)
 To do this, use the provided `two_step` YAML files:
@@ -227,7 +229,7 @@ Check the output in your favorite viewer to make sure everything looks good, the
 ./iggypop.py gb --i "test/sfGFP_formatted.gb" --o "sfGFP" 
 ```
 
-
+The main reason to us Genbank mode is when you have more complicated sequences than simple coding sequences, for example an E. coli expression cassette including promoter, terminators and other non-CDS element. [This](https://github.com/cutlersr/iggypop/blob/main/test/sfGFP_formatted.gb "sfGFP_formatted.gb)) .gb file was used to design the control GFP expression cassette in Dvir et. al. 2025. 
 ## IGGYPOPseq
 Our pipeline identifies error-free clones via nanopore sequencing of barcoded colony PCR amplicons. The amplicon barcoding primers for the pPOP and pPlant-POP vectors are in the data folder [here](data/amplicon_barcoding_primers.xlsx).  Six amplicons per target are typically generated by colony PCR; all amplicons for a given experiment are bead purified, library-prep'd and then sequenced on an ONT Minion flow cell. The fastq data from a run is then processed using our sequence analysis pipeline: [Construct-Validation-for-IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq). The ReferenceInfo.xlsx file output by iggypop can be used with [Tidybuddy](https://zenanx.shinyapps.io/tidy-buddy/) to generate the files needed by the IGGYPOPseq pipeline. 
 
