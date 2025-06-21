@@ -67,17 +67,16 @@ def extract_base_gene_name(fragment_id):
 def process_sequences(sequences, n=25, skip_library=True):
     """
     Processes sequences by trimming and grouping by gene name.
-    
-    For two-step fragments (ID contains L0_<digit>), uses a trim of 26 bp (step 1).
     Also collects oligo statistics.
     """
     processed_sequences = defaultdict(list)
     primer_pairs = defaultdict(set)
     all_primers = defaultdict(set)
     library_primer_associations = defaultdict(set)
-    primer_types = {}  # Map base_gene to type ("FRAG" or "LIBRARY")
-    
+    primer_types = {}
+
     total_oligo_count = 0
+    total_full_length_sum = 0      # <<< NEW
     gene_oligo_count = 0
     library_oligo_count = 0
     gene_oligo_length_sum = 0
@@ -85,36 +84,47 @@ def process_sequences(sequences, n=25, skip_library=True):
     non_matching_count = 0
     skipped_library_count = 0
     non_matching_ids = []
-    
+
     for seq_id, seq in sequences.items():
         base_gene_name, gene_name, primer_info, is_match = extract_base_gene_name(seq_id)
-        if is_match:
-            total_oligo_count += 1
-            current_type = "LIBRARY" if "library" in seq_id.lower() else "FRAG"
-            primer_types[base_gene_name] = current_type
-            trim_val = 26 if re.search(r"L0_\d", seq_id) else n
-            trimmed_seq = seq[trim_val:-trim_val]
-            if current_type == "LIBRARY":
-                library_oligo_count += 1
-                library_oligo_length_sum += len(trimmed_seq)
-            else:
-                gene_oligo_count += 1
-                gene_oligo_length_sum += len(trimmed_seq)
-            if skip_library and current_type == "LIBRARY":
-                skipped_library_count += 1
-                library_primer_associations[primer_info].add(base_gene_name)
-                continue
-            processed_sequences[base_gene_name].append((gene_name, trimmed_seq))
-            primer_pairs[base_gene_name].add(primer_info)
-            all_primers[primer_info].add(base_gene_name)
-        else:
+        if not is_match:
             non_matching_count += 1
             non_matching_ids.append(seq_id)
-    
-    return (processed_sequences, primer_pairs, all_primers, non_matching_count,
-            skipped_library_count, library_primer_associations, non_matching_ids,
-            primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
-            gene_oligo_length_sum, library_oligo_length_sum)
+            continue
+
+        total_oligo_count += 1
+        total_full_length_sum += len(seq)   # <<< NEW
+
+        current_type = "LIBRARY" if "library" in seq_id.lower() else "FRAG"
+        primer_types[base_gene_name] = current_type
+
+        trim_val = 26 if re.search(r"L0_\d", seq_id) else n
+        trimmed_seq = seq[trim_val:-trim_val]
+
+        if current_type == "LIBRARY":
+            library_oligo_count += 1
+            library_oligo_length_sum += len(trimmed_seq)
+        else:
+            gene_oligo_count += 1
+            gene_oligo_length_sum += len(trimmed_seq)
+
+        if skip_library and current_type == "LIBRARY":
+            skipped_library_count += 1
+            library_primer_associations[primer_info].add(base_gene_name)
+            continue
+
+        processed_sequences[base_gene_name].append((gene_name, trimmed_seq))
+        primer_pairs[base_gene_name].add(primer_info)
+        all_primers[primer_info].add(base_gene_name)
+
+    return (
+        processed_sequences, primer_pairs, all_primers, non_matching_count,
+        skipped_library_count, library_primer_associations, non_matching_ids,
+        primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
+        gene_oligo_length_sum, library_oligo_length_sum,
+        total_full_length_sum           # <<< ADDED to return list
+    )
+
 
 def assemble_sequences(processed_sequences):
     """
@@ -220,10 +230,12 @@ def main():
     args = parser.parse_args()
 
     sequences = read_fasta(args.i)
+
     (processed_sequences, primer_pairs, all_primers, non_matching_count,
-     skipped_library_count, library_primer_associations, non_matching_ids,
-     primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
-     gene_oligo_length_sum, library_oligo_length_sum) = process_sequences(sequences, args.n, args.skip_library)
+    skipped_library_count, library_primer_associations, non_matching_ids,
+    primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
+    gene_oligo_length_sum, library_oligo_length_sum,
+    total_full_length_sum) = process_sequences(sequences, args.n, args.skip_library)
 
     if non_matching_count > 0:
         print(f"Warning: {non_matching_count} sequences did not match the expected format and were ignored.")
@@ -285,21 +297,28 @@ def main():
     final_twostep = sum(1 for k in final_dict if k.startswith("STEP2:"))
     
 
-    print()
+    # Compute averages
+    overall_oligo_count = total_oligo_count
+    trimmed_length_sum = gene_oligo_length_sum + library_oligo_length_sum
+    avg_trimmed_length = (
+        trimmed_length_sum / overall_oligo_count
+        if overall_oligo_count > 0 else 0
+    )
+    avg_full_length = (
+        total_full_length_sum / overall_oligo_count
+        if overall_oligo_count > 0 else 0
+    )
+
+    # Print stats
     print("\n--- Assembly Statistics ---")
     print(f"Total assembled genes (final): {total_final}")
-    print(f"Average assembled sequence length: {avg_final_length:.2f} bp")
+    print(f"Average assembled sequence length: {avg_final_length:.0f} bp")
     print(f"Total number of bases synthesized: {total_bases}")
     print(f"Total number of oligonucleotides processed: {overall_oligo_count}")
     print(f"Total oligos for genes: {gene_oligo_count}")
     print(f"Total oligos for libraries: {library_oligo_count}")
-    print(f"Average oligo length: {avg_oligo_length:.2f} bp")
-    print("\n--- Two-step Assembly Stats ---")
-    print(f"Step 1 two-step groups: {step1_groups}")
-    print(f"Step 2 assembled two-step genes: {final_twostep}")
-    print("\n--- If you see mismatched ends, make sure `n` is set properly ---")
-    print("--- `--n 27` for Subramanian w/ 1-step and `--n 28` 2-step.   ---")
-    print()
+    print(f"Average bp per oligo (trimmed):          {avg_trimmed_length:.0f} bp")
+    print(f"Average bp per oligo (including primers): {avg_full_length:.0f} bp")
     
 if __name__ == "__main__":
     main()
