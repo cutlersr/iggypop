@@ -74,6 +74,7 @@ sequenticon==0.1.5
 six==1.16.0
 snapgene-reader==0.1.20
 soupsieve==2.5
+streamlit==1.35.0
 tensorboard==2.16.2
 tensorboard-data-server==0.7.2
 tensorflow==2.16.1
