@@ -27,6 +27,13 @@ docker build -t iggypop .
 docker run -it -v $(pwd):/app iggypop
 ```
 
+## Running the Streamlit App
+We developed a simple web application that allows users to access the basic functions of iggypop in a friendly manner. 
+```bash
+# with the iggypop env activated
+python -m streamlit run iggyapp.py
+```
+
 ## Working with Coding Sequences
 Coding sequences are domesticated, fragmented, indexed, and appended with cut sites to yield oligonucleotides that can be amplified with gene-specific primers and then assembled using Golden Gate methods. Sequence domestication and optimization prior to fragmentation is conducted using the software package _dnachisel_; sequence optimization parameters can be set in a YAML file using _dnachisel_ [`specifications`](https://edinburgh-genome-foundry.github.io/DnaChisel/ref/builtin_specifications.html). Several YAML files used in our common workflows are in the  [YAML folder](yaml/).
 
