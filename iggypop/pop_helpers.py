@@ -958,7 +958,8 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
     """
     Collapse combinatorial entries in a FASTA of required primers
     down to unique primer IDs (e.g. subra_01, subra_25, …) and
-    overwrite the original file with one record per ID.
+    overwrite the original file with one record per ID—but only
+    if at least one primer with the given prefix is found.
     """
     # read in all records
     names, seqs = [], []
@@ -992,9 +993,18 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
         else:  # direction == "R"
             id2seq[second] = seq
 
-    # overwrite with one record per unique index, sorted
-    with open(required_fasta, "w") as fh:
+    # if nothing matched, skip rewriting
+    if not id2seq:
+        print(f"[rewrite_required_primers] no records matching prefix '{prefix}'—leaving {required_fasta} untouched.")
+        return
+
+    # otherwise write to a temp file and atomically replace
+    tmp_path = required_fasta + ".tmp"
+    with open(tmp_path, "w") as out:
         for idx in sorted(id2seq):
-            fh.write(f">{prefix}_{idx:02d}\n")
-            fh.write(f"{id2seq[idx]}\n")
+            out.write(f">{prefix}_{idx:02d}\n")
+            out.write(f"{id2seq[idx]}\n")
+
+    os.replace(tmp_path, required_fasta)
+
 
