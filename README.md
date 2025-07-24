@@ -4,7 +4,7 @@
 
 ![Overview](png/overview.png)
 
-**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons using [IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq). An iggypop protocol is available [here](https://www.protocols.io/view/iggypop-rapid-and-large-scale-dna-assembly-method-gzzpbx75p) and the results described in [Dvir et al. 2025]()
+**iggypop** is a pipeline for designing and synthesizing genes from oligonucleotide pools. Input sequences are fragmented into segments that can be amplified using gene-specific primers and reassembled by Golden Gate cloning. Sequence-verified constructs are then identified by nanopore sequencing of barcoded amplicons using [IGGYPOPseq](https://github.com/ZenanXing/Construct-Validation-for-IGGYPOPseq). An iggypop protocol is available [here](https://www.protocols.io/view/iggypop-rapid-and-large-scale-dna-assembly-method-gzzpbx75p) and the results described in [Dvir et al. 2025](https://doi.org/10.1073/pnas.2508109122)
 
 ## Installation
 
