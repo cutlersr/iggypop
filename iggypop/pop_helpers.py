@@ -993,11 +993,6 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
         else:  # direction == "R"
             id2seq[second] = seq
 
-    # if nothing matched, skip rewriting
-    if not id2seq:
-        print(f"[rewrite_required_primers] no records matching prefix '{prefix}'—leaving {required_fasta} untouched.")
-        return
-
     # otherwise write to a temp file and atomically replace
     tmp_path = required_fasta + ".tmp"
     with open(tmp_path, "w") as out:
