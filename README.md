@@ -24,7 +24,11 @@ chmod +x setup.sh
 git clone https://github.com/cutlersr/iggypop
 cd iggypop
 docker build -t iggypop .
-docker run -it -v $(pwd):/app iggypop
+# first time to launch
+docker run -it --name iggypop-container -v "$(pwd)":/app iggypop
+
+# later, re‑enter the same container
+docker start -ai iggypop-container
 ```
 
 ## Running the Streamlit App
