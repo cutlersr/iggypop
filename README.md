@@ -63,7 +63,7 @@ The default settings (`yaml/domesticate_cds.yml`):
 - Assemble from oligos ≤ 250 bp with BsmBI
 - Create GoldenBraid / MoClo compatible ORFs
 
-Oligos are PCR amplified and then cloned into [pPOP](https://benchling.com/s/seq-Z68afxbmNQRteeQWghUe/edit) or [pPlantPOP](https://benchling.com/s/seq-61tVIc0QQRncIWd86JP0/edit) vectors, which use AATG/GCT overhangs.
+Oligos are PCR amplified and then cloned into [pPOP](https://benchling.com/s/seq-Z68afxbmNQRteeQWghUe/edit) or [pPlantPOP](https://benchling.com/s/seq-61tVIc0QQRncIWd86JP0/edit) vectors, which use AATG/GCT overhangs. These are available from Addgene ([pPOP-BsmBI](https://www.addgene.org/241281/);[ pPOP-BbsI](https://www.addgene.org/241282/), and [pPlantPOP](https://www.addgene.org/241283/)).
 
 #### Simulating assembly-- sanity check before ordering
 You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene and output the assembled sequences to a fasta file:
@@ -83,7 +83,7 @@ python scripts/assemble_fragments.py                     \
 ```
 
 #### GC-boosting
-The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used for [STARBURST](https://benchling.com/s/seq-mxLtW8KNIoGQkPktQgCy?m=slm-yjcniAbhttliYx0ys2S1) in [Dvir *et al.* 2025]().
+The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used for [STARBURST](https://benchling.com/s/seq-mxLtW8KNIoGQkPktQgCy?m=slm-yjcniAbhttliYx0ys2S1) in [Dvir et al. 2025](https://doi.org/10.1073/pnas.2508109122). 
 ```bash
 ./iggypop.py cds --i "test/edibles.fasta" --o "high_gc_edibles"  \
 				 --yml "yaml/domesticate_cds_mcu_gc_53.yml"                     
