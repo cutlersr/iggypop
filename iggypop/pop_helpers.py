@@ -954,12 +954,18 @@ def validate_gene_count(input_path, primers_file):
         )
 
 
+import os
+import re
+import tempfile
+
 def rewrite_required_primers(required_fasta, prefix="subra"):
     """
     Collapse combinatorial entries in a FASTA of required primers
     down to unique primer IDs (e.g. subra_01, subra_25, …) and
     overwrite the original file with one record per ID—but only
     if at least one primer with the given prefix is found.
+    Returns True if the file was rewritten, False if no matching prefix
+    was found and the original was left intact.
     """
     # read in all records
     names, seqs = [], []
@@ -967,7 +973,7 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
         cur_name = None
         cur_seq = []
         for line in fh:
-            line = line.rstrip()
+            line = line.rstrip("\n")
             if line.startswith(">"):
                 if cur_name is not None:
                     names.append(cur_name)
@@ -982,7 +988,7 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
 
     # map each index to its sequence based on F/R suffix
     id2seq = {}
-    pat = re.compile(rf"^{prefix}_(\d+)_(\d+)_(F|R)$")
+    pat = re.compile(rf"^{re.escape(prefix)}_(\d+)_(\d+)_(F|R)$")
     for nm, seq in zip(names, seqs):
         m = pat.match(nm)
         if not m:
@@ -993,13 +999,19 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
         else:  # direction == "R"
             id2seq[second] = seq
 
-    # otherwise write to a temp file and atomically replace
-    tmp_path = required_fasta + ".tmp"
-    with open(tmp_path, "w") as out:
+    if not id2seq:
+        # no primers with the given prefix found; do nothing
+        return False
+
+    # write to temp file in same directory for atomicity
+    dirpath = os.path.dirname(os.path.abspath(required_fasta))
+    with tempfile.NamedTemporaryFile("w", delete=False, dir=dirpath) as tmpf:
         for idx in sorted(id2seq):
-            out.write(f">{prefix}_{idx:02d}\n")
-            out.write(f"{id2seq[idx]}\n")
+            tmpf.write(f">{prefix}_{idx:02d}\n")
+            tmpf.write(f"{id2seq[idx]}\n")
+        tmp_path = tmpf.name
 
     os.replace(tmp_path, required_fasta)
+    return True
 
 
