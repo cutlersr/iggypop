@@ -3,15 +3,16 @@ import os
 import subprocess
 import shutil
 import streamlit as st
+import yaml  
 
 class rsc:
     @staticmethod
     def get_image(filename):
-        return f"./png/{filename}"
+        return f"./images/{filename}"
 
 def setup_page():
     st.set_page_config(
-        page_title="iggypop",
+        page_title="Iggypop",
         page_icon=rsc.get_image("best_icon.png"),
         layout="centered",
         initial_sidebar_state="auto",
@@ -30,14 +31,16 @@ def setup_page():
             'Input sequences are fragmented into segments that can be amplified using gene-specific primers '
             'and reassembled by Golden Gate cloning. This website is a simplified, user-friendly version '
             'of the pipeline. To gain access to the full capabilities of the package visit our GitHub repository at: '
-            'https://github.com/cutlersr/iggypop/tree/main. Please, do not forget to cite the iggypop paper if you found '
-            'it useful for your research.'
+            'https://github.com/cutlersr/iggypop/tree/main. The protocol for the gene assembly pipeline is available at: '
+            'https://www.protocols.io/view/iggypop-rapid-and-large-scale-dna-assembly-method-eq2lyqyzqvx9/v1 '
+            'Please, do not forget to cite our  paper if you found this useful for your research. '
         )
         st.markdown(
             "<div style='font-size:10px; margin-top:50px;'>"
-            "Dvir, G., Xing, Z., Beldman, I., Rivera, A., Wheeldon, I., & Cutler, S. R. (2025). "
+            "G. Dvir, Z. Xing, I. Beldman, A. Rivera, I. Wheeldon, & S.R. Cutler, "
             "Synthesis of large single-transcript pathways from oligonucleotide pools: Design of STARBURST, "
-            "an autobioluminescent reporter. Manuscript submitted for publication to PNAS (April 2025)."
+            "an autobioluminescent reporter. Proc. Natl. Acad. Sci. U.S.A. 122 (31) e2508109122,"
+            "https://doi.org/10.1073/pnas.2508109122 (2025)."
             "</div>",
             unsafe_allow_html=True,
         )
@@ -45,87 +48,117 @@ def setup_page():
 def go_to(page_name):
     st.session_state.page = page_name
 
-# The user can introduce custom arguments for iggypop on both runtypes
-def collect_common_options():
+def collect_common_options(defaults=None):
+    """
+    Render widgets for all common iggypop parameters,
+    seeding defaults from the `defaults` dict.
+    """
+    if defaults is None:
+        defaults = {}
     cmd_args = []
 
+    st.markdown("### Sequence optimization parameters")
+    modes = ["chisel", "no_mods", "no_hinge"]
+    default_mode = defaults.get("mode", modes[0])
+    idx_mode = modes.index(default_mode) if default_mode in modes else 0
     st.subheader("Mode")
-    mode = st.radio("", ["chisel", "no_mods", "no_hinge"], index=0)
+    mode = st.radio("", modes, index=idx_mode, key="mode_opt", help = "Operation mode. chisel will modify the input sequence. no_mods just hinges and barcodes. no_hinge will chisel without hinging")
     cmd_args += ["--mode", mode]
 
+    codon_opts = ["use_best_codon", "match_codon_usage", "hybrid", "none"]
+    default_cod = defaults.get("codon_opt", codon_opts[-1])
+    idx_cod = codon_opts.index(default_cod) if default_cod in codon_opts else len(codon_opts)-1
     st.subheader("Codon optimization method")
-    codon_method = st.radio(
-        "",
-        ["use_best_codon", "match_codon_usage", "harmonize_rca", "hybrid", "none"],
-        index=4,
-    )
+    codon_method = st.radio("", codon_opts, index=idx_cod, key="codon_opt", help = "Select your codon optimizitation strategy.")
     cmd_args += ["--codon_opt", codon_method]
-
     if codon_method != "none":
+        def_sp = defaults.get("species", "arabidopsis")
         st.subheader("Species")
-        species = st.text_input("Species", value="arabidopsis")
+        species = st.text_input("Species", value=def_sp, key="species")
         cmd_args += ["--species", species]
-        if codon_method == "harmonize_rca":
-            st.subheader("Original species")
-            orig_species = st.text_input("Original species", value="arabidopsis")
-            cmd_args += ["--original_species", orig_species]
-
     if codon_method == "hybrid":
-        st.subheader("Target sequence divergence for hybrid optimization")
-        pct = st.number_input("Percent divergence", value=20.0, min_value=0.0, max_value=100.0)
+        def_pct = defaults.get("pct", 20.0)
+        st.subheader("Percent divergence")
+        pct = st.number_input("Percent divergence", value=float(def_pct), min_value=0.0, max_value=100.0, key="pct_div")
         cmd_args += ["--pct", str(pct)]
 
-    st.subheader("Repeats")
-    repeats = st.number_input("", min_value=1, value=1)
-    cmd_args += ["--repeats", str(repeats)]
-
-    st.subheader("Oligo length")
-    oligo_length = st.number_input("", min_value=1, value=250)
-    cmd_args += ["--oligo_length", str(oligo_length)]
-
+    st.markdown("### Cloning parameters")
+    def_ext = defaults.get("ext_overhangs", ["AATG","GCTT"])
     st.subheader("External overhangs")
-    over5 = st.text_input("External overhang 5′", value="AATG")
-    over3 = st.text_input("External overhang 3′", value="GCTT")
+    over5 = st.text_input("External overhang 5′", value=def_ext[0], key="ext5", help = "The 5´ overhang that will pair with your plasmid.")
+    over3 = st.text_input("External overhang 3′", value=def_ext[1], key="ext3", help = "The 3´ overhang that will pair with your plasmid.")
     cmd_args += ["--ext_overhangs", over5, over3]
 
+    def_b5 = defaults.get("base_5p_end", "AATGCGGTCTCTA")
     st.subheader("Base 5′ end")
-    base5 = st.text_input("Base 5′ end", value="AATGCGGTCTCTA")
+    base5 = st.text_input("", value=def_b5, key="base5", help = "Constant sequence added to the 5´ of the final designed sequences.")
+    cmd_args += ["--base_5p_end", base5]
+
+    def_b3 = defaults.get("base_3p_end", "GCTTAGAGACCGCTT")
     st.subheader("Base 3′ end")
-    base3 = st.text_input("Base 3′ end", value="GCTTAGAGACCGCTT")
-    cmd_args += ["--base_5p_end", base5, "--base_3p_end", base3]
+    base3 = st.text_input("", value=def_b3, key="base3", help = "Constant sequence added to the 3´ of the final designed sequences.")
+    cmd_args += ["--base_3p_end", base3]
 
-    st.subheader("Two-step assemblies")
-    two_step = st.radio("", ["On", "Off"], index=1)
-    if two_step == "On":
-        cmd_args += ["--two_step", "on"]
-
+    def_p5 = defaults.get("pcr_5p_cut", "CGTCTCA")
     st.subheader("PCR 5′ CUT")
-    pcr5 = st.text_input("PCR 5′ CUT", value="CGTCTCA")
+    p5 = st.text_input("", value=def_p5, key="pcr5", help = "Sequence appended to the 5' of each oligo for assembly.")
+    cmd_args += ["--pcr_5p_cut", p5]
+
+    def_p3 = defaults.get("pcr_3p_cut", "AGAGACG")
     st.subheader("PCR 3′ CUT")
-    pcr3 = st.text_input("PCR 3′ CUT", value="AGAGACG")
-    cmd_args += ["--pcr_5p_cut", pcr5, "--pcr_3p_cut", pcr3]
+    p3 = st.text_input("", value=def_p3, key="pcr3", help = "Sequence appended to the 3´ of each oligo for assembly.")
+    cmd_args += ["--pcr_3p_cut", p3]
 
-    st.subheader("Primer index")
-    primer_idx = st.number_input(
-        "This is the row of indexsets file to start from", min_value=1, value=1
-    )
-    cmd_args += ["--primer_index", str(primer_idx)]
+    st.markdown("### Two-step parameters")
+    default_two = defaults.get("two_step", "off").lower()
+    idx_two = 0 if default_two=="on" else 1
+    st.subheader("Two-step assemblies")
+    two = st.radio("", ["On","Off"], index=idx_two, key="two_step", help = "Enable a two-step assembly workflow.")
+    if two=="On":
+        cmd_args += ["--two_step","on"]
+        def_len = defaults.get("two_step_length",1200)
+        st.subheader("Two-step length")
+        ts_len = st.number_input("", value=int(def_len), min_value=1, key="two_step_len", help = "Max length for two-step fragments.")
+        cmd_args += ["--two_step_length",str(ts_len)]
+        def_5p = defaults.get("two_step_5p_end","AATGCGTCTCA")
+        st.subheader("Two-step 5′ end")
+        ts5 = st.text_input("", value=def_5p, key="two_step_5", help = "5' end for two-step cloning.")
+        cmd_args += ["--two_step_5p_end",ts5]
+        def_3p = defaults.get("two_step_3p_end","AGAGACGGCTT")
+        st.subheader("Two-step 3′ end")
+        ts3 = st.text_input("",value=def_3p,key="two_step_3", help = "3' end for two-step cloning.")
+        cmd_args += ["--two_step_3p_end",ts3]
 
-    st.subheader("Number of tries")
-    n_tries = st.number_input("", min_value=1, value=50)
-    cmd_args += ["--n_tries", str(n_tries)]
-
+    st.markdown("### Hinging parameters")
+    def_ol = defaults.get("oligo_length",250)
+    st.subheader("Oligo length")
+    ol = st.number_input("", value=int(def_ol), min_value=1, key="oligo_len", help = "Max allowed oligo length.")
+    cmd_args += ["--oligo_length",str(ol)]
+    def_rad = defaults.get("radius",8)
     st.subheader("Radius")
-    radius = st.number_input("", min_value=1, value=8)
-    cmd_args += ["--radius", str(radius)]
+    rad = st.number_input("",value=int(def_rad),min_value=1,key="radius", help = "Allowable distance from ideal cut sites for selecting overhangs.")
+    cmd_args += ["--radius",str(rad)]
+    def_nt = defaults.get("n_tries",10)
+    st.subheader("Number of tries")
+    nt = st.number_input("",value=int(def_nt),min_value=1,key="n_tries", help = "Number of potential overhang sets to consider.")
+    cmd_args += ["--n_tries",str(nt)]
+    def_pi = defaults.get("primer_index",1)
+    st.subheader("Primer index")
+    pi = st.number_input("", value=int(def_pi), min_value=1, key="primer_idx", help = "The first primer index of your current run.")
+    cmd_args += ["--primer_index",str(pi)]
+    def_rep = defaults.get("repeats",1)
+    st.subheader("Repeats")
+    rep = st.number_input("",value=int(def_rep),min_value=1,key="repeats", help = "Number of chiseled sequences to create per input sequence.")
+    cmd_args += ["--repeats",str(rep)]
+    def_mf = defaults.get("max_fragments",18)
+    #st.subheader("Maximum fragments per PCR")
+    #mf = st.number_input("",value=int(def_mf),min_value=1,key="max_frags", help = "Max number of fragments per PCR.")
+    cmd_args += ["--max_fragments",str(def_mf)]
 
-    st.subheader("Maximum fragments per PCR")
-    max_frags = st.number_input("", min_value=1, value=18)
-    cmd_args += ["--max_fragments", str(max_frags)]
-
+    def_repflag = defaults.get("no_reports",False)
     st.subheader("Reports")
-    reports = st.radio("",  ["On", "Off"], index = 0, key = "report")
-    if reports == "Off":
+    rflags = st.radio("",["On","Off"],index=(1 if def_repflag else 0),key="reports", help = "Enable creation of PDF DNA chisel reports.")
+    if rflags=="Off":
         cmd_args += ["--no-reports"]
 
     return cmd_args
@@ -133,7 +166,6 @@ def collect_common_options():
 def run_streamlit():
     try:
         setup_page()
-
         if "page" not in st.session_state:
             st.session_state.page = "main"
 
@@ -147,197 +179,172 @@ def run_streamlit():
 
         # CDS PAGE
         elif st.session_state.page == "cds":
-            st.title("CDS")
-            uploaded_fasta = st.file_uploader(
-                "Upload your FASTA file", type=["fasta", "fa", "txt"]
-            )
-            if uploaded_fasta:
-                st.write(f"Uploaded file: **{uploaded_fasta.name}**")
-
+            st.title("CDS Runtype")
+            uploaded = st.file_uploader("Upload your FASTA file", type=["fasta","fa","txt"])
+            if uploaded:
+                st.write(f"Uploaded file: **{uploaded.name}**")
             with st.expander("Advanced mode"):
                 common_args = collect_common_options()
-
             col1, col2, col3 = st.columns(3)
-            pop_clicked = col1.button("Pop!")
+            pop = col1.button("Pop!")
             col2.button("← Back", on_click=go_to, args=("main",))
-
-            def _go_to_yaml_cds():
-                if not uploaded_fasta:
+            def to_yaml_cds():
+                if not uploaded:
                     st.error("Please upload a FASTA file first.")
                     return
-                # save upload for YAML run
-                upload_dir = "./uploads"
-                os.makedirs(upload_dir, exist_ok=True)
-                input_path = os.path.join(upload_dir, uploaded_fasta.name)
-                with open(input_path, "wb") as f:
-                    f.write(uploaded_fasta.getbuffer())
-                stem = os.path.splitext(uploaded_fasta.name)[0]
-                st.session_state.yaml_type = "cds"
-                st.session_state.input_path = input_path
-                st.session_state.last_stem = stem
+                upl="./uploads"; os.makedirs(upl,exist_ok=True)
+                ip=os.path.join(upl,uploaded.name)
+                with open(ip,"wb") as f: f.write(uploaded.getbuffer())
+                st.session_state.yaml_type="cds"
+                st.session_state.input_path=ip
+                st.session_state.last_stem=os.path.splitext(uploaded.name)[0]
                 go_to("yaml")
-
-            col3.button("YAML", on_click=_go_to_yaml_cds)
-
-            if pop_clicked:
-                if not uploaded_fasta:
+            col3.button("YAML", on_click=to_yaml_cds)
+            if pop:
+                if not uploaded:
                     st.error("Please upload a FASTA file first.")
                 else:
-                    upload_dir = "./uploads"
-                    os.makedirs(upload_dir, exist_ok=True)
-                    input_path = os.path.join(upload_dir, uploaded_fasta.name)
-                    with open(input_path, "wb") as f:
-                        f.write(uploaded_fasta.getbuffer())
-                    stem = os.path.splitext(uploaded_fasta.name)[0]
-                    out_dir = os.path.join("out", stem)
-                    if os.path.isdir(out_dir):
-                        shutil.rmtree(out_dir)
-                    cmd = ["./iggypop.py", "cds", "--i", input_path, "--o", stem] + common_args
-                    result = subprocess.run(cmd, capture_output=True, text=True)
-                    if result.returncode == 0:
-                        zip_path = shutil.make_archive(out_dir, "zip", out_dir)
-                        st.session_state.result_zip = zip_path
-                        st.session_state.last_stem = stem
-                        st.session_state.last_page = "cds"
-                        st.session_state.page = "results"
+                    upl="./uploads";os.makedirs(upl,exist_ok=True)
+                    ip=os.path.join(upl,uploaded.name)
+                    with open(ip,"wb") as f: f.write(uploaded.getbuffer())
+                    stem=os.path.splitext(uploaded.name)[0]
+                    outd=os.path.join("out",stem)
+                    if os.path.isdir(outd): shutil.rmtree(outd)
+                    cmd=["./iggypop.py","cds","--i",ip,"--o",stem] + common_args
+                    res=subprocess.run(cmd,capture_output=True,text=True)
+                    if res.returncode==0:
+                        zp=shutil.make_archive(outd,"zip",outd)
+                        st.session_state.result_zip=zp
+                        st.session_state.last_stem=stem
+                        st.session_state.last_page="cds"
+                        st.session_state.page="results"
                         st.rerun()
                     else:
-                        st.error(f"iggypop failed (exit {result.returncode}):\n```\n{result.stderr}\n```")
+                        st.error(f"iggypop failed (exit {res.returncode}):\n{res.stderr}")
 
-        # GB PAGE
         elif st.session_state.page == "gb":
-            st.title("GB")
-            uploaded_gb = st.file_uploader(
-                "Upload your GenBank file", type=["gb", "gbk"]
-            )
-            if uploaded_gb:
-                st.write(f"Uploaded file: **{uploaded_gb.name}**")
-
+            st.title("GB Runtype")
+            st.markdown("This runtype will format your Genbank file before processing it. "
+                        "Please check that the contents of your formatted file are correct before ordering "
+                        "an oligo pool. You can do so in the assets directory inside your zip folder.")
+            uploaded = st.file_uploader("Upload your GenBank file", type=["gb","gbk"])
+            if uploaded:
+                st.write(f"Uploaded file: **{uploaded.name}**")
             with st.expander("Advanced mode"):
                 common_args = collect_common_options()
-
             col1, col2, col3 = st.columns(3)
-            pop_clicked = col1.button("Pop!")
+            pop = col1.button("Pop!")
             col2.button("← Back", on_click=go_to, args=("main",))
-
-            def _go_to_yaml_gb():
-                if not uploaded_gb:
+            def to_yaml_gb():
+                if not uploaded:
                     st.error("Please upload a GenBank file first.")
                     return
-                upload_dir = "./uploads"
-                os.makedirs(upload_dir, exist_ok=True)
-                input_path = os.path.join(upload_dir, uploaded_gb.name)
-                with open(input_path, "wb") as f:
-                    f.write(uploaded_gb.getbuffer())
-                stem = os.path.splitext(uploaded_gb.name)[0]
-                formatted_path = os.path.join(upload_dir, f"{stem}_formatted.gb")
-                fmt_cmd = ["./iggypop.py", "format", "--i", input_path, "--o", formatted_path]
-                fmt_res = subprocess.run(fmt_cmd, capture_output=True, text=True)
-                if fmt_res.returncode != 0:
-                    st.error(f"Format failed:\n{fmt_res.stderr}")
+                upl="./uploads";os.makedirs(upl,exist_ok=True)
+                ip=os.path.join(upl,uploaded.name)
+                with open(ip,"wb") as f: f.write(uploaded.getbuffer())
+                stem=os.path.splitext(uploaded.name)[0]
+                fmt=os.path.join(upl,f"{stem}_formatted.gb")
+                r=subprocess.run(["./iggypop.py","format","--i",ip,"--o",fmt],capture_output=True,text=True)
+                if r.returncode!=0:
+                    st.error(f"Format failed:\n{r.stderr}")
                     return
-                st.session_state.yaml_type = "gb"
-                st.session_state.input_path = formatted_path
-                st.session_state.last_stem = stem
+                st.session_state.yaml_type="gb"
+                st.session_state.input_path=fmt
+                st.session_state.last_stem=stem
                 go_to("yaml")
-
-            col3.button("YAML", on_click=_go_to_yaml_gb)
-
-            if pop_clicked:
-                if not uploaded_gb:
+            col3.button("YAML", on_click=to_yaml_gb)
+            if pop:
+                if not uploaded:
                     st.error("Please upload a GenBank file first.")
                 else:
-                    upload_dir = "./uploads"
-                    os.makedirs(upload_dir, exist_ok=True)
-                    input_path = os.path.join(upload_dir, uploaded_gb.name)
-                    with open(input_path, "wb") as f:
-                        f.write(uploaded_gb.getbuffer())
-                    stem = os.path.splitext(uploaded_gb.name)[0]
-                    out_dir = os.path.join("out", stem)
-                    if os.path.isdir(out_dir):
-                        shutil.rmtree(out_dir)
-                    formatted_path = os.path.join(upload_dir, f"{stem}_formatted.gb")
-                    fmt_cmd = ["./iggypop.py", "format", "--i", input_path, "--o", formatted_path]
-                    fmt_res = subprocess.run(fmt_cmd, capture_output=True, text=True)
-                    if fmt_res.returncode != 0:
-                        st.error(f"Format failed:\n{fmt_res.stderr}")
+                    upl="./uploads";os.makedirs(upl,exist_ok=True)
+                    ip=os.path.join(upl,uploaded.name)
+                    with open(ip,"wb") as f: f.write(uploaded.getbuffer())
+                    stem=os.path.splitext(uploaded.name)[0]
+                    outd=os.path.join("out",stem)
+                    if os.path.isdir(outd): shutil.rmtree(outd)
+                    fmt=os.path.join(upl,f"{stem}_formatted.gb")
+                    r=subprocess.run(["./iggypop.py","format","--i",ip,"--o",fmt],capture_output=True,text=True)
+                    if r.returncode!=0:
+                        st.error(f"Format failed:\n{r.stderr}")
                     else:
-                        cmd = ["./iggypop.py", "gb", "--i", formatted_path, "--o", stem] + common_args
-                        result = subprocess.run(cmd, capture_output=True, text=True)
-                        if result.returncode == 0:
-                            zip_path = shutil.make_archive(out_dir, "zip", out_dir)
-                            st.session_state.result_zip = zip_path
-                            st.session_state.last_stem = stem
-                            st.session_state.last_page = "gb"
-                            st.session_state.page = "results"
+                        cmd=["./iggypop.py","gb","--i",fmt,"--o",stem] + common_args
+                        res=subprocess.run(cmd,capture_output=True,text=True)
+                        if res.returncode==0:
+                            zp=shutil.make_archive(outd,"zip",outd)
+                            st.session_state.result_zip=zp
+                            st.session_state.last_stem=stem
+                            st.session_state.last_page="gb"
+                            st.session_state.page="results"
                             st.rerun()
                         else:
-                            st.error(f"iggypop gb failed:\n{result.stderr}")
+                            st.error(f"iggypop gb failed:\n{res.stderr}")
 
-        # RESULTS PAGE
         elif st.session_state.page == "results":
             st.title("Run Complete!")
             stem = st.session_state.last_stem
-            zip_path = st.session_state.result_zip
+            zp = st.session_state.result_zip
             st.write(f"Your results for **{stem}** are ready:")
-            with open(zip_path, "rb") as fp:
+            with open(zp,"rb") as fp:
                 st.download_button("Download Results", data=fp,
-                                   file_name=os.path.basename(zip_path),
+                                   file_name=os.path.basename(zp),
                                    mime="application/zip")
-            last = st.session_state.get("last_page", "cds")
-            st.button("← Back to CDS" if last == "cds" else "← Back to GB",
+            last = st.session_state.get("last_page","cds")
+            st.button("← Back to CDS" if last=="cds" else "← Back to GB",
                       on_click=go_to, args=(last,))
 
-        # YAML PAGE
         elif st.session_state.page == "yaml":
             st.title("Select a YAML template")
             yaml_type = st.session_state.yaml_type
-            if yaml_type == "cds":
-                options = [
-                    "domesticate_cds_hybrid.yml",
-                    "domesticate_cds_mcu_gc_53.yml",
-                    "domesticate_cds_mcu.yml",
-                    "domesticate_cds_minimal.yml",
-                    "domesticate_cds_ubc.yml",
-                    "domesticate_cds.yml",
-                    "domesticate_two_step_cds_hybrid.yml",
-                    "domesticate_two_step_cds_mcu.yml",
-                    "domesticate_two_step_cds_ubc.yml",
-                    "domesticate_two_step_cds.yml",
-                ]
-            else:
-                options = [
-                    "domesticate_gb_hybrid.yml",
-                    "domesticate_gb_mcu.yml",
-                    "domesticate_gb_ubc.yml",
-                    "domesticate_gb.yml",
-                    "domesticate_two_step_gb_hybrid.yml",
-                    "domesticate_two_step_gb_mcu.yml",
-                    "domesticate_two_step_gb_ubc.yml",
-                    "domesticate_two_step_gb.yml",
-                ]
-            choice = st.selectbox("Template:", options)
+
+            # dynamic listing
+            yaml_dir = "./yaml"
+            try:
+                files = sorted(os.listdir(yaml_dir))
+            except FileNotFoundError:
+                st.error(f"Directory '{yaml_dir}' not found.")
+                files = []
+            opts = [f for f in files if f.endswith(".yml")]
+            if not opts:
+                st.error("No YAML templates found.")
+                return
+
+            choice = st.selectbox("Template:", opts, key="yaml_choice")
+
+            # Confirm loads defaults
+            if st.button("Confirm"):
+                path = os.path.join(yaml_dir, choice)
+                with open(path) as yf:
+                    parsed = yaml.safe_load(yf) or {}
+                st.session_state.yaml_defaults = parsed
+                st.session_state.yaml_args = None
+                st.success("Loaded defaults from YAML.")
+
+            # Advanced mode: collect args using those defaults
+            with st.expander("Advanced mode"):
+                defaults = st.session_state.get("yaml_defaults", {})
+                st.session_state.yaml_args = collect_common_options(defaults=defaults)
+
+            # Retrieve collected args
+            common_args = st.session_state.get("yaml_args", [])
+
             col1, col2 = st.columns(2)
             pop_yaml = col1.button("Pop!")
             col2.button("← Back", on_click=go_to, args=(yaml_type,))
 
             if pop_yaml:
-                input_path = st.session_state.input_path
+                ip = st.session_state.input_path
                 stem = st.session_state.last_stem
-                out_dir = os.path.join("out", stem)
-                if os.path.isdir(out_dir):
-                    shutil.rmtree(out_dir)
-
-                cmd = [
-                    "./iggypop.py", yaml_type,
-                    "--i", input_path,
-                    "--o", stem,
-                    "--yml", f"yaml/{choice}"
-                ]
+                outd = os.path.join("out", stem)
+                if os.path.isdir(outd):
+                    shutil.rmtree(outd)
+                cmd = ["./iggypop.py", yaml_type, "--i", ip, "--o", stem] \
+                      + common_args \
+                      + ["--yml", os.path.join("yaml", choice)]
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.returncode == 0:
-                    zip_path = shutil.make_archive(out_dir, "zip", out_dir)
-                    st.session_state.result_zip = zip_path
+                    zp = shutil.make_archive(outd, "zip", outd)
+                    st.session_state.result_zip = zp
                     st.session_state.last_page = yaml_type
                     st.session_state.page = "results"
                     st.rerun()
