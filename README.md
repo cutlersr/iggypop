@@ -19,21 +19,9 @@ chmod +x setup.sh
 ```
 
 ### Docker
-Users can either build iggypop themselves or simply pull the image available at https://hub.docker.com/r/cutlerlab/iggypop. 
-#### Build instructions
+Users can simply pull the image available at https://hub.docker.com/r/cutlerlab/iggypop. 
 ```bash
 # this is your best option on a mac
-git clone https://github.com/cutlersr/iggypop
-cd iggypop
-docker build -t iggypop .
-# first time to launch
-docker run -it --name iggypop-container -v "$(pwd)":/app iggypop
-
-# later, re‑enter the same container
-docker start -ai iggypop-container
-```
-#### Pull instructions
-```bash
 git clone https://github.com/cutlersr/iggypop
 cd iggypop
 docker pull cutlerlab/iggypop
