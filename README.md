@@ -19,6 +19,8 @@ chmod +x setup.sh
 ```
 
 ### Docker
+Users can either build iggypop themselves or simply pull the image available at https://hub.docker.com/r/cutlerlab/iggypop. 
+#### Build instructions
 ```bash
 # this is your best option on a mac
 git clone https://github.com/cutlersr/iggypop
@@ -30,6 +32,14 @@ docker run -it --name iggypop-container -v "$(pwd)":/app iggypop
 # later, re‑enter the same container
 docker start -ai iggypop-container
 ```
+#### Pull instructions
+```bash
+git clone https://github.com/cutlersr/iggypop
+cd iggypop
+docker pull cutlerlab/iggypop
+docker run -it cutlerlab/iggypop
+```
+
 
 ## Running the Streamlit App
 We developed a simple web application that allows users to access the basic functions of iggypop in a friendly manner. 
