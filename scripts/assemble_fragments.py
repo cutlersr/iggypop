@@ -363,11 +363,11 @@ def main():
 
     # Two-step presence check & counts
     step2_final_count = len(twostep_final)
-    step1_final_count = len(one_step_assemblies)
+    step1_final_count = len(twostep_first)
     has_step2 = step2_final_count > 0
 
     # Base totals split
-    bases_step1 = sum(len(seq) for k, seq in final_dict.items() if not k.startswith("STEP2:") and not k.startswith("STEP1:"))
+    bases_step1 = sum(len(seq) for k, seq in final_dict.items() if k.startswith("STEP1:"))
     bases_step2 = sum(len(seq) for k, seq in final_dict.items() if k.startswith("STEP2:"))
 
     # Step1 mismatch count from assemble_sequences()
