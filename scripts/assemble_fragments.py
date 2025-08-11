@@ -22,7 +22,7 @@ name should include a pattern like "L0_<digit>" (e.g.:
 In two-step assemblies the base gene is recognized as everything up to (and including) 
 the "L0_<digit>" (e.g. STARBURST_hispS_npgA_H3H_Luz_CPH_v1_npgA_removed.1_L0_3) in step 1.
 Then, in a second assembly step, all first-step assemblies from the same two-step group 
-are reassembled (with a trim of 25 bp) to yield the final gene, e.g.:
+are reassembled (with a trim of 11 bp per block) to yield the final gene, e.g.:
   STARBURST_hispS_npgA_H3H_Luz_CPH_v1_npgA_removed.1
 
 The final output FASTA file will include:
@@ -156,18 +156,27 @@ def assemble_sequences(processed_sequences):
             overhangs[base_gene] = gene_overhangs
     return assembled_sequences, overhangs, mismatches
 
-def simulate_second_step(first_step, n_second=25, cloning_ohs=["AATG", "GCTT"]):
+def simulate_second_step(first_step, n_second=11, cloning_ohs=["AATG", "GCTT"]):
     """
     Simulates the second assembly step for two-step fragments.
-    
-    For each key in first_step that contains "_L0_", group all such keys by the final gene name
-    (obtained by stripping the "_L0_*" suffix). Then, sort the fragments (using the numeric value
-    following "L0_" if available), concatenate them using the overlap logic, trim n_second bp from
-    each end, and enforce that the final sequence starts with cloning_ohs[0] and ends with cloning_ohs[1].
+
+    Behavior:
+      - Group STEP1 assemblies by base gene (strip `_L0_*` suffix).
+      - Sort by the integer after `L0_`.
+      - **For each STEP1 block, trim n_second (default 11) from BOTH ends** to expose STEP2 overhangs (BsmBI).
+      - Join trimmed blocks by matching 3' OH of prev to 5' OH of next (4-bp overlap; warn/count mismatches).
+      - Enforce external cloning overhangs at the ends of the final sequence.
+
+    Returns:
+      final_assemblies: dict[group_key] -> final assembled sequence
+      step2_overhangs: dict[group_key] -> list of 5' overhangs (trimmed cores) in join order
+      step2_mismatch_count: int
     """
     groups = defaultdict(list)
     final_assemblies = {}
-    
+    step2_overhangs = {}
+    mismatch_count = 0
+
     # Partition keys: if key contains "_L0_", group by final gene name.
     for key, seq in first_step.items():
         if "_L0_" in key:
@@ -175,24 +184,54 @@ def simulate_second_step(first_step, n_second=25, cloning_ohs=["AATG", "GCTT"]):
             m = re.search(r"_L0_(\d+)", key)
             num = int(m.group(1)) if m else 0
             groups[group_key].append((num, seq))
-    # Assemble each group.
+
     for group_key, frag_list in groups.items():
         frag_list.sort(key=lambda x: x[0])
-        assembled = frag_list[0][1]
-        for _, frag in frag_list[1:]:
-            if assembled[-4:] != frag[:4]:
-                print(f"Warning (step2): Overlap mismatch in group {group_key}: {assembled[-4:]} != {frag[:4]}")
-            assembled = assembled[:-4] + frag
-        if len(assembled) > 2 * n_second:
-            final_seq = assembled[n_second:-n_second]
-        else:
-            final_seq = assembled
+        if not frag_list:
+            continue
+
+        # Prepare trimmed cores and their overhangs for step2
+        parts = []
+        for _, seq in frag_list:
+            if len(seq) >= 2 * n_second:
+                core = seq[n_second:len(seq)-n_second]
+            else:
+                core = seq  # too short; fallback
+            five = core[:4] if len(core) >= 4 else ""
+            three = core[-4:] if len(core) >= 4 else ""
+            parts.append({"core": core, "five": five, "three": three})
+
+        if not parts:
+            continue
+
+        # Overhang list: 5' OHs in the order used
+        oh_list = [parts[0]["five"]]
+
+        assembled = parts[0]["core"]
+        for i in range(1, len(parts)):
+            prev = parts[i-1]
+            curr = parts[i]
+            oh_list.append(curr["five"])
+            if prev["three"] != curr["five"]:
+                print(f"Warning (step2): Overlap mismatch in group {group_key}: {prev['three']} != {curr['five']}")
+                mismatch_count += 1
+            # stitch with 4-bp overlap
+            assembled = assembled + curr["core"][4:]
+
+        # Enforce external cloning overhangs
+        final_seq = assembled
         if not final_seq.startswith(cloning_ohs[0]):
             final_seq = cloning_ohs[0] + final_seq
         if not final_seq.endswith(cloning_ohs[1]):
             final_seq = final_seq + cloning_ohs[1]
+
+                # include terminal 3' overhang from the last block
+        oh_list.append(parts[-1]['three'])
         final_assemblies[group_key] = final_seq
-    return final_assemblies
+        step2_overhangs[group_key] = oh_list
+
+    return final_assemblies, step2_overhangs, mismatch_count
+
 
 def write_fasta(assemblies, primer_pairs, overhangs, all_primers,
                 library_primer_associations, cloning_ohs, output_file):
@@ -252,7 +291,7 @@ def main():
     twostep_first = {k: v for k, v in first_step_assemblies.items() if "_L0_" in k}
     
     # Simulate second-step assembly for two-step groups.
-    twostep_final = simulate_second_step(first_step_assemblies, n_second=25, cloning_ohs=args.cloning_ohs)
+    twostep_final, twostep_overhangs, step2_mismatches = simulate_second_step(first_step_assemblies, n_second=11, cloning_ohs=args.cloning_ohs)
     
     # Create combined dictionary with labels.
     final_dict = {}
@@ -277,7 +316,7 @@ def main():
         new_key = "STEP2:" + k
         final_dict[new_key] = seq
         final_primer_pairs[new_key] = set()  # Not available for final step.
-        final_overhangs[new_key] = []       # Not available for final step.
+        final_overhangs[new_key] = twostep_overhangs.get(k, [])
     
     # Write all combined assemblies to one output FASTA file.
     write_fasta(final_dict, final_primer_pairs, final_overhangs,
@@ -310,15 +349,54 @@ def main():
     )
 
     # Print stats
+    
+    # Statistics.
+    total_final = len(final_dict)
+    total_bases = sum(len(seq) for seq in final_dict.values())
+
+    # Oligo-level stats for averages
+    overall_oligo_count = total_oligo_count
+    trimmed_length_sum = gene_oligo_length_sum + library_oligo_length_sum
+    avg_trimmed_length = (trimmed_length_sum / overall_oligo_count) if overall_oligo_count > 0 else 0
+    avg_full_length = (total_full_length_sum / overall_oligo_count) if overall_oligo_count > 0 else 0
+    avg_final_length = (total_bases / total_final) if total_final > 0 else 0
+
+    # Two-step presence check & counts
+    step2_final_count = len(twostep_final)
+    step1_final_count = len(one_step_assemblies)
+    has_step2 = step2_final_count > 0
+
+    # Base totals split
+    bases_step1 = sum(len(seq) for k, seq in final_dict.items() if not k.startswith("STEP2:") and not k.startswith("STEP1:"))
+    bases_step2 = sum(len(seq) for k, seq in final_dict.items() if k.startswith("STEP2:"))
+
+    # Step1 mismatch count from assemble_sequences()
+    step1_mismatch_count = sum(len(v) for v in mismatches.values()) if isinstance(mismatches, dict) else 0
+    step2_mismatch_count = step2_mismatches if 'step2_mismatches' in locals() else 0
+
     print("\n--- Assembly Statistics ---")
-    print(f"Total assembled genes (final): {total_final}")
+    if has_step2:
+        print(f"Total step 1 (L0) genes assembled final: {step1_final_count}")
+        print(f"Total step 2 genes assembled final: {step2_final_count}")
+        print(f"Total number of bases synthesized (step 1): {bases_step1}")
+        print(f"Total number of bases synthesized (step 2): {bases_step2}")
+    else:
+        print(f"Total assembled genes (final): {total_final}")
+        print(f"Total number of bases synthesized: {total_bases}")
+
     print(f"Average assembled sequence length: {avg_final_length:.0f} bp")
-    print(f"Total number of bases synthesized: {total_bases}")
     print(f"Total number of oligonucleotides processed: {overall_oligo_count}")
     print(f"Total oligos for genes: {gene_oligo_count}")
     print(f"Total oligos for libraries: {library_oligo_count}")
     print(f"Average bp per oligo (trimmed):          {avg_trimmed_length:.0f} bp")
     print(f"Average bp per oligo (including primers): {avg_full_length:.0f} bp")
-    
+
+    if has_step2:
+        print("Note: Step 2 assembly assumed BsmBI and trimmed 11 bp from each step-1 block before joining.")
+        print(f"Step2 overlap mismatches during joins: {step2_mismatch_count}")
+
+    # Success banner if no assembly errors
+    if step1_mismatch_count == 0 and (not has_step2 or step2_mismatch_count == 0):
+        print(f"ALL GENES PROPERLY ASSEMBLED — output: {args.o}")
 if __name__ == "__main__":
     main()
