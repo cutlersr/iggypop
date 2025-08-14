@@ -1,402 +1,415 @@
+#!/usr/bin/env python3
 import re
-from Bio import SeqIO
-from Bio.Seq import Seq
-from Bio.SeqRecord import SeqRecord
 import argparse
-from collections import defaultdict
+from collections import defaultdict, Counter
 
-"""
-Iggypop Fragment Assembly Script
-
-This script processes DNA oligo fragments from an iggypop FASTA file,
-trims the ends to remove primers and cut site sequences, checks for matching 
-overhangs between fragments, and assembles them into full sequences.
-
-For one-step assemblies:
-  >{accession}.{n}_FRAG_{m}_PRI_{set}
-
-For two-step assemblies (which require a trim of 26 in step 1), the sequence 
-name should include a pattern like "L0_<digit>" (e.g.:
-  >STARBURST_hispS_npgA_H3H_Luz_CPH_v1_npgA_removed.1_L0_3_1_PRI_set234)
-
-In two-step assemblies the base gene is recognized as everything up to (and including) 
-the "L0_<digit>" (e.g. STARBURST_hispS_npgA_H3H_Luz_CPH_v1_npgA_removed.1_L0_3) in step 1.
-Then, in a second assembly step, all first-step assemblies from the same two-step group 
-are reassembled (with a trim of 11 bp per block) to yield the final gene, e.g.:
-  STARBURST_hispS_npgA_H3H_Luz_CPH_v1_npgA_removed.1
-
-The final output FASTA file will include:
-  - One-step assemblies (for fragments not in two-step groups)
-  - For two-step groups, both the first-step assembly (prefixed with "STEP1:")
-    and the final second-step assembly (prefixed with "STEP2:").
-
-Arguments:
---i            Input FASTA file
---o            Output FASTA file name (final assemblies)
---n            Number of bp to trim from each end for 1-step assemblies; 
-               default is 25; sequences with L0_<digit> are trimmed with 26 bp in step 1.
---cloning_ohs  External overhangs used for cloning (default: ['AATG', 'GCTT'])
---skip_library Skip assembling sequences with 'library' in the name.
-"""
-
-def read_fasta(input_file):
-    """Reads sequences from a FASTA file and returns a dict {record.id: record.seq}."""
-    sequences = {}
-    for record in SeqIO.parse(input_file, "fasta"):
-        sequences[record.id] = str(record.seq)
-    return sequences
-
-def extract_base_gene_name(fragment_id):
-    """
-    Extracts the base gene name and primer info from the fragment ID.
-    
-    For two-step assemblies (IDs containing "L0_<digit>"), captures everything 
-    up to the "_L0_<digit>" portion. For one-step sequences, uses the standard pattern.
-    """
-    if re.search(r"L0_\d", fragment_id):
-        # Example: STARBURST..._L0_3_1_PRI_set234 -> returns key "STARBURST..._L0_3"
-        match = re.match(r"^(.*_L0_\d+)_\d+_PRI_(.*\d+)", fragment_id)
-    else:
-        match = re.match(r"^(.*)_FRAG_.*_PRI_(.*\d+)", fragment_id)
-    if match:
-        base_gene_name = match.group(1)
-        primer_info = match.group(2)
-        return base_gene_name, base_gene_name, primer_info, True
-    return None, None, None, False
-
-def process_sequences(sequences, n=25, skip_library=True):
-    """
-    Processes sequences by trimming and grouping by gene name.
-    Also collects oligo statistics.
-    """
-    processed_sequences = defaultdict(list)
-    primer_pairs = defaultdict(set)
-    all_primers = defaultdict(set)
-    library_primer_associations = defaultdict(set)
-    primer_types = {}
-
-    total_oligo_count = 0
-    total_full_length_sum = 0      # <<< NEW
-    gene_oligo_count = 0
-    library_oligo_count = 0
-    gene_oligo_length_sum = 0
-    library_oligo_length_sum = 0
-    non_matching_count = 0
-    skipped_library_count = 0
-    non_matching_ids = []
-
-    for seq_id, seq in sequences.items():
-        base_gene_name, gene_name, primer_info, is_match = extract_base_gene_name(seq_id)
-        if not is_match:
-            non_matching_count += 1
-            non_matching_ids.append(seq_id)
-            continue
-
-        total_oligo_count += 1
-        total_full_length_sum += len(seq)   # <<< NEW
-
-        current_type = "LIBRARY" if "library" in seq_id.lower() else "FRAG"
-        primer_types[base_gene_name] = current_type
-
-        trim_val = 26 if re.search(r"L0_\d", seq_id) else n
-        trimmed_seq = seq[trim_val:-trim_val]
-
-        if current_type == "LIBRARY":
-            library_oligo_count += 1
-            library_oligo_length_sum += len(trimmed_seq)
-        else:
-            gene_oligo_count += 1
-            gene_oligo_length_sum += len(trimmed_seq)
-
-        if skip_library and current_type == "LIBRARY":
-            skipped_library_count += 1
-            library_primer_associations[primer_info].add(base_gene_name)
-            continue
-
-        processed_sequences[base_gene_name].append((gene_name, trimmed_seq))
-        primer_pairs[base_gene_name].add(primer_info)
-        all_primers[primer_info].add(base_gene_name)
-
-    return (
-        processed_sequences, primer_pairs, all_primers, non_matching_count,
-        skipped_library_count, library_primer_associations, non_matching_ids,
-        primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
-        gene_oligo_length_sum, library_oligo_length_sum,
-        total_full_length_sum           # <<< ADDED to return list
-    )
-
-
-def assemble_sequences(processed_sequences):
-    """
-    Assembles sequences (first-step) by concatenating trimmed fragments.
-    """
-    assembled_sequences = {}
-    overhangs = {}
-    mismatches = defaultdict(list)
-    
-    for base_gene, fragments in processed_sequences.items():
-        merged_fragments = defaultdict(list)
-        for gene_name, fragment in fragments:
-            merged_fragments[gene_name].append(fragment)
-        for gene_name, gene_fragments in merged_fragments.items():
-            assembled_seq = gene_fragments[0]
-            gene_overhangs = [assembled_seq[:4]]
-            for i in range(1, len(gene_fragments)):
-                prev_frag = gene_fragments[i - 1]
-                curr_frag = gene_fragments[i]
-                gene_overhangs.append(curr_frag[:4])
-                if prev_frag[-4:] != curr_frag[:4]:
-                    msg = (f"Warning: Mismatch between fragments {i-1} and {i} "
-                           f"in {gene_name}: {prev_frag[-4:]} != {curr_frag[:4]}")
-                    mismatches[base_gene].append(msg)
-                    print(msg)
-                assembled_seq = assembled_seq[:-4] + curr_frag
-            gene_overhangs.append(assembled_seq[-4:])
-            assembled_sequences[base_gene] = assembled_seq
-            overhangs[base_gene] = gene_overhangs
-    return assembled_sequences, overhangs, mismatches
-
-def simulate_second_step(first_step, n_second=11, cloning_ohs=["AATG", "GCTT"]):
-    """
-    Simulates the second assembly step for two-step fragments.
-
-    Behavior:
-      - Group STEP1 assemblies by base gene (strip `_L0_*` suffix).
-      - Sort by the integer after `L0_`.
-      - **For each STEP1 block, trim n_second (default 11) from BOTH ends** to expose STEP2 overhangs (BsmBI).
-      - Join trimmed blocks by matching 3' OH of prev to 5' OH of next (4-bp overlap; warn/count mismatches).
-      - Enforce external cloning overhangs at the ends of the final sequence.
-
-    Returns:
-      final_assemblies: dict[group_key] -> final assembled sequence
-      step2_overhangs: dict[group_key] -> list of 5' overhangs (trimmed cores) in join order
-      step2_mismatch_count: int
-    """
-    groups = defaultdict(list)
-    final_assemblies = {}
-    step2_overhangs = {}
-    mismatch_count = 0
-
-    # Partition keys: if key contains "_L0_", group by final gene name.
-    for key, seq in first_step.items():
-        if "_L0_" in key:
-            group_key = re.sub(r"_L0_.*", "", key)
-            m = re.search(r"_L0_(\d+)", key)
-            num = int(m.group(1)) if m else 0
-            groups[group_key].append((num, seq))
-
-    for group_key, frag_list in groups.items():
-        frag_list.sort(key=lambda x: x[0])
-        if not frag_list:
-            continue
-
-        # Prepare trimmed cores and their overhangs for step2
-        parts = []
-        for _, seq in frag_list:
-            if len(seq) >= 2 * n_second:
-                core = seq[n_second:len(seq)-n_second]
+# ---------------- FASTA helpers ----------------
+def parse_fasta(path):
+    """Yield (header, sequence) tuples; header excludes leading '>'."""
+    with open(path, "r") as fh:
+        header = None
+        seq_chunks = []
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith(">"):
+                if header is not None:
+                    yield header, "".join(seq_chunks)
+                header = line[1:].strip()
+                seq_chunks = []
             else:
-                core = seq  # too short; fallback
-            five = core[:4] if len(core) >= 4 else ""
-            three = core[-4:] if len(core) >= 4 else ""
-            parts.append({"core": core, "five": five, "three": three})
+                seq_chunks.append(line)
+        if header is not None:
+            yield header, "".join(seq_chunks)
 
+def count_headers(path):
+    with open(path, "r") as fh:
+        return sum(1 for line in fh if line.startswith(">"))
+
+# ---------------- Header parsing ----------------
+# Supported header variants:
+#  1) legacy FRAG:   ACC.N_FRAG_<frag>_PRI_<pri>
+#  2) generic FRAG:  <BASE>_FRAG_<frag>_PRI_<pri>
+#  3) two-index FRAG:<BASE>_FRAG_<block>_<frag>_PRI_<pri>  -> groups by (BASE, block)
+#  4) L0:            <BASE>_L0_<block>_<frag>_PRI_<pri>
+#  5) FINAL-ish:     "<name> ind_####"
+#  6) cph tiles:     cph_fragm(e)?nts_ind_<NNNN>.<frag>    -> groups by stem before dot
+#  7) pipe form:     "<anything>|index_primer_name=ind_####" -> treat as FINAL, name = left side
+FRAG_2IDX_RE = re.compile(r"^(?P<base>.+?)_FRAG_(?P<blk>\d+)_(?P<frag>\d+)_PRI_(?P<pri>.+)$")
+FRAG_1IDX_DOTTED_RE = re.compile(r"^(?P<acc>.+?)\.(?P<n>\d+)_FRAG_(?P<frag>\d+)_PRI_(?P<pri>.+)$")
+FRAG_1IDX_GENERIC_RE = re.compile(r"^(?P<base>.+?)_FRAG_(?P<frag>\d+)_PRI_(?P<pri>.+)$")
+L0_RE   = re.compile(r"^(?P<acc>.+?)_L0_(?P<block>\d+)_(?P<frag>\d+)_PRI_(?P<pri>.+)$")
+FINAL_RE= re.compile(r"^(?P<name>.+?)\s+ind_\d+$", re.IGNORECASE)
+CPH_RE  = re.compile(r"^(?P<stem>cph_fragm(?:e)?nts_ind_\d+)\.(?P<frag>\d+)$", re.IGNORECASE)
+PIPE_FINAL_RE = re.compile(r"^(?P<left>.+?)\|index_primer_name=ind_\d+$", re.IGNORECASE)
+
+def classify_header(h):
+    """
+    Return (type, base_key, order_key, pri) where:
+      type in {"FRAG","L0","FINAL","LIBRARY","UNKNOWN"}
+      base_key groups fragments that assemble together
+      order_key determines assembly order (int or tuple)
+      pri is the PRI_* suffix if present
+    """
+    hl = h.lower()
+    if hl.startswith("linker_") or "library" in hl:
+        return ("LIBRARY", h, None, None)
+
+    m = PIPE_FINAL_RE.match(h)
+    if m:
+        return ("FINAL", m.group("left"), None, None)
+
+    m = CPH_RE.match(h)
+    if m:
+        base = m.group("stem")
+        order = int(m.group("frag"))
+        return ("FRAG", base, order, None)
+
+    # two-index FRAG: group BY BLOCK
+    m = FRAG_2IDX_RE.match(h)
+    if m:
+        base = f"{m.group('base')}::blk{m.group('blk')}"   # separate groups per block
+        order = int(m.group("frag"))
+        return ("FRAG", base, order, m.group("pri"))
+
+    # dotted legacy FRAG
+    m = FRAG_1IDX_DOTTED_RE.match(h)
+    if m:
+        base = f"{m.group('acc')}.{m.group('n')}"
+        order = int(m.group("frag"))
+        return ("FRAG", base, order, m.group("pri"))
+
+    # generic single-index FRAG
+    m = FRAG_1IDX_GENERIC_RE.match(h)
+    if m:
+        base = m.group("base")
+        order = int(m.group("frag"))
+        return ("FRAG", base, order, m.group("pri"))
+
+    # L0 two-step
+    m = L0_RE.match(h)
+    if m:
+        base = f"{m.group('acc')}_L0_{m.group('block')}"
+        order = int(m.group("frag"))
+        return ("L0", base, order, m.group("pri"))
+
+    # Already-assembled constructs with index primer suffix
+    m = FINAL_RE.match(h)
+    if m:
+        name = m.group("name")
+        return ("FINAL", name, None, None)
+
+    return ("UNKNOWN", None, None, None)
+
+# ---------------- Processing ----------------
+def process(input_path, n_trim=25, skip_library=True):
+    input_total = count_headers(input_path)
+
+    ids = []
+    recs = []
+    for h, s in parse_fasta(input_path):
+        ids.append(h)
+        recs.append((h, s))
+
+    id_counts = Counter(ids)
+    dup_occ = sum(v-1 for v in id_counts.values())
+    dup_ids = [k for k,v in id_counts.items() if v > 1]
+
+    frag_groups = defaultdict(list)  # base -> list[(order, trimmed_seq)]
+    l0_groups   = defaultdict(list)  # base -> list[(order, trimmed_seq)]
+    finals      = {}                 # name -> seq
+    unknown_ids = []
+
+    lib_count = 0
+    lib_len_sum = 0
+    gene_count = 0
+    gene_len_sum = 0
+    full_len_sum = 0
+
+    for h, s in recs:
+        full_len_sum += len(s)
+        typ, base, order, pri = classify_header(h)
+
+        if typ == "LIBRARY":
+            lib_count += 1
+            trim = 26 if "_L0_" in h else n_trim
+            ts = s[trim:-trim] if len(s) >= 2*trim else s
+            lib_len_sum += len(ts)
+            if not skip_library:
+                pass
+            continue
+
+        if typ == "FRAG":
+            trim = n_trim
+            ts = s[trim:-trim] if len(s) >= 2*trim else s
+            frag_groups[base].append((order, ts))
+            gene_count += 1
+            gene_len_sum += len(ts)
+            continue
+
+        if typ == "L0":
+            trim = 26
+            ts = s[trim:-trim] if len(s) >= 2*trim else s
+            l0_groups[base].append((order, ts))
+            gene_count += 1
+            gene_len_sum += len(ts)
+            continue
+
+        if typ == "FINAL":
+            finals[base] = s
+            continue
+
+        unknown_ids.append(h)
+
+    return {
+        "input_total": input_total,
+        "records_total": len(recs),
+        "unique_ids": len(id_counts),
+        "dup_ids": dup_ids,
+        "dup_occurrences": dup_occ,
+        "frag_groups": frag_groups,
+        "l0_groups": l0_groups,
+        "finals": finals,
+        "unknown_ids": unknown_ids,
+        "gene_count": gene_count,
+        "lib_count": lib_count,
+        "gene_len_sum": gene_len_sum,
+        "lib_len_sum": lib_len_sum,
+        "full_len_sum": full_len_sum,
+    }
+
+# ---------------- Assembly ----------------
+def assemble_groups(groups, cloning_5, cloning_3):
+    """
+    Assemble each base group by 4-bp overlaps.
+    Emits separate contigs when a "reset" boundary is detected: prev[-4:]==cloning_3 and curr[:4]==cloning_5.
+    Returns (assemblies, overhangs, mismatches), where
+      assemblies: dict of id->sequence (id may include '::partN')
+      overhangs:  id->list[4-mers] [5', internal..., 3']
+      mismatches: id->list[str]
+    """
+    assemblies = {}
+    overhangs  = {}
+    mismatches = defaultdict(list)
+
+    for base, items in groups.items():
+        items_sorted = sorted(items, key=lambda x: (x[0] is None, x[0]))
+        seqs = [s for _, s in items_sorted]
+        if not seqs:
+            continue
+
+        part_idx = 1
+        assembled = seqs[0]
+        oh = [assembled[:4]]
+        out_id = base if part_idx == 1 else f"{base}::part{part_idx}"
+
+        for i in range(1, len(seqs)):
+            prev = seqs[i-1]
+            curr = seqs[i]
+            prev_tail = prev[-4:]
+            curr_head = curr[:4]
+            # reset boundary? (e.g., GCTT -> AATG or TAGT/TCGC, depending on args)
+            if prev_tail == cloning_3 and curr_head == cloning_5:
+                # flush current contig
+                oh.append(assembled[-4:])
+                assemblies[out_id] = assembled
+                overhangs[out_id] = oh
+                part_idx += 1
+                out_id = base if part_idx == 1 else f"{base}::part{part_idx}"
+                # start new contig
+                assembled = curr
+                oh = [curr_head]
+                continue
+
+            # normal join
+            oh.append(curr_head)
+            if prev_tail != curr_head:
+                mismatches[out_id].append(f"Mismatch {i-1}->{i}: {prev_tail} != {curr_head}")
+            assembled = assembled[:-4] + curr
+
+        # flush last contig
+        oh.append(assembled[-4:])
+        assemblies[out_id] = assembled
+        overhangs[out_id] = oh
+
+    return assemblies, overhangs, mismatches
+
+# ---------------- Output ----------------
+def write_fasta(records, output_file):
+    with open(output_file, "w") as out:
+        for rec_id, seq in records:
+            out.write(f">{rec_id}\n")
+            for i in range(0, len(seq), 80):
+                out.write(seq[i:i+80] + "\n")
+
+# ---------------- Main ----------------
+def main():
+    ap = argparse.ArgumentParser(description="Iggypop fragment assembler & checker (v6)")
+    ap.add_argument("--i", required=True, help="Input FASTA")
+    ap.add_argument("--o", default="assembled_seq.fasta", help="Output FASTA")
+    ap.add_argument("--n", type=int, default=25, help="Trim N for FRAG_* (default 25). L0_* uses 26.")
+    ap.add_argument("--cloning_ohs", nargs=2, default=["AATG", "GCTT"], help="Expected cloning overhangs 5'/3'")
+    ap.add_argument("--skip_library", action="store_true", default=True, help="Skip assembling library/linker sequences")
+    args = ap.parse_args()
+
+    state = process(args.i, n_trim=args.n, skip_library=args.skip_library)
+
+    # Assemble FRAG and L0 step1 (with reset-aware stitching)
+    fr_assemblies, fr_overhangs, fr_mismatch = assemble_groups(state["frag_groups"], args.cloning_ohs[0], args.cloning_ohs[1])
+    l0_step1_assemblies, l0_step1_overhangs, l0_mismatch = assemble_groups(state["l0_groups"], args.cloning_ohs[0], args.cloning_ohs[1])
+
+    # Step 2: join L0 blocks per accession (group blocks by prefix before _L0_)
+    groups_for_step2 = defaultdict(list)  # gene -> list of (block_num, seq)
+    for base, seq in l0_step1_assemblies.items():
+        m = re.search(r"_L0_(\d+)", base)
+        block_num = int(m.group(1)) if m else 0
+        gene = re.sub(r"_L0_.*", "", base)
+        groups_for_step2[gene].append((block_num, seq))
+
+    l0_final = {}
+    l0_final_overhangs = {}
+    step2_mismatch = []
+
+    for gene, lst in groups_for_step2.items():
+        lst.sort(key=lambda x: x[0])
+        if not lst:
+            continue
+        parts = []
+        for _, seq in lst:
+            core = seq[11:-11] if len(seq) >= 22 else seq  # typical BsmBI cores
+            parts.append({"core": core, "five": core[:4], "three": core[-4:]})
         if not parts:
             continue
-
-        # Overhang list: 5' OHs in the order used
-        oh_list = [parts[0]["five"]]
-
         assembled = parts[0]["core"]
+        oh = [parts[0]["five"]]
         for i in range(1, len(parts)):
             prev = parts[i-1]
             curr = parts[i]
-            oh_list.append(curr["five"])
+            oh.append(curr["five"])
             if prev["three"] != curr["five"]:
-                print(f"Warning (step2): Overlap mismatch in group {group_key}: {prev['three']} != {curr['five']}")
-                mismatch_count += 1
-            # stitch with 4-bp overlap
+                step2_mismatch.append(f"{gene} block{i-1}->{i}: {prev['three']} != {curr['five']}")
             assembled = assembled + curr["core"][4:]
+        # enforce cloning_ohs at ends for step2 outputs
+        if not assembled.startswith(args.cloning_ohs[0]):
+            assembled = args.cloning_ohs[0] + assembled
+        if not assembled.endswith(args.cloning_ohs[1]):
+            assembled = assembled + args.cloning_ohs[1]
+        oh.append(parts[-1]["three"])
+        l0_final[gene] = assembled
+        l0_final_overhangs[gene] = oh
 
-        # Enforce external cloning overhangs
-        final_seq = assembled
-        if not final_seq.startswith(cloning_ohs[0]):
-            final_seq = cloning_ohs[0] + final_seq
-        if not final_seq.endswith(cloning_ohs[1]):
-            final_seq = final_seq + cloning_ohs[1]
-
-                # include terminal 3' overhang from the last block
-        oh_list.append(parts[-1]['three'])
-        final_assemblies[group_key] = final_seq
-        step2_overhangs[group_key] = oh_list
-
-    return final_assemblies, step2_overhangs, mismatch_count
-
-
-def write_fasta(assemblies, primer_pairs, overhangs, all_primers,
-                library_primer_associations, cloning_ohs, output_file):
-    """
-    Writes the assembled sequences to a FASTA file.
-    """
-    records = []
-    for gene, seq in assemblies.items():
-        primers = " ".join(sorted(primer_pairs.get(gene, [])))
-        ohs = ", ".join(overhangs.get(gene, []))
-        record_id = f"{gene} {primers} ohs:[{ohs}]"
-        if not (seq.startswith(cloning_ohs[0]) and seq.endswith(cloning_ohs[1])):
-            print(f"Warning: Cloning overhangs do not match for {record_id}")
-        record = SeqRecord(Seq(seq), id=record_id, description="")
-        records.append(record)
-    for primer, genes in all_primers.items():
-        if len(genes) > 1:
-            print(f"Warning: Primer {primer} is used for multiple genes: {', '.join(genes)}")
-    for primer, genes in library_primer_associations.items():
-        if len(genes) > 1:
-            print(f"Warning: Library Primer {primer} is used for multiple genes: {', '.join(genes)}")
-    SeqIO.write(records, output_file, "fasta")
-
-def main():
-    parser = argparse.ArgumentParser(description="Iggypop fragment assembler & checker")
-    parser.add_argument("--i", help="Input FASTA file", required=True)
-    parser.add_argument("--n", type=int, default=25,
-                        help=("Number of bp to trim from each end for 1-step assemblies; "
-                              "default is 25; sequences with L0_<digit> are trimmed with 26 bp in step 1."))
-    parser.add_argument("--o", default="assembled_seq.fasta", help="Output FASTA file (final assemblies)")
-    parser.add_argument("--cloning_ohs", nargs=2, default=["AATG", "GCTT"],
-                        help="Cloning overhangs (default: ['AATG', 'GCTT'])")
-    parser.add_argument("--skip_library", action='store_true', default=True,
-                        help="Skip assembling sequences with 'library' in their name.")
-    args = parser.parse_args()
-
-    sequences = read_fasta(args.i)
-
-    (processed_sequences, primer_pairs, all_primers, non_matching_count,
-    skipped_library_count, library_primer_associations, non_matching_ids,
-    primer_types, total_oligo_count, gene_oligo_count, library_oligo_count,
-    gene_oligo_length_sum, library_oligo_length_sum,
-    total_full_length_sum) = process_sequences(sequences, args.n, args.skip_library)
-
-    if non_matching_count > 0:
-        print(f"Warning: {non_matching_count} sequences did not match the expected format and were ignored.")
-        for seq_id in non_matching_ids:
-            print(f"  - {seq_id}")
-    if not args.skip_library and skipped_library_count:
-        print(f"Skipped {skipped_library_count} sequences containing 'library' in their name.")
-
-    # First-step assembly.
-    first_step_assemblies, first_overhangs, mismatches = assemble_sequences(processed_sequences)
-    
-    # Separate one-step and two-step first-step assemblies.
-    one_step_assemblies = {k: v for k, v in first_step_assemblies.items() if "_L0_" not in k}
-    twostep_first = {k: v for k, v in first_step_assemblies.items() if "_L0_" in k}
-    
-    # Simulate second-step assembly for two-step groups.
-    twostep_final, twostep_overhangs, step2_mismatches = simulate_second_step(first_step_assemblies, n_second=11, cloning_ohs=args.cloning_ohs)
-    
-    # Create combined dictionary with labels.
-    final_dict = {}
-    final_primer_pairs = {}
+    # Build final outputs
+    final_records = []
     final_overhangs = {}
-    
-    # One-step assemblies: keys unchanged.
-    for k, seq in one_step_assemblies.items():
-        final_dict[k] = seq
-        final_primer_pairs[k] = primer_pairs[k]
-        final_overhangs[k] = first_overhangs[k]
-    
-    # Two-step first-step assemblies: add prefix "STEP1:".
-    for k, seq in twostep_first.items():
-        new_key = "STEP1:" + k
-        final_dict[new_key] = seq
-        final_primer_pairs[new_key] = primer_pairs[k]
-        final_overhangs[new_key] = first_overhangs[k]
-    
-    # Two-step final assemblies: add prefix "STEP2:".
-    for k, seq in twostep_final.items():
-        new_key = "STEP2:" + k
-        final_dict[new_key] = seq
-        final_primer_pairs[new_key] = set()  # Not available for final step.
-        final_overhangs[new_key] = twostep_overhangs.get(k, [])
-    
-    # Write all combined assemblies to one output FASTA file.
-    write_fasta(final_dict, final_primer_pairs, final_overhangs,
-                all_primers, library_primer_associations, args.cloning_ohs, args.o)
-    
-    # Statistics.
-    total_final = len(final_dict)
-    total_bases = sum(len(seq) for seq in final_dict.values())
-    avg_final_length = total_bases / total_final if total_final > 0 else 0
-    overall_oligo_count = total_oligo_count
-    overall_length_sum = gene_oligo_length_sum + library_oligo_length_sum
-    avg_oligo_length = overall_length_sum / overall_oligo_count if overall_oligo_count > 0 else 0
-    
-    # Two-step stats.
-    two_step_keys = [k for k in primer_types if "_L0_" in k]
-    step1_groups = len(two_step_keys)
-    final_twostep = sum(1 for k in final_dict if k.startswith("STEP2:"))
-    
 
-    # Compute averages
-    overall_oligo_count = total_oligo_count
-    trimmed_length_sum = gene_oligo_length_sum + library_oligo_length_sum
-    avg_trimmed_length = (
-        trimmed_length_sum / overall_oligo_count
-        if overall_oligo_count > 0 else 0
-    )
-    avg_full_length = (
-        total_full_length_sum / overall_oligo_count
-        if overall_oligo_count > 0 else 0
-    )
+    for k, seq in fr_assemblies.items():
+        final_records.append((k, seq))
+        final_overhangs[k] = fr_overhangs.get(k, [])
 
-    # Print stats
-    
-    # Statistics.
-    total_final = len(final_dict)
-    total_bases = sum(len(seq) for seq in final_dict.values())
+    for k, seq in l0_step1_assemblies.items():
+        rid = f"STEP1:{k}"
+        final_records.append((rid, seq))
+        final_overhangs[rid] = l0_step1_overhangs.get(k, [])
 
-    # Oligo-level stats for averages
-    overall_oligo_count = total_oligo_count
-    trimmed_length_sum = gene_oligo_length_sum + library_oligo_length_sum
-    avg_trimmed_length = (trimmed_length_sum / overall_oligo_count) if overall_oligo_count > 0 else 0
-    avg_full_length = (total_full_length_sum / overall_oligo_count) if overall_oligo_count > 0 else 0
-    avg_final_length = (total_bases / total_final) if total_final > 0 else 0
+    for k, seq in l0_final.items():
+        rid = f"STEP2:{k}"
+        final_records.append((rid, seq))
+        final_overhangs[rid] = l0_final_overhangs.get(k, [])
 
-    # Two-step presence check & counts
-    step2_final_count = len(twostep_final)
-    step1_final_count = len(twostep_first)
-    has_step2 = step2_final_count > 0
+    for k, seq in state["finals"].items():
+        rid = f"FINAL:{k}"
+        final_records.append((rid, seq))
+        final_overhangs[rid] = [seq[:4], seq[-4:]]
 
-    # Base totals split
-    bases_step1 = sum(len(seq) for k, seq in final_dict.items() if k.startswith("STEP1:"))
-    bases_step2 = sum(len(seq) for k, seq in final_dict.items() if k.startswith("STEP2:"))
+    write_fasta(final_records, args.o)
 
-    # Step1 mismatch count from assemble_sequences()
-    step1_mismatch_count = sum(len(v) for v in mismatches.values()) if isinstance(mismatches, dict) else 0
-    step2_mismatch_count = step2_mismatches if 'step2_mismatches' in locals() else 0
-
+    # ---------------- Reporting ----------------
     print("\n--- Assembly Statistics ---")
-    if has_step2:
+    print(f"Total oligos in input file (headers): {state['input_total']}")
+    print(f"Total records parsed: {state['records_total']}")
+    print(f"Unique header IDs: {state['unique_ids']}")
+    if state["dup_occurrences"]:
+        print(f"Duplicate headers (occurrences beyond first): {state['dup_occurrences']} (unique dup IDs: {len(state['dup_ids'])})")
+
+    print(f"Total oligos for genes (FRAG + L0): {state['gene_count']}")
+    print(f"Total oligos for libraries/linkers: {state['lib_count']}")
+    avg_trimmed = (state['gene_len_sum'] + state['lib_len_sum']) / max(1, state['records_total'])
+    avg_full    = state['full_len_sum'] / max(1, state['records_total'])
+    print(f"Average bp per oligo (trimmed est.): {avg_trimmed:.0f} bp")
+    print(f"Average bp per oligo (including primers): {avg_full:.0f} bp")
+
+    step1_final_count = len([rid for rid,_ in final_records if rid.startswith('STEP1:')])
+    step2_final_count = len([rid for rid,_ in final_records if rid.startswith('STEP2:')])
+    onestep_count     = len([rid for rid,_ in final_records if not rid.startswith(('STEP1:','STEP2:','FINAL:'))])
+    finals_count      = len([rid for rid,_ in final_records if rid.startswith('FINAL:')])
+
+    total_final = len(final_records)
+    total_bases = sum(len(seq) for _, seq in final_records)
+    avg_final_length = total_bases / max(1, total_final)
+
+    if step2_final_count > 0:
+        bases_step1 = sum(len(seq) for rid, seq in final_records if rid.startswith("STEP1:"))
+        bases_step2 = sum(len(seq) for rid, seq in final_records if rid.startswith("STEP2:"))
+        bases_onestep = sum(len(seq) for rid, seq in final_records if not rid.startswith(("STEP1:","STEP2:","FINAL:")))
         print(f"Total step 1 (L0) genes assembled final: {step1_final_count}")
         print(f"Total step 2 genes assembled final: {step2_final_count}")
+        print(f"Total one-step genes assembled final: {onestep_count}")
         print(f"Total number of bases synthesized (step 1): {bases_step1}")
         print(f"Total number of bases synthesized (step 2): {bases_step2}")
+        print(f"Total number of bases synthesized (one-step): {bases_onestep}")
     else:
-        print(f"Total assembled genes (final): {total_final}")
+        print(f"Total assembled records (all): {total_final}")
         print(f"Total number of bases synthesized: {total_bases}")
 
     print(f"Average assembled sequence length: {avg_final_length:.0f} bp")
-    print(f"Total number of oligonucleotides processed: {overall_oligo_count}")
-    print(f"Total oligos for genes: {gene_oligo_count}")
-    print(f"Total oligos for libraries: {library_oligo_count}")
-    print(f"Average bp per oligo (trimmed):          {avg_trimmed_length:.0f} bp")
-    print(f"Average bp per oligo (including primers): {avg_full_length:.0f} bp")
 
-    if has_step2:
-        print("Note: Step 2 assembly assumed BsmBI and trimmed 11 bp from each step-1 block before joining.")
-        print(f"Step2 overlap mismatches during joins: {step2_mismatch_count}")
+    # Summaries
+    if state["unknown_ids"]:
+        print(f"Warning: {len(state['unknown_ids'])} sequences did not match expected formats (FRAG/L0/FINAL/LIBRARY). Showing first 10:")
+        for u in state["unknown_ids"][:10]:
+            print(f"  - {u}")
 
-    # Success banner if no assembly errors
-    if step1_mismatch_count == 0 and (not has_step2 or step2_mismatch_count == 0):
-        print(f"ALL GENES PROPERLY ASSEMBLED — output: {args.o}")
+    total_fr_mis = sum(len(v) for v in fr_mismatch.values())
+    if total_fr_mis:
+        print(f"Step1 FRAG overlap mismatches: {total_fr_mis} total. Showing first 10:")
+        shown = 0
+        for msgs in fr_mismatch.values():
+            for m in msgs:
+                print(f"  - {m}")
+                shown += 1
+                if shown >= 10: break
+            if shown >= 10: break
+
+    total_l0_mis = sum(len(v) for v in l0_mismatch.values())
+    if total_l0_mis:
+        print(f"L0 step1 overlap mismatches: {total_l0_mis} total. Showing first 10:")
+        shown = 0
+        for msgs in l0_mismatch.values():
+            for m in msgs:
+                print(f"  - {m}")
+                shown += 1
+                if shown >= 10: break
+            if shown >= 10: break
+
+    if step2_final_count and step2_mismatch:
+        print(f"Step2 overlap mismatches: {len(step2_mismatch)} total. Showing first 10:")
+        for m in step2_mismatch[:10]:
+            print(f"  - {m}")
+
+    # Cloning overhang audit only on STEP2 and FINAL outputs (skip FRAG one-step unless requested)
+    cloning_oh_mismatches = []
+    for rid, seq in final_records:
+        if rid.startswith("STEP2:") or rid.startswith("FINAL:"):
+            if not (seq.startswith(args.cloning_ohs[0]) and seq.endswith(args.cloning_ohs[1])):
+                five = seq[:4]
+                three = seq[-4:]
+                ohs = final_overhangs.get(rid, [five, three])
+                cloning_oh_mismatches.append((rid, ohs, five, three))
+    if cloning_oh_mismatches:
+        print(f"Cloning overhang mismatches: {len(cloning_oh_mismatches)} total. Showing first 10:")
+        for rid, ohs, five, three in cloning_oh_mismatches[:10]:
+            print(f"  - {rid} ohs:{ohs} (5'={five}, 3'={three})")
+
 if __name__ == "__main__":
     main()
