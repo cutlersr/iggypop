@@ -1,7 +1,24 @@
 #!/usr/bin/env python3
 import re
 import argparse
+import sys
 from collections import defaultdict, Counter
+from pathlib import Path
+
+
+# ------------- Statistics -------------
+def _safe_div(numer, denom):
+    return (numer / denom) if denom else 0.0
+
+class Tee:
+    def __init__(self, *streams):
+        self.streams = streams
+    def write(self, s):
+        for st in self.streams:
+            st.write(s)
+    def flush(self):
+        for st in self.streams:
+            st.flush()
 
 # ---------------- FASTA helpers ----------------
 def parse_fasta(path):
@@ -253,6 +270,29 @@ def main():
     ap.add_argument("--skip_library", action="store_true", default=True, help="Skip assembling library/linker sequences")
     args = ap.parse_args()
 
+
+    # Decide the summary filename:
+    # - If user kept default output ("assembled_seq.fasta"), use "assembly_summary.txt"
+    # - If user gave a custom output (e.g., "run42.fasta"), use "run42_summary.txt"
+    DEFAULT_OUT = "assembled_seq.fasta"
+    out_path = Path(args.o)
+    summary_path = (
+        out_path.with_name(f"{out_path.stem}_summary.txt")
+        if out_path.name != DEFAULT_OUT else Path("assembly_summary.txt")
+    )
+
+    # Start teeing stdout to both console and summary file
+    log_fh = open(summary_path, "w")
+    old_stdout = sys.stdout
+    sys.stdout = Tee(sys.stdout, log_fh)
+
+    print()
+    print(f"Input file: {args.i}")
+    print(f"Assembled sequences: {args.o}")
+    print(f"Summary: {summary_path}")
+    print()
+
+
     state = process(args.i, n_trim=args.n, skip_library=args.skip_library)
 
     # Assemble FRAG and L0 step1 (with reset-aware stitching)
@@ -324,20 +364,37 @@ def main():
 
     write_fasta(final_records, args.o)
 
-    # ---------------- Reporting ----------------
-    print("\n--- Assembly Statistics ---")
-    print(f"Total oligos in input file (headers): {state['input_total']}")
-    print(f"Total records parsed: {state['records_total']}")
-    print(f"Unique header IDs: {state['unique_ids']}")
-    if state["dup_occurrences"]:
-        print(f"Duplicate headers (occurrences beyond first): {state['dup_occurrences']} (unique dup IDs: {len(state['dup_ids'])})")
 
-    print(f"Total oligos for genes (FRAG + L0): {state['gene_count']}")
-    print(f"Total oligos for libraries/linkers: {state['lib_count']}")
-    avg_trimmed = (state['gene_len_sum'] + state['lib_len_sum']) / max(1, state['records_total'])
-    avg_full    = state['full_len_sum'] / max(1, state['records_total'])
-    print(f"Average bp per oligo (trimmed est.): {avg_trimmed:.0f} bp")
-    print(f"Average bp per oligo (including primers): {avg_full:.0f} bp")
+    total_final = len(final_records)
+    total_bases = sum(len(seq) for _, seq in final_records)
+    avg_final_length = _safe_div(total_bases, total_final)
+
+    # Averages per input oligo (not per final assembly)
+    avg_trimmed = _safe_div(state["gene_len_sum"] + state["lib_len_sum"], state["records_total"])
+    avg_full    = _safe_div(state["full_len_sum"], state["records_total"])
+
+
+    # ---------------- Reporting ----------------
+    print("\n--- Oligo counts ---")
+    print(f"Total oligos in input file: {state['input_total']}")
+    print(f"Total records parsed: {state['records_total']}")
+
+    if state["dup_occurrences"]:
+        print(f"Duplicate oligo names: {state['dup_occurrences']} (unique dup IDs: {len(state['dup_ids'])})")
+        print(f" unqiue oligo names are needed to correctly simulate assemblies")
+        print(f"Unique oligo IDs identified in record: {state['unique_ids']}")
+
+    print()
+
+    if state["lib_count"] > 0:
+        print(f"Total oligos for libraries/linkers: {state['lib_count']}")
+        print(f"Total oligos for genes (FRAG + L0): {state['gene_count']}")
+
+    if total_final > 0:
+        print(f"Average assembled sequence length: {avg_final_length:.0f} bp")
+
+    print(f"Average bp per oligo (including primers/gg sites): {avg_full:.0f} bp")
+    print(f"Average bp per oligo (after oligo/gg site removal): {avg_trimmed:.0f} bp")
 
     step1_final_count = len([rid for rid,_ in final_records if rid.startswith('STEP1:')])
     step2_final_count = len([rid for rid,_ in final_records if rid.startswith('STEP2:')])
@@ -352,27 +409,42 @@ def main():
         bases_step1 = sum(len(seq) for rid, seq in final_records if rid.startswith("STEP1:"))
         bases_step2 = sum(len(seq) for rid, seq in final_records if rid.startswith("STEP2:"))
         bases_onestep = sum(len(seq) for rid, seq in final_records if not rid.startswith(("STEP1:","STEP2:","FINAL:")))
-        print(f"Total step 1 (L0) genes assembled final: {step1_final_count}")
-        print(f"Total step 2 genes assembled final: {step2_final_count}")
-        print(f"Total one-step genes assembled final: {onestep_count}")
-        print(f"Total number of bases synthesized (step 1): {bases_step1}")
-        print(f"Total number of bases synthesized (step 2): {bases_step2}")
-        print(f"Total number of bases synthesized (one-step): {bases_onestep}")
+
+        print()
+        print(f"--- Assembly simulations  ---")
+        print(f"Total L0 fragments assembled: {step1_final_count}")
+        print(f"Total step 2 fragments assembled: {step2_final_count}")
+
+        if onestep_count:
+            print(f"Total one-step fragments assembled: {onestep_count}")
+        print()
+        print(f"--- Bases synthesized ---")
+        print(f"Total number of L0 bases synthesized: {bases_step1}")
+        if onestep_count:
+            print(f"Total number one-step bases synthesized: {bases_onestep}")
     else:
-        print(f"Total assembled records (all): {total_final}")
-        print(f"Total number of bases synthesized: {total_bases}")
+        print()
+        print(f"--- Assembly simulation ---")
+        print(f"Total fragments assembled: {onestep_count}")
+        print()
+        print(f"--- Bases synthesized stats ---")
+        print(f"Total number one-step bases synthesized: {bases_onestep}")
 
     print(f"Average assembled sequence length: {avg_final_length:.0f} bp")
 
     # Summaries
     if state["unknown_ids"]:
-        print(f"Warning: {len(state['unknown_ids'])} sequences did not match expected formats (FRAG/L0/FINAL/LIBRARY). Showing first 10:")
+        print()
+        print(f"Warning: {len(state['unknown_ids'])} sequences did not match expected naming formats (FRAG/L0/FINAL/LIBRARY included name). Showing first 10:")
         for u in state["unknown_ids"][:10]:
             print(f"  - {u}")
 
     total_fr_mis = sum(len(v) for v in fr_mismatch.values())
     if total_fr_mis:
+        print()
         print(f"Step1 FRAG overlap mismatches: {total_fr_mis} total. Showing first 10:")
+        print(f"mismatches will be predicted by this script when non-cannonical names or duplicates are present")
+
         shown = 0
         for msgs in fr_mismatch.values():
             for m in msgs:
@@ -383,7 +455,9 @@ def main():
 
     total_l0_mis = sum(len(v) for v in l0_mismatch.values())
     if total_l0_mis:
+        print()
         print(f"L0 step1 overlap mismatches: {total_l0_mis} total. Showing first 10:")
+        print(f"mismatches will be predicted by this script when non-cannonical names or duplicates are present")
         shown = 0
         for msgs in l0_mismatch.values():
             for m in msgs:
@@ -393,7 +467,9 @@ def main():
             if shown >= 10: break
 
     if step2_final_count and step2_mismatch:
+        print()
         print(f"Step2 overlap mismatches: {len(step2_mismatch)} total. Showing first 10:")
+        print(f"mismatches will be predicted by this script when non-cannonical names or duplicates are present")
         for m in step2_mismatch[:10]:
             print(f"  - {m}")
 
@@ -407,7 +483,9 @@ def main():
                 ohs = final_overhangs.get(rid, [five, three])
                 cloning_oh_mismatches.append((rid, ohs, five, three))
     if cloning_oh_mismatches:
+        print()        
         print(f"Cloning overhang mismatches: {len(cloning_oh_mismatches)} total. Showing first 10:")
+        print(f"mismatches will be predicted by this script when non-cannonical names or duplicates are present")
         for rid, ohs, five, three in cloning_oh_mismatches[:10]:
             print(f"  - {rid} ohs:{ohs} (5'={five}, 3'={three})")
 
